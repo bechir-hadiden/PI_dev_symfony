@@ -1,0 +1,189 @@
+{# templates/destination/show.html.twig #}
+{% extends 'base.html.twig' %}
+{% block title %}{{ destination.nom }}{% endblock %}
+
+{% block body %}
+<div class="page-header">
+  <h1>🌍 <span>{{ destination.nom }}</span></h1>
+  <div style="display:flex;gap:8px;">
+    <a href="{{ path('destination_edit', {id: destination.id}) }}" class="btn btn-gold">✏️ Modifier</a>
+    <a href="{{ path('destination_index') }}" class="btn btn-outline">← Retour</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 380px;gap:28px;align-items:start;">
+
+  {# ── COLONNE GAUCHE ── #}
+  <div>
+
+    {# SLIDER D'IMAGES #}
+    {% set images = destination.allImages %}
+    {% if images|length > 0 %}
+      <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:24px;background:#0d1b2a;" id="slider">
+        {% for img in images %}
+          <div class="slide" style="display:{{ loop.first ? 'block' : 'none' }};">
+            <img src="{{ img }}" alt="{{ destination.nom }}" style="width:100%;height:380px;object-fit:cover;">
+          </div>
+        {% endfor %}
+
+        {% if images|length > 1 %}
+          <button onclick="prevSlide()" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:42px;height:42px;font-size:1.2rem;cursor:pointer;">‹</button>
+          <button onclick="nextSlide()" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:42px;height:42px;font-size:1.2rem;cursor:pointer;">›</button>
+          <div style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;" id="dots">
+            {% for img in images %}
+              <div class="dot" onclick="goToSlide({{ loop.index0 }})"
+                   style="width:8px;height:8px;border-radius:50%;background:{{ loop.first ? '#c9a84c' : 'rgba(255,255,255,0.5)' }};cursor:pointer;transition:background 0.2s;"></div>
+            {% endfor %}
+          </div>
+          <div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.5);color:#fff;padding:4px 10px;border-radius:100px;font-size:0.78rem;" id="counter">
+            1 / {{ images|length }}
+          </div>
+        {% endif %}
+      </div>
+
+      {% if images|length > 1 %}
+        <div style="display:flex;gap:8px;margin-bottom:24px;overflow-x:auto;">
+          {% for img in images %}
+            <img src="{{ img }}" onclick="goToSlide({{ loop.index0 }})"
+                 class="thumb" data-index="{{ loop.index0 }}"
+                 style="width:70px;height:50px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid {{ loop.first ? '#c9a84c' : 'transparent' }};flex-shrink:0;transition:border-color 0.2s;">
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% else %}
+      <div style="width:100%;height:200px;background:#f0f0f0;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:24px;">🗺️</div>
+    {% endif %}
+
+    {# Description #}
+    {% if destination.description %}
+      <div class="card" style="padding:20px;">
+        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);margin-bottom:10px;">📝 Description</h3>
+        <p style="font-size:0.875rem;color:var(--muted);line-height:1.7;">{{ destination.description }}</p>
+      </div>
+    {% endif %}
+  </div>
+
+  {# ── COLONNE DROITE ── #}
+  <div style="display:flex;flex-direction:column;gap:16px;">
+
+    {# Infos #}
+    <div class="card" style="padding:24px;border-top:3px solid var(--gold);">
+      <table style="width:100%;border-collapse:collapse;font-size:0.875rem;">
+        <tr style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:10px 0;font-weight:600;color:var(--navy);">📍 Pays</td>
+          <td style="padding:10px 0;color:var(--muted);">{{ destination.pays }}</td>
+        </tr>
+        {% if destination.codeIata %}
+        <tr style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:10px 0;font-weight:600;color:var(--navy);">✈️ Code IATA</td>
+          <td style="padding:10px 0;"><span class="badge badge-navy">{{ destination.codeIata }}</span></td>
+        </tr>
+        {% endif %}
+        <tr style="border-bottom:1px solid #f0f0f0;">
+          <td style="padding:10px 0;font-weight:600;color:var(--navy);">🖼️ Photos</td>
+          <td style="padding:10px 0;color:var(--muted);">{{ images|length }} photo(s)</td>
+        </tr>
+        <tr>
+          <td style="padding:10px 0;font-weight:600;color:var(--navy);">📅 Ajouté le</td>
+          <td style="padding:10px 0;color:var(--muted);">{{ destination.dateCreation|date('d/m/Y') }}</td>
+        </tr>
+      </table>
+    </div>
+
+    {# ── QR CODE ── #}
+    <div class="card" style="padding:24px;text-align:center;">
+      <h4 style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);margin-bottom:4px;">📱 QR Code</h4>
+
+      {# QR Code pointe TOUJOURS vers une recherche YouTube de la ville #}
+      {% if destination.videoUrl %}
+        {# Vidéo spécifique enregistrée #}
+        {% set youtubeLink = 'https://www.youtube.com/watch?v=' ~ destination.videoUrl %}
+        <p style="font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Scannez pour voir la vidéo 🎬</p>
+      {% else %}
+        {# Pas de vidéo → recherche YouTube automatique par nom de ville #}
+        {% set youtubeLink = 'https://www.youtube.com/results?search_query=' ~ (destination.nom ~ ' ' ~ destination.pays ~ ' travel')|url_encode %}
+        <p style="font-size:0.75rem;color:var(--muted);margin-bottom:16px;">Scannez pour voir des vidéos de {{ destination.nom }} 🎬</p>
+      {% endif %}
+
+      {# Génération QR Code #}
+      {% set qrImgUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' ~ youtubeLink|url_encode ~ '&color=ff0000&bgcolor=ffffff&format=png' %}
+
+      <a href="{{ youtubeLink }}" target="_blank">
+        <img src="{{ qrImgUrl }}"
+             alt="QR Code {{ destination.nom }}"
+             style="width:180px;height:180px;border-radius:12px;border:3px solid #ff0000;padding:8px;background:#fff;transition:transform 0.2s;"
+             onmouseover="this.style.transform='scale(1.05)'"
+             onmouseout="this.style.transform='scale(1)'">
+      </a>
+
+      <p style="font-size:0.72rem;color:var(--muted);margin-top:10px;font-weight:600;letter-spacing:1px;text-transform:uppercase;">
+        {{ destination.nom }} — {{ destination.pays }}
+      </p>
+
+      <div style="font-size:0.72rem;color:#ff0000;margin-top:4px;">
+        ▶️ Ouvre YouTube
+      </div>
+
+      <a href="{{ qrImgUrl }}" download="qrcode-{{ destination.nom|lower }}.png" class="btn btn-outline btn-sm" style="margin-top:12px;">
+        ⬇️ Télécharger le QR Code
+      </a>
+    </div>
+
+    {# Voyages associés #}
+    <div class="card" style="padding:24px;">
+      <h4 style="font-size:0.9rem;font-weight:600;color:var(--navy);margin-bottom:12px;">✈️ Voyages ({{ destination.voyages|length }})</h4>
+      {% if destination.voyages is empty %}
+        <p style="font-size:0.8rem;color:var(--muted);">Aucun voyage associé.</p>
+        <a href="{{ path('voyage_new') }}" class="btn btn-gold btn-sm" style="margin-top:10px;">+ Créer un voyage</a>
+      {% else %}
+        {% for voyage in destination.voyages %}
+          <div style="padding:10px 0;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:0.82rem;font-weight:600;color:var(--navy);">{{ voyage.destinationNom }}</div>
+              <div style="font-size:0.72rem;color:var(--muted);">{{ voyage.dateDebut|date('d/m/Y') }} → {{ voyage.dateFin|date('d/m/Y') }}</div>
+            </div>
+            <div style="font-weight:700;color:var(--gold);font-size:0.85rem;">{{ voyage.prix|number_format(0,',',' ') }} TND</div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+let currentSlide = 0;
+const slides = document.querySelectorAll('.slide');
+const dots   = document.querySelectorAll('.dot');
+const thumbs = document.querySelectorAll('.thumb');
+const total  = slides.length;
+
+function goToSlide(index) {
+  if (total === 0) return;
+  slides[currentSlide].style.display = 'none';
+  if (dots[currentSlide])   dots[currentSlide].style.background   = 'rgba(255,255,255,0.5)';
+  if (thumbs[currentSlide]) thumbs[currentSlide].style.borderColor = 'transparent';
+
+  currentSlide = (index + total) % total;
+
+  slides[currentSlide].style.display = 'block';
+  if (dots[currentSlide])   dots[currentSlide].style.background   = '#c9a84c';
+  if (thumbs[currentSlide]) thumbs[currentSlide].style.borderColor = '#c9a84c';
+
+  const counter = document.getElementById('counter');
+  if (counter) counter.textContent = (currentSlide + 1) + ' / ' + total;
+}
+
+function nextSlide() { goToSlide(currentSlide + 1); }
+function prevSlide()  { goToSlide(currentSlide - 1); }
+
+{% if destination.allImages|length > 1 %}
+setInterval(nextSlide, 4000);
+{% endif %}
+
+// QR Code généré côté serveur par QRCodeService (équivalent ZXing JavaFX)
+</script>
+{% endblock %}

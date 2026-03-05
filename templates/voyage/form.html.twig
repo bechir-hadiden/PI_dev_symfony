@@ -1,0 +1,83 @@
+{# templates/voyage/form.html.twig #}
+{% extends 'base.html.twig' %}
+{% block title %}{{ mode == 'new' ? 'Nouveau voyage' : 'Modifier le voyage' }}{% endblock %}
+
+{% block body %}
+<div class="page-header">
+  <h1>{{ mode == 'new' ? '✈️ Nouveau <span>Voyage</span>' : '✏️ Modifier <span>le voyage</span>' }}</h1>
+  <a href="{{ path('voyage_index') }}" class="btn btn-outline">← Retour</a>
+</div>
+
+{{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+<div class="form-card">
+
+  {# destination (varchar) #}
+  <div class="form-group">
+    {{ form_label(form.destination) }}
+    {{ form_widget(form.destination) }}
+    {{ form_errors(form.destination) }}
+  </div>
+
+  {# destination_id (FK) #}
+  <div class="form-group">
+    {{ form_label(form.destinationRel) }}
+    {{ form_widget(form.destinationRel) }}
+    {{ form_errors(form.destinationRel) }}
+    <small style="color:var(--muted);font-size:0.75rem;">Lier ce voyage à une fiche destination existante</small>
+  </div>
+
+  {# pays_depart #}
+  <div class="form-group">
+    {{ form_label(form.paysDepart) }}
+    {{ form_widget(form.paysDepart) }}
+    {{ form_errors(form.paysDepart) }}
+  </div>
+
+  {# dates #}
+  <div class="form-row">
+    <div class="form-group">
+      {{ form_label(form.dateDebut) }}
+      {{ form_widget(form.dateDebut) }}
+      {{ form_errors(form.dateDebut) }}
+    </div>
+    <div class="form-group">
+      {{ form_label(form.dateFin) }}
+      {{ form_widget(form.dateFin) }}
+      {{ form_errors(form.dateFin) }}
+    </div>
+  </div>
+
+  {# prix #}
+  <div class="form-group">
+    {{ form_label(form.prix) }}
+    {{ form_widget(form.prix) }}
+    {{ form_errors(form.prix) }}
+  </div>
+
+  {# imagePath #}
+  <div class="form-group">
+    {{ form_label(form.imagePath) }}
+    {{ form_widget(form.imagePath) }}
+    {{ form_errors(form.imagePath) }}
+    {% if voyage.imagePath %}
+      <img src="{{ voyage.imagePath }}" style="margin-top:10px;max-height:100px;border-radius:8px;" alt="preview">
+    {% endif %}
+  </div>
+
+  {# description #}
+  <div class="form-group">
+    {{ form_label(form.description) }}
+    {{ form_widget(form.description) }}
+    {{ form_errors(form.description) }}
+  </div>
+
+  <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;">
+    <a href="{{ path('voyage_index') }}" class="btn btn-outline">Annuler</a>
+    <button type="submit" class="btn btn-gold">
+      {{ mode == 'new' ? '✅ Créer le voyage' : '💾 Sauvegarder' }}
+    </button>
+  </div>
+
+</div>
+{{ form_end(form) }}
+{% endblock %}

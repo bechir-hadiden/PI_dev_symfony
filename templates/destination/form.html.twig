@@ -1,0 +1,232 @@
+{# templates/destination/form.html.twig #}
+{% extends 'base.html.twig' %}
+{% block title %}{{ mode == 'new' ? 'Nouvelle destination' : 'Modifier ' ~ destination.nom }}{% endblock %}
+
+{% block body %}
+<div class="page-header">
+  <h1>{{ mode == 'new' ? '🌍 Nouvelle <span>Destination</span>' : '✏️ Modifier <span>' ~ destination.nom ~ '</span>' }}</h1>
+  <a href="{{ path('destination_index') }}" class="btn btn-outline">← Retour</a>
+</div>
+
+{{ form_start(form, {attr: {novalidate: 'novalidate', enctype: 'multipart/form-data'}}) }}
+<div class="form-card">
+
+  <div class="form-row">
+    <div class="form-group">
+      {{ form_label(form.nom) }}
+      {{ form_widget(form.nom) }}
+      {{ form_errors(form.nom) }}
+    </div>
+    <div class="form-group">
+      {{ form_label(form.pays) }}
+      {{ form_widget(form.pays) }}
+      {{ form_errors(form.pays) }}
+    </div>
+  </div>
+
+  <div class="form-group">
+    {{ form_label(form.codeIata) }}
+    {{ form_widget(form.codeIata) }}
+    {{ form_errors(form.codeIata) }}
+  </div>
+
+  {# ── MULTI IMAGES ── #}
+  <div class="form-group">
+    <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--navy);margin-bottom:8px;">
+      🖼️ Images (sélectionnez plusieurs d'un coup)
+    </label>
+
+    {# Zone dropzone — onclick utilise querySelector au lieu d'un ID fixe #}
+    <div id="dropzone" style="border:2px dashed #c9a84c;border-radius:12px;padding:24px;text-align:center;background:#fafafa;cursor:pointer;"
+         onclick="document.querySelector('input[type=file]').click()">
+      <div style="font-size:2.5rem;">🖼️</div>
+      <div id="dropzoneText" style="font-weight:600;color:var(--navy);margin-top:6px;">Cliquez pour choisir vos images</div>
+      <div style="font-size:0.78rem;color:var(--muted);margin-top:4px;">JPG, PNG, WEBP — max 3 Mo chacune — sélection multiple possible</div>
+    </div>
+
+    {# Input file caché — multiple activé #}
+    {{ form_widget(form.imageFiles, {attr: {
+      accept: 'image/*',
+      multiple: 'multiple',
+      style: 'display:none'
+    }}) }}
+
+    {# Grille de preview #}
+    <div id="previewGrid" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;">
+      {# Images déjà enregistrées en BDD #}
+      {% for img in destination.allImages %}
+        <div style="position:relative;">
+          <img src="{{ img }}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid var(--gold);">
+          <div style="position:absolute;top:-4px;right:-4px;background:var(--gold);color:var(--navy);border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;">✓</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    {% if destination.allImages|length > 0 %}
+      <p style="font-size:0.75rem;color:var(--muted);margin-top:6px;">
+        {{ destination.allImages|length }} image(s) déjà enregistrée(s) — choisissez de nouvelles pour en ajouter
+      </p>
+    {% endif %}
+
+    {{ form_errors(form.imageFiles) }}
+  </div>
+
+  {# ── YOUTUBE ── #}
+  <div style="background:#f8f9ff;border:1px solid #e0e0ff;border-radius:14px;padding:20px;margin-bottom:20px;">
+    <label style="display:block;font-size:0.8rem;font-weight:600;color:var(--navy);margin-bottom:10px;">
+      🎬 Vidéo YouTube
+    </label>
+
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      {{ form_widget(form.youtubeSearch, {attr: {
+        placeholder: 'Ex: Toulouse city tour...',
+        id: 'youtubeSearch',
+        style: 'flex:1;padding:10px 14px;border:2px solid #e5e7eb;border-radius:10px;font-family:inherit;font-size:0.875rem;outline:none;'
+      }}) }}
+      <button type="button" onclick="searchYoutube()" class="btn btn-primary">🔍 Chercher</button>
+    </div>
+
+    {# Résultats YouTube #}
+    <div id="youtubeResults" style="display:none;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;"></div>
+
+    {# Vidéo sélectionnée #}
+    <div id="selectedVideo" style="display:none;margin-bottom:12px;">
+      <iframe id="youtubePlayer" width="100%" height="200" style="border-radius:10px;border:none;" allowfullscreen></iframe>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+      {{ form_widget(form.videoUrl, {attr: {
+        id: 'videoUrlField',
+        readonly: 'readonly',
+        style: 'flex:1;padding:10px 14px;border:2px solid #e5e7eb;border-radius:10px;font-family:inherit;font-size:0.875rem;background:#fafafa;'
+      }}) }}
+      <button type="button" onclick="clearVideo()" class="btn btn-danger btn-sm">✕ Vider</button>
+    </div>
+    <small style="color:var(--muted);font-size:0.72rem;">L'ID YouTube est sauvegardé automatiquement quand vous sélectionnez une vidéo</small>
+  </div>
+
+  <div class="form-group">
+    {{ form_label(form.description) }}
+    {{ form_widget(form.description) }}
+    {{ form_errors(form.description) }}
+  </div>
+
+  <div class="form-group">
+    {{ form_label(form.order) }}
+    {{ form_widget(form.order) }}
+    {{ form_errors(form.order) }}
+  </div>
+
+  <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px;">
+    <a href="{{ path('destination_index') }}" class="btn btn-outline">Annuler</a>
+    <button type="submit" class="btn btn-gold">
+      {{ mode == 'new' ? '✅ Créer la destination' : '💾 Sauvegarder' }}
+    </button>
+  </div>
+
+</div>
+{{ form_end(form) }}
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+const YOUTUBE_SEARCH_URL = '{{ path('destination_youtube_search') }}';
+
+// ── Preview images multiples ──────────────────────────────────────
+// On utilise querySelector pour trouver l'input file peu importe son ID généré par Symfony
+document.querySelector('input[type="file"]').addEventListener('change', function() {
+  const grid = document.getElementById('previewGrid');
+
+  // Supprimer les previews nouvelles précédentes (garder les ✓ existantes)
+  grid.querySelectorAll('.new-preview').forEach(el => el.remove());
+
+  Array.from(this.files).forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const div = document.createElement('div');
+      div.className = 'new-preview';
+      div.style.cssText = 'position:relative;';
+      div.innerHTML = `
+        <img src="${ev.target.result}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #4ade80;">
+        <div style="position:absolute;top:-4px;right:-4px;background:#4ade80;color:#fff;border-radius:50%;width:18px;height:18px;font-size:0.6rem;display:flex;align-items:center;justify-content:center;font-weight:700;">+</div>
+      `;
+      grid.appendChild(div);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  if (this.files.length > 0) {
+    document.getElementById('dropzoneText').textContent = this.files.length + ' image(s) sélectionnée(s) ✅';
+    document.getElementById('dropzone').style.borderColor = '#4ade80';
+  }
+});
+
+// ── Recherche YouTube ─────────────────────────────────────────────
+async function searchYoutube() {
+  const q = document.getElementById('youtubeSearch').value.trim();
+  if (!q) return;
+
+  const btn = document.querySelector('button[onclick="searchYoutube()"]');
+  btn.textContent = '⏳ Recherche...';
+  btn.disabled = true;
+
+  try {
+    const res  = await fetch(YOUTUBE_SEARCH_URL + '?q=' + encodeURIComponent(q));
+    const data = await res.json();
+    const container = document.getElementById('youtubeResults');
+    container.innerHTML = '';
+    container.style.display = 'grid';
+
+    if (data.length === 0) {
+      container.innerHTML = '<p style="color:var(--muted);font-size:0.82rem;grid-column:1/-1;">Aucun résultat.</p>';
+      return;
+    }
+
+    data.forEach(video => {
+      const div = document.createElement('div');
+      div.style.cssText = 'cursor:pointer;border-radius:10px;overflow:hidden;border:2px solid transparent;transition:border-color 0.2s;background:#fff;';
+      div.innerHTML = `
+        <img src="${video.thumbnail}" style="width:100%;height:80px;object-fit:cover;">
+        <div style="padding:6px;">
+          <div style="font-size:0.72rem;font-weight:600;color:var(--navy);line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;">${video.title}</div>
+          <div style="font-size:0.65rem;color:var(--muted);">${video.channel}</div>
+        </div>
+      `;
+      div.onclick = () => selectVideo(video.videoId, div);
+      container.appendChild(div);
+    });
+  } catch(e) {
+    alert('Erreur lors de la recherche YouTube.');
+  } finally {
+    btn.textContent = '🔍 Chercher';
+    btn.disabled = false;
+  }
+}
+
+function selectVideo(videoId, el) {
+  document.querySelectorAll('#youtubeResults > div').forEach(d => d.style.borderColor = 'transparent');
+  el.style.borderColor = 'var(--gold)';
+  document.getElementById('videoUrlField').value = videoId;
+  document.getElementById('youtubePlayer').src = `https://www.youtube.com/embed/${videoId}`;
+  document.getElementById('selectedVideo').style.display = 'block';
+}
+
+function clearVideo() {
+  document.getElementById('videoUrlField').value = '';
+  document.getElementById('youtubePlayer').src = '';
+  document.getElementById('selectedVideo').style.display = 'none';
+  document.getElementById('youtubeResults').style.display = 'none';
+  document.getElementById('youtubeSearch').value = '';
+}
+
+// Afficher vidéo existante au chargement
+window.addEventListener('load', () => {
+  const videoId = document.getElementById('videoUrlField').value.trim();
+  if (videoId) {
+    document.getElementById('youtubePlayer').src = `https://www.youtube.com/embed/${videoId}`;
+    document.getElementById('selectedVideo').style.display = 'block';
+  }
+});
+</script>
+{% endblock %}

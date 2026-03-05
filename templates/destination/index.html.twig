@@ -1,0 +1,64 @@
+{# templates/destination/index.html.twig #}
+{% extends 'base.html.twig' %}
+{% block title %}Destinations{% endblock %}
+
+{% block body %}
+<div class="page-header">
+  <h1>🌍 <span>Destinations</span></h1>
+  <a href="{{ path('destination_new') }}" class="btn btn-gold">+ Nouvelle destination</a>
+</div>
+
+{# Search #}
+<form method="GET" class="search-bar">
+  <input type="text" name="q" value="{{ query }}" placeholder="🔍 Rechercher une destination, pays...">
+  <button type="submit" class="btn btn-primary">Chercher</button>
+  {% if query %}<a href="{{ path('destination_index') }}" class="btn btn-outline">✕ Effacer</a>{% endif %}
+</form>
+
+{% if destinations is empty %}
+  <div class="empty-state">
+    <div class="icon">🌍</div>
+    <h3>Aucune destination trouvée</h3>
+    <p style="margin-bottom:16px;">{% if query %}Aucun résultat pour « {{ query }} »{% else %}Commencez par ajouter une destination.{% endif %}</p>
+    <a href="{{ path('destination_new') }}" class="btn btn-gold">+ Ajouter une destination</a>
+  </div>
+{% else %}
+  <p style="color:var(--muted);font-size:0.82rem;margin-bottom:20px;">{{ destinations|length }} destination(s) trouvée(s)</p>
+  <div class="dest-grid">
+    {% for dest in destinations %}
+      <div class="dest-card">
+        <div class="dest-card-img">
+          {% if dest.imageUrl %}
+            <img src="{{ dest.imageUrl }}" alt="{{ dest.nom }}" loading="lazy">
+          {% else %}
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3rem;color:rgba(255,255,255,0.3);">🗺️</div>
+          {% endif %}
+          {% if dest.codeIata %}
+            <div class="dest-badge"><span class="badge badge-navy">{{ dest.codeIata }}</span></div>
+          {% endif %}
+        </div>
+        <div class="dest-card-body">
+          <h3>{{ dest.nom }}</h3>
+          <p class="pays">📍 {{ dest.pays }}</p>
+          {% if dest.voyages|length > 0 %}
+            <p style="font-size:0.78rem;color:var(--muted);margin-top:6px;">✈️ {{ dest.voyages|length }} voyage(s) associé(s)</p>
+          {% endif %}
+          {% if dest.description %}
+            <p style="font-size:0.78rem;color:var(--muted);margin-top:6px;">{{ dest.description|slice(0, 80) }}{% if dest.description|length > 80 %}...{% endif %}</p>
+          {% endif %}
+        </div>
+        <div class="dest-card-footer">
+          <a href="{{ path('destination_show', {id: dest.id}) }}" class="btn btn-outline btn-sm">Voir</a>
+          <div style="display:flex;gap:6px;">
+            <a href="{{ path('destination_edit', {id: dest.id}) }}" class="btn btn-gold btn-sm">✏️</a>
+            <form method="POST" action="{{ path('destination_delete', {id: dest.id}) }}" onsubmit="return confirm('Supprimer {{ dest.nom }} ?')">
+              <input type="hidden" name="_token" value="{{ csrf_token('delete_destination_' ~ dest.id) }}">
+              <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}
