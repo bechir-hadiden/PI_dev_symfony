@@ -1,0 +1,54 @@
+/* Fond de page comme JavaFX */
+body { background-color: #F4F7FB; }
+
+/* Filtres Pilules */
+.filter-pill {
+    background-color: #E2E8F0;
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-weight: 600;
+    color: #475569;
+    border: none;
+    transition: 0.3s;
+}
+.filter-pill.active {
+    background-color: #1A73E8;
+    color: white;
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.3);
+}
+
+/* Cartes d'Offres */
+.offer-card {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid #F1F5F9;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+.offer-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 35px rgba(26, 115, 232, 0.15);
+}
+
+.card-img-top { height: 180px; object-fit: cover; }
+
+.badge-remise {
+    position: absolute; top: 15px; right: 15px;
+    background: #FF5A1F; color: white; padding: 5px 12px;
+    border-radius: 10px; font-weight: 800;
+}
+
+.price-main { color: #FF5A1F; font-size: 22px; font-weight: 900; }
+.price-old { text-decoration: line-through; color: #94A3B8; font-size: 14px; }
+
+.badge-odd {
+    background-color: #DCFCE7; color: #166534;
+    padding: 6px 15px; border-radius: 50px; font-weight: bold; font-size: 12px;
+}
+
+.btn-view {
+    background: transparent; border: 2px solid #1A73E8;
+    color: #1A73E8; border-radius: 12px; font-weight: bold;
+}
+.btn-view:hover { background: #1A73E8; color: white; }

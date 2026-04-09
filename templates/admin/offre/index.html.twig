@@ -1,0 +1,142 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}SmartTrip - Admin Dashboard{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4" style="background-color: #F4F7FB; min-height: 100vh;">
+    
+    <!-- En-tête -->
+    <div class="d-flex justify-content-between align-items-center mb-4 px-4">
+        <h1 class="label-title">Gestion des promotions</h1>
+        <div class="d-flex gap-3">
+            <input type="text" class="form-control rounded-pill" placeholder="Rechercher une offre..." style="width: 250px;">
+            <a href="{{ path('app_offre_new') }}" class="btn btn-primary rounded-pill px-4" style="background-color: #1A73E8; border: none;">
+                + Créer une Offre
+            </a>
+        </div>
+    </div>
+
+    <!-- 1. ZONE STATISTIQUES (Dashboard) -->
+    <div class="row g-4 mb-4 px-4">
+        <!-- Chiffres clés -->
+        <div class="col-md-4">
+            <div class="bg-white rounded-4 shadow-sm p-4 h-100 border-0">
+                <h6 class="text-muted fw-bold small mb-3">ANALYSE DES OFFRES</h6>
+                <div class="mb-3">
+                    <span class="text-muted">Total Offres : </span>
+                    <span class="h4 fw-bold text-primary">{{ offres|length }}</span>
+                </div>
+                <div>
+                    <span class="text-muted">Impact ODD 8 : </span>
+                    <span class="h4 fw-bold text-success">
+                        {% set countODD = 0 %}
+                        {% for o in offres %}{% if o.isLocalSupport %}{% set countODD = countODD + 1 %}{% endif %}{% endfor %}
+                        {{ countODD }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graphique PieChart -->
+        <div class="col-md-8">
+            <div class="bg-white rounded-4 shadow-sm p-3 border-0">
+                <div class="d-flex justify-content-between align-items-center px-3">
+                    <h6 class="fw-bold">Répartition par Catégorie</h6>
+                </div>
+                <canvas id="statChart" style="max-height: 160px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. LA CARTE DU TABLEAU -->
+    <div class="mx-4">
+        <div class="bg-white rounded-4 shadow-sm border-0 overflow-hidden">
+            <table class="table table-hover mb-0 align-middle">
+                <thead style="background-color: #F8FAFC;">
+                    <tr>
+                        <th class="ps-4 text-muted small">ID</th>
+                        <th class="text-muted small">Titre</th>
+                        <th class="text-muted small">Remise (%)</th>
+                        <th class="text-muted small">Statut</th>
+                        <th class="text-muted small">Impact ODD 8</th>
+                        <th class="text-end pe-4 text-muted small">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for offre in offres %}
+                    <tr>
+                        <td class="ps-4 text-muted">#{{ offre.id }}</td>
+                        <td class="fw-bold text-dark">{{ offre.titre }}</td>
+                        <td class="text-center">
+                            <span class="fw-bold text-primary">{{ offre.tauxRemise }}%</span>
+                        </td>
+                        <td>
+                            <span class="badge rounded-pill px-3 py-2" style="background-color: #DBEAFE; color: #1E40AF;">
+                                ACTIVE
+                            </span>
+                        </td>
+                        <td>
+                            {% if offre.isLocalSupport %}
+                                <span class="badge rounded-pill px-3 py-2" style="background-color: #DCFCE7; color: #166534;">
+                                    🤝 Soutien Local
+                                </span>
+                            {% else %}
+                                <span class="text-muted small">Standard</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="d-flex gap-2 justify-content-end align-items-center">
+                                <!-- NOUVEAU BOUTON : Gérer les Coupons (Lien vers la 2ème entité) -->
+                                <a href="{{ path('app_admin_offre_coupons', {'id': offre.id}) }}" 
+                                   class="btn btn-sm btn-primary rounded-pill px-3 shadow-sm" 
+                                   style="background-color: #1A73E8; border: none; font-size: 0.85rem;">
+                                   Coupons 🎟️
+                                </a>
+
+                                <a href="{{ path('app_offre_edit', {'id': offre.id}) }}" 
+                                   class="btn btn-sm btn-light rounded-pill border px-3" 
+                                   style="font-size: 0.85rem;">
+                                   Modifier
+                                </a>
+                                
+                                <div style="display: inline-block;">
+                                    {{ include('offre/_delete_form.html.twig') }}
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Chargement de Chart.js pour le graphique -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('statChart');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Hôtels', 'Vols', 'Transports', 'Voyages'],
+            datasets: [{
+                data: [
+                    {{ offres|filter(o => o.category == 'HOTEL')|length }},
+                    {{ offres|filter(o => o.category == 'VOL')|length }},
+                    {{ offres|filter(o => o.category == 'TRANSPORT')|length }},
+                    {{ offres|filter(o => o.category == 'VOYAGE' or o.category is null)|length }}
+                ],
+                backgroundColor: ['#1A73E8', '#FF5A1F', '#27AE60', '#64748B'],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 10 } }
+            },
+            maintainAspectRatio: false
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,25 @@
+{{ form_start(form) }}
+    {{ form_widget(form) }}
+    <button class="btn">{{ button_label|default('Save') }}</button>
+{{ form_end(form) }}
+
+<script>
+document.getElementById('offre_category').addEventListener('change', function() {
+    const category = this.value;
+    const itemSelect = document.getElementById('offre_id_target');
+    
+    if(!category) return;
+
+    fetch('/offre/api/items/' + category)
+        .then(response => response.json())
+        .then(data => {
+            itemSelect.innerHTML = '<option value="">Sélectionner un élément...</option>';
+            data.forEach(item => {
+                let opt = document.createElement('option');
+                opt.value = item.id;
+                opt.text = item.label;
+                itemSelect.add(opt);
+            });
+        });
+});
+</script>

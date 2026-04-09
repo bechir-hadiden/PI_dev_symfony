@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="white-container shadow-sm rounded-4 p-4 p-lg-5 bg-white">
+        
+        <!-- Header -->
+        <div class="row align-items-center mb-4">
+            <div class="col-md-7">
+                <h1 class="label-title">Exclusive Offers</h1>
+                <p class="text-muted">Voyagez responsable, soutenez l'économie locale.</p>
+            </div>
+            <div class="col-md-5 text-end">
+                <input type="text" id="clientSearch" class="form-control rounded-pill px-4" placeholder="Rechercher une destination...">
+            </div>
+        </div>
+
+        <!-- Filtres Pilules -->
+        <div class="d-flex gap-2 mb-5">
+            <a href="{{ path('app_offre_client_index', {'cat': 'ALL'}) }}" class="filter-btn {{ active_cat == 'ALL' ? 'filter-active' : '' }}">🌟 All Offers</a>
+            <a href="{{ path('app_offre_client_index', {'cat': 'HOTEL'}) }}" class="filter-btn {{ active_cat == 'HOTEL' ? 'filter-active' : '' }}">🏨 Hotels</a>
+            <a href="{{ path('app_offre_client_index', {'cat': 'VOL'}) }}" class="filter-btn {{ active_cat == 'VOL' ? 'filter-active' : '' }}">✈️ Flights</a>
+            <a href="{{ path('app_offre_client_index', {'cat': 'TRANSPORT'}) }}" class="filter-btn {{ active_cat == 'TRANSPORT' ? 'filter-active' : '' }}">🚗 Transport</a>
+        </div>
+
+        <!-- Grille des Cartes -->
+        <div class="row g-4" id="offersGrid">
+            {% for o in offres %}
+            <div class="col-md-4 offer-item">
+                <div class="offer-card h-100 border-0 shadow-sm overflow-hidden">
+                    <div class="position-relative">
+                        <img src="{% if o.imageUrl starts with 'http' %}{{ o.imageUrl }}{% else %}{{ asset('images/' ~ o.imageUrl) }}{% endif %}" 
+                             class="w-100" style="height: 160px; object-fit: cover;">
+                        <span class="badge-remise position-absolute top-0 end-0 m-3">-{{ o.tauxRemise }}%</span>
+                    </div>
+                    <div class="p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="text-primary fw-bold small">📍 {{ o.labelDestination }}</span>
+                            {% if o.isLocalSupport %}
+                                <span class="badge-odd">🤝 Soutien Local</span>
+                            {% endif %}
+                        </div>
+                        <h5 class="fw-bold mb-3" style="font-size: 1.1rem;">{{ o.titre }}</h5>
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            <span class="price-main text-orange h4 mb-0">{{ o.prixFinal }} DT</span>
+                            <span class="price-old text-muted small">{{ o.prixInitial }} DT</span>
+                        </div>
+                        <button class="btn btn-view w-100 rounded-pill" data-bs-toggle="modal" data-bs-target="#modal{{ o.id }}">
+                            Voir l'offre →
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% for o in offres %}
+    {% include 'offre/_detail_modal.html.twig' with {'o': o} %}
+{% endfor %}
+{% endblock %}
