@@ -96,6 +96,20 @@ class Voyage
     public function setPrix(float $v): static { $this->prix = $v; return $this; }
 
     public function getImagePath(): ?string { return $this->imagePath; }
+
+    // ── Retourne uniquement la première image (séparateur ; ou |) ──
+    public function getFirstImagePath(): ?string
+    {
+        if (!$this->imagePath) return null;
+
+        $parts = preg_split('/[;|]/', $this->imagePath);
+        foreach ($parts as $part) {
+            $p = trim($part);
+            if ($p !== '') return $p;
+        }
+        return null;
+    }
+
     public function setImagePath(?string $v): static { $this->imagePath = $v; return $this; }
 
     public function getDescription(): ?string { return $this->description; }

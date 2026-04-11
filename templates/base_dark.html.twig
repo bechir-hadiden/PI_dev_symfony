@@ -33,13 +33,115 @@
     }
     .nav-logo { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700; color:var(--gold); text-decoration:none; letter-spacing:1px; }
     .nav-logo span { color:var(--white); }
-    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links { display:flex; gap:2rem; list-style:none; align-items:center; }
     .nav-links a { color:rgba(255,255,255,0.7); text-decoration:none; font-size:.875rem; font-weight:500; transition:color .3s; position:relative; }
     .nav-links a::after { content:''; position:absolute; bottom:-4px; left:0; width:0; height:1px; background:var(--gold); transition:width .3s; }
     .nav-links a:hover { color:var(--gold); }
     .nav-links a:hover::after { width:100%; }
     .nav-cta { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy) !important; padding:.55rem 1.4rem; border-radius:50px; font-weight:700 !important; }
     .nav-cta::after { display:none !important; }
+
+    /* ── BOUTON LOGIN NAVBAR ── */
+    .btn-login-nav {
+      display:inline-flex; align-items:center; gap:.4rem;
+      padding:.5rem 1.1rem;
+      border:1px solid rgba(201,168,76,0.4);
+      border-radius:50px;
+      color:rgba(255,255,255,0.75) !important;
+      font-size:.8rem; font-weight:600;
+      cursor:pointer; transition:all .25s;
+      background:transparent;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      text-decoration:none;
+    }
+    .btn-login-nav::after { display:none !important; }
+    .btn-login-nav:hover { border-color:var(--gold); color:var(--gold) !important; background:rgba(201,168,76,0.08); }
+    .btn-login-nav i { font-size:.75rem; color:var(--gold); }
+
+    /* Badge user connecté */
+    .nav-user {
+      display:inline-flex; align-items:center; gap:.5rem;
+      padding:.45rem 1rem;
+      background:rgba(201,168,76,0.12);
+      border:1px solid rgba(201,168,76,0.25);
+      border-radius:50px;
+      font-size:.78rem; color:var(--gold); font-weight:600;
+    }
+    .nav-user i { font-size:.75rem; }
+
+    /* ── MODAL LOGIN ── */
+    .modal-overlay {
+      display:none;
+      position:fixed; inset:0; z-index:9999;
+      background:rgba(7,16,26,0.85);
+      backdrop-filter:blur(8px);
+      align-items:center; justify-content:center;
+    }
+    .modal-overlay.open { display:flex; }
+
+    .modal-card {
+      background:rgba(17,34,54,0.98);
+      border:1px solid rgba(201,168,76,0.25);
+      border-radius:20px;
+      padding:2.5rem 2.2rem;
+      width:100%; max-width:400px;
+      position:relative;
+      animation:modalIn .25s ease;
+    }
+    @keyframes modalIn {
+      from { opacity:0; transform:translateY(-20px) scale(0.97); }
+      to   { opacity:1; transform:translateY(0)     scale(1);    }
+    }
+
+    .modal-close {
+      position:absolute; top:1rem; right:1.1rem;
+      background:none; border:none; color:rgba(255,255,255,0.35);
+      font-size:1.2rem; cursor:pointer; transition:color .2s;
+      line-height:1;
+    }
+    .modal-close:hover { color:var(--gold); }
+
+    .modal-logo { text-align:center; margin-bottom:1.6rem; }
+    .modal-logo h2 { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:700; color:var(--gold); }
+    .modal-logo h2 span { color:var(--white); }
+    .modal-logo p { font-size:.75rem; color:rgba(255,255,255,0.35); margin-top:.3rem; }
+
+    .modal-field { margin-bottom:1.1rem; }
+    .modal-field label {
+      display:block; font-size:.68rem; font-weight:700;
+      letter-spacing:.12em; text-transform:uppercase;
+      color:rgba(255,255,255,0.45); margin-bottom:.45rem;
+    }
+    .modal-field input {
+      width:100%; padding:.8rem 1rem;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(201,168,76,0.2);
+      border-radius:10px; color:var(--white);
+      font-family:'Plus Jakarta Sans',sans-serif;
+      font-size:.875rem; outline:none; transition:border-color .3s;
+    }
+    .modal-field input:focus { border-color:var(--gold); }
+    .modal-field input::placeholder { color:rgba(255,255,255,0.2); }
+
+    .modal-remember { display:flex; align-items:center; gap:.5rem; margin-bottom:1.4rem; }
+    .modal-remember input[type="checkbox"] { accent-color:var(--gold); }
+    .modal-remember label { font-size:.75rem; color:rgba(255,255,255,0.4); }
+
+    .btn-modal-submit {
+      width:100%; padding:.9rem;
+      background:linear-gradient(135deg,var(--gold),var(--gold-l));
+      color:var(--navy); border:none; border-radius:10px;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      font-size:.9rem; font-weight:700; cursor:pointer;
+      transition:transform .3s,box-shadow .3s; letter-spacing:.03em;
+    }
+    .btn-modal-submit:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(201,168,76,0.4); }
+
+    .modal-error {
+      background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.3);
+      border-radius:8px; padding:.75rem 1rem;
+      color:#fca5a5; font-size:.8rem; margin-bottom:1.1rem; text-align:center;
+    }
 
     /* ── FLASH ── */
     .flash { padding:1rem 5%; margin-top:72px; font-size:.875rem; }
@@ -69,7 +171,7 @@
     /* ── BUTTONS ── */
     .btn-primary { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); padding:.85rem 2rem; border-radius:50px; font-weight:700; font-size:.9rem; text-decoration:none; display:inline-flex; align-items:center; gap:.5rem; transition:transform .3s,box-shadow .3s; }
     .btn-primary:hover { transform:translateY(-3px); box-shadow:0 12px 35px rgba(201,168,76,0.4); }
-    .btn-outline-light { border:1px solid rgba(255,255,255,0.35); color:var(--white); padding:.85rem 2rem; border-radius:50px; font-weight:500; font-size:.9rem; text-decoration:none; display:inline-flex; align-items:center; gap:.5rem; backdrop-filter:blur(10px); transition:border-color .3s,background .3s; }
+    .btn-outline-light { border:1px solid rgba(255,255,255,0.35); color:var(--white); padding:.85rem 2rem; border-radius:50px; font-weight:500; font-size:.9rem; text-decoration:none; display:inline-flex; align-items:center; gap:.5rem; backdrop-filter:blur(10px); transition:border-color .3s,background .3s; cursor:pointer; }
     .btn-outline-light:hover { border-color:var(--gold); background:rgba(201,168,76,0.1); color:var(--gold); }
     .btn-gold { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); border:none; cursor:pointer; padding:.6rem 1.4rem; border-radius:50px; font-weight:700; font-size:.85rem; text-decoration:none; display:inline-flex; align-items:center; gap:.4rem; transition:transform .3s,box-shadow .3s; }
     .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(201,168,76,0.4); }
@@ -192,12 +294,14 @@
       .about-features,.form-row { grid-template-columns:1fr; }
       .footer-grid { grid-template-columns:1fr; gap:2rem; }
       .about-img-badge { right:1rem; bottom:1rem; }
+      #chat-widget { bottom:16px !important; right:16px !important; }
+      #chat-popup  { width:calc(100vw - 32px) !important; }
     }
 
     @keyframes fadeInUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
-    .fade-in { animation:fadeInUp .8s ease forwards; }
-    .delay-1 { animation-delay:.2s; opacity:0; }
-    .delay-2 { animation-delay:.4s; opacity:0; }
+    .fade-in  { animation:fadeInUp .8s ease forwards; }
+    .delay-1  { animation-delay:.2s; opacity:0; }
+    .delay-2  { animation-delay:.4s; opacity:0; }
 
     {% block extra_css %}{% endblock %}
   </style>
@@ -205,18 +309,163 @@
 </head>
 <body>
 
-<!-- NAVBAR -->
+{# ══ MODAL LOGIN ══════════════════════════════════════════════════ #}
+{% if not app.user %}
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal()" title="Fermer">✕</button>
+
+    <div class="modal-logo">
+      <h2>Smart<span>Trip</span></h2>
+      <p>Connexion à votre espace</p>
+    </div>
+
+    {# ── TABS ── #}
+    <div style="display:flex; gap:.5rem; margin-bottom:1.5rem;">
+      <button onclick="switchTab('password')" id="tab-password"
+        style="flex:1; padding:.6rem; border-radius:8px; cursor:pointer;
+               font-family:'Plus Jakarta Sans',sans-serif; font-size:.82rem; font-weight:700;
+               background:linear-gradient(135deg,var(--gold),var(--gold-l));
+               color:var(--navy); border:1px solid var(--gold); transition:all .3s;">
+        🔑 Mot de passe
+      </button>
+      <button onclick="switchTab('faceid')" id="tab-faceid"
+        style="flex:1; padding:.6rem; border-radius:8px; cursor:pointer;
+               font-family:'Plus Jakarta Sans',sans-serif; font-size:.82rem; font-weight:600;
+               background:transparent; color:rgba(255,255,255,0.6);
+               border:1px solid rgba(201,168,76,0.3); transition:all .3s;">
+        📷 Face ID
+      </button>
+    </div>
+
+    {# ── ERREUR ── #}
+    {% if app.request.attributes.get('_route') == 'app_login' and error is defined and error %}
+      <div class="modal-error">❌ {{ error.messageKey|trans(error.messageData, 'security') }}</div>
+    {% endif %}
+
+    {# ══ PANEL 1 : Login classique ══ #}
+    <div id="panel-password">
+      <form method="POST" action="{{ path('app_login') }}">
+        <div class="modal-field">
+          <label for="modal_email">Adresse Email</label>
+          <input type="email" id="modal_email" name="email"
+                 value="{{ last_username ?? '' }}"
+                 placeholder="votre@email.com"
+                 autocomplete="email" required>
+        </div>
+        <div class="modal-field">
+          <label for="modal_password">Mot de passe</label>
+          <input type="password" id="modal_password" name="password"
+                 placeholder="••••••••"
+                 autocomplete="current-password" required>
+        </div>
+        <div class="modal-remember">
+          <input type="checkbox" id="modal_remember" name="_remember_me">
+          <label for="modal_remember">Se souvenir de moi</label>
+        </div>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+        <button type="submit" class="btn-modal-submit">
+          <i class="fas fa-sign-in-alt"></i> Se connecter
+        </button>
+      </form>
+    </div>
+
+    {# ══ PANEL 2 : Face ID ══ #}
+    <div id="panel-faceid" style="display:none;">
+
+      <div class="modal-field">
+        <label>Votre Email</label>
+        <input type="email" id="faceEmail"
+               placeholder="votre@email.com"
+               style="width:100%; padding:.8rem 1rem;
+                      background:rgba(255,255,255,0.06);
+                      border:1px solid rgba(201,168,76,0.2);
+                      border-radius:10px; color:var(--white);
+                      font-family:'Plus Jakarta Sans',sans-serif;
+                      font-size:.875rem; outline:none;">
+      </div>
+
+      {# Webcam avec viseur oval #}
+      <div style="position:relative; border-radius:12px; overflow:hidden;
+                  border:1px solid rgba(201,168,76,0.3); margin-bottom:1rem; background:#000;">
+        <video id="webcam" autoplay playsinline
+               style="width:100%; height:200px; display:block; object-fit:cover;"></video>
+        <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+
+        {# Viseur oval #}
+        <div style="position:absolute; inset:0; display:flex;
+                    align-items:center; justify-content:center; pointer-events:none;">
+          <div style="width:110px; height:135px;
+                      border:2px solid var(--gold);
+                      border-radius:55px; opacity:.7;
+                      box-shadow:0 0 20px rgba(201,168,76,0.3);"></div>
+        </div>
+
+        {# Label caméra #}
+        <div style="position:absolute; bottom:.5rem; left:0; right:0;
+                    text-align:center; font-size:.7rem;
+                    color:rgba(255,255,255,0.5);">
+          Centrez votre visage dans l'ovale
+        </div>
+      </div>
+
+      <button id="faceLoginBtn" class="btn-modal-submit" type="button">
+        <i class="fas fa-camera"></i> Scanner mon visage
+      </button>
+
+      <p id="faceResult"
+         style="text-align:center; margin-top:.75rem;
+                font-size:.82rem; min-height:1.2rem; color:rgba(255,255,255,0.6);">
+      </p>
+    </div>
+
+  </div>
+</div>
+{% endif %} 
+
+{# ══ NAVBAR ══════════════════════════════════════════════════════ #}
 <nav id="navbar">
   <a href="{{ path('app_home') }}" class="nav-logo">Smart<span>Trip</span></a>
   <ul class="nav-links">
-    <li><a href="{{ path('client_destination_index') }}">Destinations</a></li>
-    <li><a href="{{ path('client_voyage_index') }}">Voyages</a></li>
+    {% if is_granted('ROLE_ADMIN') %}
+      <li><a href="{{ path('admin_destination_index') }}">Destinations</a></li>
+      <li><a href="{{ path('admin_voyage_index') }}">Voyages</a></li>
+      <li><a href="{{ path('admin_destination_new') }}" style="color:var(--gold) !important;"><i class="fas fa-plus"></i> Ajouter</a></li>
+    {% else %}
+      <li><a href="{{ path('client_destination_index') }}">Destinations</a></li>
+      <li><a href="{{ path('client_voyage_index') }}">Voyages</a></li>
+    {% endif %}
     <li><a href="{{ path('app_home') }}#about">À propos</a></li>
-    <li><a href="{{ path('app_home') }}#contact" class="nav-cta">Réserver</a></li>
+
+    {# ── Bouton "Planifier avec Sarah" dans la navbar ── #}
+    <li>
+      <a href="#" class="nav-cta" onclick="event.preventDefault();toggleSarahChat()">
+        <i class="fas fa-paper-plane"></i> Planifier
+      </a>
+    </li>
+
+    {# ── LOGIN / USER ── #}
+    <li>
+      {% if app.user %}
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <span class="nav-user">
+            <i class="fas fa-user-circle"></i>
+            {{ app.user.email }}
+          </span>
+          <a href="{{ path('app_logout') }}" class="btn-login-nav" title="Se déconnecter">
+            <i class="fas fa-sign-out-alt"></i> Déconnexion
+          </a>
+        </div>
+      {% else %}
+        <button class="btn-login-nav" onclick="openModal()" type="button">
+          <i class="fas fa-user"></i> Connexion
+        </button>
+      {% endif %}
+    </li>
   </ul>
 </nav>
 
-<!-- FLASH MESSAGES -->
+{# ── FLASH MESSAGES ── #}
 {% for msg in app.flashes('success') %}
   <div class="flash flash-success">✅ {{ msg }}</div>
 {% endfor %}
@@ -226,7 +475,7 @@
 
 {% block body %}{% endblock %}
 
-<!-- FOOTER -->
+{# ══ FOOTER ══════════════════════════════════════════════════════ #}
 <footer>
   <div class="footer-grid">
     <div class="footer-brand">
@@ -258,6 +507,11 @@
       <ul>
         <li><a href="{{ path('app_home') }}#about"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> À propos</a></li>
         <li><a href="{{ path('app_home') }}#contact"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Contact</a></li>
+        <li>
+          <a href="#" onclick="event.preventDefault();toggleSarahChat()">
+            <i class="fas fa-chevron-right" style="font-size:.6rem"></i> Parler à Sarah ✈️
+          </a>
+        </li>
       </ul>
     </div>
   </div>
@@ -267,22 +521,171 @@
   </div>
 </footer>
 
+{# ══ CHAT SARAH — Popup N8N ══════════════════════════════════════ #}
+{% include 'chat/_popup.html.twig' %}
+
+{# ══ JAVASCRIPT ══════════════════════════════════════════════════ #}
 {% block javascripts %}
 <script>
-window.addEventListener('scroll', () => {
-  const nav = document.getElementById('navbar');
-  if (!nav) return;
-  nav.style.background = window.scrollY > 50
-    ? 'rgba(13,27,42,0.99)'
-    : 'rgba(13,27,42,0.96)';
-});
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
-    const t = document.querySelector(a.getAttribute('href'));
-    if (t) { e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
+  {# ── Navbar scroll ── #}
+  window.addEventListener('scroll', () => {
+    const nav = document.getElementById('navbar');
+    if (!nav) return;
+    nav.style.background = window.scrollY > 50
+      ? 'rgba(13,27,42,0.99)'
+      : 'rgba(13,27,42,0.96)';
   });
+
+  {# ── Smooth scroll ── #}
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const href = a.getAttribute('href');
+      if (href === '#') return;
+      const t = document.querySelector(href);
+      if (t) { e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
+    });
+  });
+
+  {# ── Modal ── #}
+  function openModal() {
+    document.getElementById('loginModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('modal_email')?.focus(), 100);
+  }
+
+  function closeModal() {
+    document.getElementById('loginModal')?.classList.remove('open');
+    document.body.style.overflow = '';
+    // Stopper la caméra quand on ferme
+    const video = document.getElementById('webcam');
+    if (video && video.srcObject) {
+      video.srcObject.getTracks().forEach(t => t.stop());
+      video.srcObject = null;
+      cameraStarted = false;
+    }
+  }
+
+  document.getElementById('loginModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  {% if app.request.attributes.get('_route') == 'app_login' and error is defined and error %}
+    document.addEventListener('DOMContentLoaded', () => openModal());
+  {% endif %}
+
+  {# ── Tabs switch ── #}
+  function switchTab(tab) {
+    const isPassword = tab === 'password';
+
+    document.getElementById('panel-password').style.display = isPassword ? 'block' : 'none';
+    document.getElementById('panel-faceid').style.display   = isPassword ? 'none'  : 'block';
+
+    const tabPwd   = document.getElementById('tab-password');
+    const tabFace  = document.getElementById('tab-faceid');
+
+    if (isPassword) {
+      tabPwd.style.cssText  += 'background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy);border:1px solid var(--gold);font-weight:700;';
+      tabFace.style.cssText += 'background:transparent;color:rgba(255,255,255,0.6);border:1px solid rgba(201,168,76,0.3);font-weight:600;';
+    } else {
+      tabFace.style.cssText += 'background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy);border:1px solid var(--gold);font-weight:700;';
+      tabPwd.style.cssText  += 'background:transparent;color:rgba(255,255,255,0.6);border:1px solid rgba(201,168,76,0.3);font-weight:600;';
+      startCamera();
+    }
+  }
+
+  {# ── Caméra ── #}
+  let cameraStarted = false;
+
+  function startCamera() {
+    if (cameraStarted) return;
+    const video  = document.getElementById('webcam');
+    const result = document.getElementById('faceResult');
+    if (!video) return;
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+        cameraStarted = true;
+      })
+      .catch(() => {
+        if (result) {
+          result.textContent = '❌ Caméra non accessible';
+          result.style.color = '#f87171';
+        }
+      });
+  }
+
+  {# ── Face ID Login ── #}
+  document.getElementById('faceLoginBtn')?.addEventListener('click', async () => {
+    const email  = document.getElementById('faceEmail')?.value?.trim();
+    const result = document.getElementById('faceResult');
+    const btn    = document.getElementById('faceLoginBtn');
+
+    if (!email) {
+        result.textContent = '⚠️ Entre ton email d\'abord';
+        result.style.color = 'orange';
+        return;
+    }
+
+    const video  = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+    const ctx    = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, 320, 240);
+
+    result.textContent = '⏳ Analyse...';
+    btn.disabled = true;
+
+    const formData = new FormData();
+    formData.append('email',      email);
+    formData.append('face_image', canvas.toDataURL('image/jpeg'));
+
+    // ── DEBUG : afficher ce qu'on envoie ──
+    console.log('📤 Envoi vers /face-login pour:', email);
+
+    let res, data;
+
+    try {
+        res = await fetch('/face-login', { method: 'POST', body: formData });
+    } catch (e) {
+        console.error('❌ Fetch échoué:', e);
+        result.textContent = '❌ Erreur réseau : ' + e.message;
+        result.style.color = '#f87171';
+        btn.disabled = false;
+        return;
+    }
+
+    console.log('📥 Status HTTP:', res.status);
+
+    try {
+        data = await res.json();
+    } catch (e) {
+        const text = await res.text();
+        console.error('❌ Réponse non-JSON:', text);
+        result.textContent = '❌ Réponse invalide du serveur';
+        result.style.color = '#f87171';
+        btn.disabled = false;
+        return;
+    }
+
+    console.log('📦 Réponse:', data);
+
+    if (data.success) {
+        result.textContent = `✅ Bienvenue ! (${data.confidence}%)`;
+        result.style.color = '#4ade80';
+        setTimeout(() => window.location.href = data.redirect, 1200);
+    } else {
+        result.textContent = `❌ ${data.error ?? 'Visage non reconnu'} (${data.confidence ?? 0}%)`;
+        result.style.color = '#f87171';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-camera"></i> Réessayer';
+    }
 });
 </script>
 {% endblock %}
+
 </body>
 </html>

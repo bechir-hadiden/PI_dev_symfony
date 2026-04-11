@@ -1,0 +1,36 @@
+{# templates/register/index.html.twig #}
+<form id="registerForm" method="post">
+    <input type="text"     name="name"     placeholder="Nom complet" required>
+    <input type="email"    name="email"    placeholder="Email" required>
+    <input type="password" name="password" placeholder="Mot de passe" required>
+
+    {# Face ID #}
+    <div class="face-section">
+        <video id="webcam" width="320" height="240" autoplay></video>
+        <canvas id="canvas" width="320" height="240" hidden></canvas>
+        <button type="button" id="captureBtn">📷 Capturer mon visage</button>
+        <p id="faceStatus">❌ Visage non capturé</p>
+    </div>
+
+    <input type="hidden" name="face_image" id="faceInput">
+    <button type="submit">S'inscrire</button>
+</form>
+
+<script>
+// Ouvrir la caméra
+const video = document.getElementById('webcam');
+navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => video.srcObject = stream);
+
+// Capturer le visage
+document.getElementById('captureBtn').addEventListener('click', () => {
+    const canvas  = document.getElementById('canvas');
+    const ctx     = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, 320, 240);
+
+    const imageData = canvas.toDataURL('image/jpeg');
+    document.getElementById('faceInput').value = imageData;
+    document.getElementById('faceStatus').textContent = '✅ Visage capturé !';
+    document.getElementById('faceStatus').style.color = 'green';
+});
+</script>

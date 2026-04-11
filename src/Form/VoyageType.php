@@ -12,7 +12,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\GreaterThan;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\LessThanOrEqual;
@@ -44,12 +43,16 @@ class VoyageType extends AbstractType
                 ],
             ])
 
+            // ✅ OBLIGATOIRE — sans destination liée, les images ne s'affichent pas
             ->add('destinationRel', EntityType::class, [
-                'label'        => 'Lier à une destination (optionnel)',
+                'label'        => 'Destination liée (obligatoire pour les images)',
                 'class'        => Destination::class,
                 'choice_label' => fn(Destination $d) => $d->getNom() . ' — ' . $d->getPays(),
-                'placeholder'  => '— Sélectionner —',
-                'required'     => false,
+                'placeholder'  => '— Sélectionner une destination —',
+                'required'     => true,
+                'constraints'  => [
+                    new NotNull(message: 'Veuillez sélectionner une destination liée.'),
+                ],
             ])
 
             ->add('paysDepart', TextType::class, [
@@ -94,11 +97,9 @@ class VoyageType extends AbstractType
                     'min' => (new \DateTime('+1 day'))->format('Y-m-d'),
                 ],
                 'constraints' => [
+                    // ✅ dateFin > dateDebut géré dans Voyage.php (Entity)
+                    // via #[Assert\GreaterThan(propertyPath: 'dateDebut')]
                     new NotNull(message: 'La date de fin est obligatoire.'),
-                    new GreaterThan(
-                        propertyPath: 'dateDebut',
-                        message: 'La date de fin doit être postérieure à la date de début.'
-                    ),
                 ],
             ])
 
@@ -122,12 +123,13 @@ class VoyageType extends AbstractType
             ])
 
             ->add('imagePath', TextType::class, [
-                'label'    => 'URL de l\'image',
+                'label'    => 'URL de l\'image (optionnel)',
                 'required' => false,
                 'attr'     => [
                     'placeholder' => 'https://exemple.com/image.jpg',
                     'maxlength'   => 255,
                 ],
+                'help'        => 'Si vide, les images de la destination liée seront utilisées.',
                 'constraints' => [
                     new Url(message: 'Veuillez entrer une URL valide (commençant par https://).'),
                     new Length(

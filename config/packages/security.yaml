@@ -1,20 +1,14 @@
 security:
-    # Hash des mots de passe
     password_hashers:
         App\Entity\User:
             algorithm: auto
 
-        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
-            algorithm: auto
-
-    # Provider utilisateur (depuis la base de données)
     providers:
         app_user_provider:
             entity:
                 class: App\Entity\User
                 property: email
 
-    # Firewalls
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js|assets|build)/
@@ -30,6 +24,7 @@ security:
                 default_target_path: app_home
                 username_parameter: email
                 password_parameter: password
+                enable_csrf: true
 
             logout:
                 path: app_logout
@@ -37,17 +32,15 @@ security:
 
             remember_me:
                 secret: '%kernel.secret%'
-                lifetime: 604800  # 7 jours
+                lifetime: 604800
 
-    # Contrôle d'accès
     access_control:
-        - { path: ^/login, roles: PUBLIC_ACCESS }
-        - { path: ^/admin, roles: ROLE_ADMIN }
-        - { path: ^/destinations, roles: PUBLIC_ACCESS }
-        - { path: ^/voyages, roles: PUBLIC_ACCESS }
-        - { path: ^/, roles: PUBLIC_ACCESS }
+        - { path: ^/login,    roles: PUBLIC_ACCESS }
+        - { path: ^/register, roles: PUBLIC_ACCESS }
+        - { path: ^/face-login, roles: PUBLIC_ACCESS }  # ← route Face ID
+        - { path: ^/admin,    roles: ROLE_ADMIN }
+        - { path: ^/,         roles: PUBLIC_ACCESS }
 
-# Configuration spécifique pour les tests
 when@test:
     security:
         password_hashers:

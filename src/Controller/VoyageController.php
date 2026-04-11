@@ -48,7 +48,7 @@ class VoyageController extends AbstractController
 
             // ✅ getDestination() et non getTitre() qui n'existe pas
             $this->addFlash('success', '✅ Voyage « ' . $voyage->getDestination() . ' » créé avec succès !');
-            return $this->redirectToRoute('voyage_index');
+            return $this->redirectToRoute('admin_voyage_index');
         }
 
         return $this->render('voyage/form.html.twig', [
@@ -75,7 +75,7 @@ class VoyageController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
             $this->addFlash('success', '✅ Voyage mis à jour !');
-            return $this->redirectToRoute('voyage_index');
+            return $this->redirectToRoute('admin_voyage_index');
         }
 
         return $this->render('voyage/form.html.twig', [
@@ -93,6 +93,6 @@ class VoyageController extends AbstractController
             $em->flush();
             $this->addFlash('success', '🗑️ Voyage supprimé.');
         }
-        return $this->redirectToRoute('voyage_index');
+        return $this->redirectToRoute('admin_voyage_index');
     }
 }

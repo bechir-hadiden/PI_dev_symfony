@@ -66,7 +66,7 @@ class Destination
     private ?string $description = null;
 
     // Toutes les images séparées par "|"
-    #[ORM\Column(name: 'image_url', type: 'string', length: 500, nullable: true)]
+    #[ORM\Column(name: 'image_url', type: 'text', nullable: true)]  // text = illimité
     private ?string $imageUrl = null;
 
     #[ORM\Column(name: 'video_url', type: 'string', length: 500, nullable: true)]

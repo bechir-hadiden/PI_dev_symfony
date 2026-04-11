@@ -24,6 +24,6 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
-    App\Service\N8nItineraireService:
-        arguments:
-            $webhookUrl: '%env(N8N_WEBHOOK_URL)%'
+    # App\Service\N8nChatService:
+    #     arguments:
+    #         $webhookUrl: '%env(N8N_WEBHOOK_URL)%'

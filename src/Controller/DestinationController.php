@@ -60,7 +60,7 @@ class DestinationController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Destination « ' . $destination->getNom() . ' » créée avec succès !');
-            return $this->redirectToRoute('destination_show', ['id' => $destination->getId()]);
+            return $this->redirectToRoute('admin_destination_show', ['id' => $destination->getId()]);
         }
 
         return $this->render('destination/form.html.twig', [
