@@ -18,58 +18,49 @@ class LoginController extends AbstractController
         HttpClientInterface $http
     ): JsonResponse {
 
-        $email     = $request->request->get('email');
         $imageData = $request->request->get('face_image');
 
-        // 1. Trouver l'utilisateur
-        $user = $userRepo->findOneBy(['email' => $email]);
-        if (!$user) {
-            return new JsonResponse(['success' => false, 'error' => 'Email non trouvé'], 404);
-        }
-
-        // 2. Extraire uniquement la partie base64 pure
+        // 1. Extraire le base64
         $base64 = $imageData;
         if (str_contains($base64, ',')) {
             $base64 = explode(',', $base64)[1];
         }
         $base64 = trim($base64);
-if (empty($base64)) {
-    return new JsonResponse([
-        'success' => false,
-        'error'   => '⚠️ Image vide — webcam non capturée côté JS'
-    ], 400);
-}
 
-error_log("✅ Base64 reçu, longueur: " . strlen($base64));
-        // 3. Vérifier que Python tourne
+        if (empty($base64)) {
+            return new JsonResponse(['success' => false, 'error' => 'Image vide'], 400);
+        }
+
+        // 2. Vérifier que Python tourne
         try {
             $http->request('GET', 'http://127.0.0.1:5000/health', ['timeout' => 2]);
         } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'error' => 'Service Python indisponible'], 503);
+        }
+
+        // 3. Envoyer à /identify — Python trouve le user tout seul
+        try {
+            $response = $http->request('POST',
+                "http://127.0.0.1:5000/identify",
+                ['json' => ['image_base64' => $base64]]
+            );
+            $result = $response->toArray();
+
+        } catch (\Exception $e) {
             return new JsonResponse([
                 'success' => false,
-                'error'   => 'Service Python indisponible'
+                'error'   => 'Erreur Python : ' . $e->getMessage()
             ], 503);
         }
 
-        // 4. Envoyer en JSON avec base64 ✅
- try {
-    $response = $http->request('POST',
-        "http://127.0.0.1:5000/verify/{$user->getId()}",
-        [
-            'json' => ['image_base64' => $base64]  // ← 'json' au lieu de 'body'
-        ]
-    );
-    $result = $response->toArray();
+        // 4. Connecter si match
+        if (!empty($result['match']) && !empty($result['user_id'])) {
+            $user = $userRepo->find($result['user_id']);
 
-} catch (\Exception $e) {
-    return new JsonResponse([
-        'success' => false,
-        'error'   => 'Erreur Python : ' . $e->getMessage()
-    ], 503);
-}
+            if (!$user) {
+                return new JsonResponse(['success' => false, 'error' => 'Utilisateur non trouvé'], 404);
+            }
 
-        // 5. Connecter si match
-        if (!empty($result['match']) && $result['confidence'] > 75) {
             $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
             $request->getSession()->set('_security_main', serialize($token));
 
@@ -83,7 +74,7 @@ error_log("✅ Base64 reçu, longueur: " . strlen($base64));
         return new JsonResponse([
             'success'    => false,
             'confidence' => $result['confidence'] ?? 0,
-            'error'      => 'Visage non reconnu'
+            'error'      => $result['error'] ?? 'Visage non reconnu'
         ], 401);
     }
 }

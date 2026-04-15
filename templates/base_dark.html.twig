@@ -621,67 +621,39 @@
 
   {# ── Face ID Login ── #}
   document.getElementById('faceLoginBtn')?.addEventListener('click', async () => {
-    const email  = document.getElementById('faceEmail')?.value?.trim();
     const result = document.getElementById('faceResult');
     const btn    = document.getElementById('faceLoginBtn');
-
-    if (!email) {
-        result.textContent = '⚠️ Entre ton email d\'abord';
-        result.style.color = 'orange';
-        return;
-    }
 
     const video  = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
     const ctx    = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, 320, 240);
 
-    result.textContent = '⏳ Analyse...';
-    btn.disabled = true;
+    result.textContent = '⏳ Identification en cours...';
+    result.style.color = 'rgba(255,255,255,0.6)';
+    btn.disabled       = true;
 
     const formData = new FormData();
-    formData.append('email',      email);
     formData.append('face_image', canvas.toDataURL('image/jpeg'));
 
-    // ── DEBUG : afficher ce qu'on envoie ──
-    console.log('📤 Envoi vers /face-login pour:', email);
-
-    let res, data;
-
     try {
-        res = await fetch('/face-login', { method: 'POST', body: formData });
+        const res  = await fetch('/face-login', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (data.success) {
+            result.textContent = `✅ Bienvenue ! (${data.confidence}%)`;
+            result.style.color = '#4ade80';
+            setTimeout(() => window.location.href = data.redirect, 1200);
+        } else {
+            result.textContent = `❌ ${data.error ?? 'Visage non reconnu'} (${data.confidence ?? 0}%)`;
+            result.style.color = '#f87171';
+            btn.disabled       = false;
+            btn.innerHTML      = '<i class="fas fa-camera"></i> Réessayer';
+        }
     } catch (e) {
-        console.error('❌ Fetch échoué:', e);
-        result.textContent = '❌ Erreur réseau : ' + e.message;
+        result.textContent = '❌ Erreur réseau';
         result.style.color = '#f87171';
-        btn.disabled = false;
-        return;
-    }
-
-    console.log('📥 Status HTTP:', res.status);
-
-    try {
-        data = await res.json();
-    } catch (e) {
-        const text = await res.text();
-        console.error('❌ Réponse non-JSON:', text);
-        result.textContent = '❌ Réponse invalide du serveur';
-        result.style.color = '#f87171';
-        btn.disabled = false;
-        return;
-    }
-
-    console.log('📦 Réponse:', data);
-
-    if (data.success) {
-        result.textContent = `✅ Bienvenue ! (${data.confidence}%)`;
-        result.style.color = '#4ade80';
-        setTimeout(() => window.location.href = data.redirect, 1200);
-    } else {
-        result.textContent = `❌ ${data.error ?? 'Visage non reconnu'} (${data.confidence ?? 0}%)`;
-        result.style.color = '#f87171';
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-camera"></i> Réessayer';
+        btn.disabled       = false;
     }
 });
 </script>

@@ -83,8 +83,8 @@
       {% for voyage in voyages %}
 
         {# Résoudre la meilleure image disponible #}
-        {% set imgFinal = voyage.firstImagePath 
-            ?? (voyage.destinationRel ? voyage.destinationRel.firstImage : null) %}
+        {% set rawImg = voyage.firstImagePath ?? (voyage.destinationRel ? voyage.destinationRel.firstImage : null) %}
+        {% set imgFinal = rawImg ? (rawImg|split(','))|first|trim : null %}
 
         <a href="{{ path('client_voyage_show', {id: voyage.id}) }}"
            style="text-decoration:none;display:flex;flex-direction:column;background:var(--white);border-radius:16px;overflow:hidden;box-shadow:0 2px 16px rgba(13,27,42,0.08);transition:transform .3s,box-shadow .3s;border:1px solid rgba(13,27,42,0.06);"

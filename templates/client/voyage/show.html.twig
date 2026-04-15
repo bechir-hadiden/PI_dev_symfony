@@ -47,7 +47,8 @@
 
       {# ── IMAGES ── #}
       {% if voyage.imagePath %}
-        {% set imgSrc = voyage.imagePath starts with 'http' ? voyage.imagePath : asset(voyage.imagePath) %}
+        {% set rawPath = (voyage.imagePath|split(','))|first|trim %}
+        {% set imgSrc = rawPath starts with 'http' ? rawPath : asset(rawPath) %}
         <div style="border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(13,27,42,0.18);">
           <img src="{{ imgSrc }}" alt="{{ voyage.destination }}"
                style="width:100%;height:380px;object-fit:cover;"

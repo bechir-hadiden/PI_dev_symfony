@@ -72,18 +72,12 @@ class RegisterController extends AbstractController
                         $imageData
                     );
 
-                    $binary = base64_decode($imageData);
-
-
                     // appel API Flask
                     $response = $http->request(
                         'POST',
                         "http://127.0.0.1:5000/register/" . $user->getId(),
                         [
-                            'headers' => [
-                                'Content-Type' => 'application/octet-stream'
-                            ],
-                            'body' => $binary
+                            'json' => ['image_base64' => $imageData]
                         ]
                     );
 
