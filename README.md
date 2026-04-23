@@ -19,7 +19,6 @@ Advanced search: by destination, date, or trip type
 Export data in PDF or CSV format for reporting
 Pricing and promotions management
 
-
 Tech Stack
 
 PHP 8.2
@@ -28,7 +27,6 @@ MySQL for the database
 Composer for dependency management
 Doctrine ORM for database mapping
 Twig for interface design
-
 
 Academic Context
 Developed as part of the PDEV at Esprit School of Engineering – Tunisia
