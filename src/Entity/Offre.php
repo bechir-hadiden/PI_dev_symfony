@@ -21,6 +21,11 @@ class Offre
     #[ORM\Column(length: 255)]
     private ?string $titre = null;
 
+    #[Assert\NotBlank(message: "La description ne peut pas être vide.")]
+    #[Assert\Length(
+        min: 10, 
+        minMessage: "La description doit contenir au moins {{ limit }} caractères pour être informative."
+    )]
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $description = null;
 
@@ -63,9 +68,10 @@ class Offre
     #[ORM\JoinColumn(name: "id_vehicule", referencedColumnName: "idVehicule", nullable: true)]
     private ?Vehicule $vehicule = null;
 
-    // Pour les Vols, on garde l'ID simple pour le moment
-    #[ORM\Column(name: "id_vol", type: Types::BIGINT, nullable: true)]
-    private ?string $idVol = null;
+    #[ORM\ManyToOne(targetEntity: Vol::class)]
+    #[ORM\JoinColumn(name: "id_vol", referencedColumnName: "id", nullable: true)]
+    private ?Vol $vol = null;
+
 
 
     // --- GETTERS ET SETTERS ---
@@ -105,8 +111,8 @@ class Offre
     public function getVehicule(): ?Vehicule { return $this->vehicule; }
     public function setVehicule(?Vehicule $vehicule): self { $this->vehicule = $vehicule; return $this; }
 
-    public function getIdVol(): ?string { return $this->idVol; }
-    public function setIdVol(?string $idVol): self { $this->idVol = $idVol; return $this; }
+    public function getVol(): ?Vol { return $this->vol; }
+    public function setVol(?Vol $vol): self { $this->vol = $vol; return $this; }
 
 
     // --- MÉTHODES MÉTIER (Business Logic) ---
@@ -114,39 +120,42 @@ class Offre
     /**
      * Retourne le nom de la destination/partenaire selon la catégorie
      */
-    public function getLabelDestination(): string
-    {
-        if ($this->category === 'TRANSPORT' && $this->vehicule) {
-            return $this->vehicule->getType() . " (" . $this->vehicule->getVille() . ")";
-        }
-        if ($this->category === 'HOTEL' && $this->hotel) {
-            return $this->hotel->getName();
-        }
-        if ($this->category === 'VOL' && $this->idVol) {
-            return "Vol #" . $this->idVol;
-        }
-        if ($this->voyage) {
-            return $this->voyage->getDestination();
-        }
-        return "Destination non spécifiée";
+   public function getLabelDestination(): string
+{
+    if ($this->category === 'VOL' && $this->vol) {
+        return "Vers " . $this->vol->getArrivee(); // Affichera "Vers New York"
     }
+    if ($this->category === 'HOTEL' && $this->hotel) {
+        return $this->hotel->getName();
+    }
+    if ($this->category === 'TRANSPORT' && $this->vehicule) {
+        return $this->vehicule->getType() . " (" . $this->vehicule->getVille() . ")";
+    }
+    if ($this->voyage) {
+        return $this->voyage->getDestination();
+    }
+    return "Destination N/A";
+}
 
     /**
      * Récupère le prix d'origine selon la catégorie
      */
     public function getPrixInitial(): float
-    {
-        if ($this->category === 'TRANSPORT' && $this->vehicule) {
-            return (float) $this->vehicule->getPrix();
-        }
-        if ($this->category === 'HOTEL' && $this->hotel) {
-            return (float) $this->hotel->getPricePerNight();
-        }
-        if ($this->voyage) {
-            return (float) $this->voyage->getPrix();
-        }
-        return 0.0;
+{
+    if ($this->category === 'VOL' && $this->vol) {
+        return (float) $this->vol->getPrix(); // Récupère le prix réel de la table vols
     }
+    if ($this->category === 'HOTEL' && $this->hotel) {
+        return $this->hotel->getPricePerNight();
+    }
+    if ($this->category === 'TRANSPORT' && $this->vehicule) {
+        return (float) $this->vehicule->getPrix();
+    }
+    if ($this->voyage) {
+        return (float) $this->voyage->getPrix();
+    }
+    return 0.0;
+}
 
     /**
      * Calcule le prix après remise

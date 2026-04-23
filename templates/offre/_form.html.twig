@@ -1,25 +1,245 @@
-{{ form_start(form) }}
-    {{ form_widget(form) }}
-    <button class="btn">{{ button_label|default('Save') }}</button>
-{{ form_end(form) }}
+<div class="form-container">
+    {{ form_start(form, {'attr': {'id': 'offreForm', 'novalidate': 'novalidate'}}) }}
+        <div class="main-card shadow-sm border-0 p-4 bg-white rounded-4">
+            
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Titre de la promotion</label>
+                    {{ form_widget(form.titre) }}
+                    <div class="text-danger small">{{ form_errors(form.titre) }}</div>
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Description</label>
+                    {{ form_widget(form.description) }}
+                    <div class="text-danger small">{{ form_errors(form.description) }}</div>
+                    
+                   <div class="d-flex align-items-center gap-2 mt-2 flex-wrap">
+                        <button type="button" id="btnAI" class="btn btn-sm btn-dark rounded-pill px-3" onclick="analyzeWithAI()">
+                            🪄 Analyser avec l'IA
+                        </button>
+                        <button type="button" id="btnEnhance" class="btn btn-sm btn-warning rounded-pill px-3" onclick="enhanceWithAI()">
+                            ✨ Optimiser la description
+                        </button>
+                        <div id="aiLoader" class="spinner-border spinner-border-sm text-primary ms-1 d-none"></div>
+                        <div id="enhanceLoader" class="spinner-border spinner-border-sm text-warning ms-1 d-none"></div>
+                        <span id="aiSuggestion" class="badge rounded-pill bg-success text-white p-2 px-3" style="display:none;"></span>
+                        <span id="odd8Badge" class="badge rounded-pill bg-success text-white p-2 px-3" style="display:none;">
+                            🤝 ODD 8 détecté
+                        </span>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Taux de remise (%)</label>
+                    {{ form_widget(form.taux_remise) }}
+                    <div class="text-danger small">{{ form_errors(form.taux_remise) }}</div>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Catégorie</label>
+                    {{ form_widget(form.category) }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Date de début</label>
+                    {{ form_widget(form.date_debut) }}
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Date de fin</label>
+                    {{ form_widget(form.date_fin) }}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">Élément concerné (Hôtel, Vol, Transport...)</label>
+                    {{ form_widget(form.id_target) }}
+                </div>
+
+                <div class="col-12">
+                    <label class="form-label">URL de l'image</label>
+                    {{ form_widget(form.image_url) }}
+                </div>
+
+                <div class="col-12 mt-3">
+                    <div class="form-check form-switch p-0 ps-5">
+                        {{ form_widget(form.is_local_support) }}
+                        <label class="form-check-label fw-bold text-success">Soutien Local 🤝 (ODD 8)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-center gap-3 mt-5">
+                <button class="btn btn-save shadow-sm">{{ button_label|default('Enregistrer l\'offre') }}</button>
+                <a href="{{ path('app_offre_index') }}" class="btn btn-light rounded-pill px-4 border">Annuler</a>
+            </div>
+        </div>
+    {{ form_end(form) }}
+</div>
 
 <script>
-document.getElementById('offre_category').addEventListener('change', function() {
-    const category = this.value;
-    const itemSelect = document.getElementById('offre_id_target');
-    
-    if(!category) return;
+document.addEventListener('DOMContentLoaded', function() {
+    const categorySelect = document.getElementById('offre_category');
+    const itemSelect     = document.getElementById('offre_id_target');
 
-    fetch('/offre/api/items/' + category)
-        .then(response => response.json())
-        .then(data => {
-            itemSelect.innerHTML = '<option value="">Sélectionner un élément...</option>';
-            data.forEach(item => {
-                let opt = document.createElement('option');
-                opt.value = item.id;
-                opt.text = item.label;
-                itemSelect.add(opt);
+    // --- LOGIQUE ÉLÉMENTS DYNAMIQUES (AJAX) ---
+    const currentSelectedId = "{% if offre.hotel is not null %}{{ offre.hotel.id }}{% elseif offre.vehicule is not null %}{{ offre.vehicule.id }}{% elseif offre.vol is not null %}{{ offre.vol.id }}{% elseif offre.voyage is not null %}{{ offre.voyage.id }}{% endif %}";
+
+    function loadItems(category, selectedId = null) {
+        if (!category) {
+            itemSelect.innerHTML = '<option value="">Sélectionner un type d\'abord...</option>';
+            return;
+        }
+        itemSelect.innerHTML = '<option>Chargement en cours...</option>';
+        fetch('/offre/api/items/' + category)
+            .then(response => response.json())
+            .then(data => {
+                itemSelect.innerHTML = '<option value="">Sélectionner l\'élément...</option>';
+                data.forEach(item => {
+                    let opt = document.createElement('option');
+                    opt.value = item.id;
+                    opt.text = item.label;
+                    if (selectedId && item.id == selectedId) opt.selected = true;
+                    itemSelect.add(opt);
+                });
             });
-        });
+    }
+
+    categorySelect.addEventListener('change', function() {
+        loadItems(this.value);
+    });
+
+    if (categorySelect.value) {
+        loadItems(categorySelect.value, currentSelectedId);
+    }
+
+    // --- LOGIQUE IA : Analyser ---
+    window.analyzeWithAI = function() {
+        const descriptionField = document.getElementById('offre_description');
+        const text             = descriptionField.value;
+        const btn              = document.getElementById('btnAI');
+        const loader           = document.getElementById('aiLoader');
+        const suggestionLabel  = document.getElementById('aiSuggestion');
+        const odd8Badge        = document.getElementById('odd8Badge');
+        const odd8Toggle       = document.getElementById('offre_is_local_support');
+
+        if (text.length < 15) {
+            alert("La description est trop courte pour une analyse pertinente (min 15 car.).");
+            return;
+        }
+
+        btn.disabled = true;
+        loader.classList.remove('d-none');
+        suggestionLabel.style.display = 'none';
+        odd8Badge.style.display = 'none';
+
+        const params = new URLSearchParams();
+        params.append('text', text);
+
+        fetch('/offre/api/ai-analyze', { method: 'POST', body: params })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                loader.classList.add('d-none');
+
+                if (!data.label) {
+                    if (data.error) alert("Erreur IA : " + data.error);
+                    return;
+                }
+
+                // Badge catégorie
+                const sourceTag = data.source === 'fallback' ? ' (local)' : ' ✦';
+                suggestionLabel.innerText = "Suggestion IA : " + data.label + sourceTag;
+                suggestionLabel.style.display = 'inline-block';
+
+                // Mapping label IA → valeur exacte du <select> Catégorie
+                const labelToCategoryMap = {
+                    'Luxe'       : 'HOTEL',
+                    'Famille'    : 'HOTEL',
+                    'Aventure'   : 'VOYAGE',
+                    'Economique' : 'VOL',
+                };
+
+                const detectedCategory = labelToCategoryMap[data.label];
+                if (detectedCategory) {
+                    categorySelect.value = detectedCategory;
+                    categorySelect.dispatchEvent(new Event('change'));
+                    categorySelect.style.border = '2px solid #27AE60';
+                    setTimeout(() => categorySelect.style.border = '', 2000);
+                }
+
+                // --- ODD 8 AUTO-DÉTECTION ---
+                if (data.odd8 === true) {
+                    odd8Toggle.checked = true;
+                    odd8Badge.style.display = 'inline-block';
+                    // Feedback visuel sur le toggle
+                    const toggleContainer = odd8Toggle.closest('.form-check');
+                    if (toggleContainer) {
+                        toggleContainer.style.border = '2px solid #27AE60';
+                        toggleContainer.style.borderRadius = '8px';
+                        toggleContainer.style.padding = '4px 8px';
+                        setTimeout(() => {
+                            toggleContainer.style.border = '';
+                            toggleContainer.style.padding = '';
+                        }, 2500);
+                    }
+                } else {
+                    odd8Toggle.checked = false;
+                    odd8Badge.style.display = 'none';
+                }
+                // ------------------------------------
+            })
+            .catch(() => {
+                btn.disabled = false;
+                loader.classList.add('d-none');
+                alert("Erreur réseau, réessayez.");
+            });
+    };
+
+    // --- LOGIQUE IA : Optimiser la description ---
+    window.enhanceWithAI = function() {
+        const descriptionField = document.getElementById('offre_description');
+        const text             = descriptionField.value;
+        const btn              = document.getElementById('btnEnhance');
+        const loader           = document.getElementById('enhanceLoader');
+
+        if (text.length < 15) {
+            alert("Écrivez d'abord une description à optimiser (min 15 car.).");
+            return;
+        }
+
+        btn.disabled = true;
+        loader.classList.remove('d-none');
+
+        const params = new URLSearchParams();
+        params.append('text', text);
+
+        fetch('/offre/api/ai-enhance', { method: 'POST', body: params })
+            .then(response => response.json())
+            .then(data => {
+                btn.disabled = false;
+                loader.classList.add('d-none');
+
+                if (data.enhanced) {
+                    // Remplace la description par la version luxe générée
+                    descriptionField.value = data.enhanced;
+                    // Feedback visuel sur le textarea
+                    descriptionField.style.border      = '2px solid #f0a500';
+                    descriptionField.style.background  = '#fffdf0';
+                    setTimeout(() => {
+                        descriptionField.style.border     = '';
+                        descriptionField.style.background = '';
+                    }, 3000);
+                } else if (data.error) {
+                    alert("Erreur optimisation : " + data.error);
+                }
+            })
+            .catch(() => {
+                btn.disabled = false;
+                loader.classList.add('d-none');
+                alert("Erreur réseau, réessayez.");
+            });
+    };
+
 });
 </script>

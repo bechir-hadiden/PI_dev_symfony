@@ -24,10 +24,18 @@ class OffreType extends AbstractType
             ->add('titre', TextType::class, [
                 'attr' => ['class' => 'form-control rounded-pill', 'placeholder' => 'Ex: Promo Été']
             ])
+            // src/Form/OffreType.php
+
             ->add('description', TextareaType::class, [
-                'required' => false,
-                'attr' => ['class' => 'form-control rounded-4', 'rows' => 3]
+                'label' => 'Description',
+                'required' => true, // <-- Force HTML5 validation (le navigateur bloque)
+                'attr' => [
+                    'class' => 'form-control rounded-4',
+                    'placeholder' => 'Décrivez l\'offre en quelques mots...',
+                    'rows' => 3
+                ]
             ])
+
             ->add('taux_remise', IntegerType::class, [
                 'attr' => ['class' => 'form-control rounded-pill', 'placeholder' => 'Ex: 20']
             ])

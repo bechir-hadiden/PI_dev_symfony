@@ -1,57 +1,89 @@
-{% extends 'base.html.twig' %}
+{% extends 'client_base.html.twig' %}
 
 {% block body %}
 <div class="container py-5">
-    <div class="white-container shadow-sm rounded-4 p-4 p-lg-5 bg-white">
+    <!-- Conteneur Principal Style "Luxe" -->
+    <div class="shadow-lg rounded-0 p-4 p-lg-5" style="background: white; border-top: 3px solid var(--gold);">
         
-        <!-- Header -->
-        <div class="row align-items-center mb-4">
+        <!-- Header Section -->
+        <div class="row align-items-end mb-5">
             <div class="col-md-7">
-                <h1 class="label-title">Exclusive Offers</h1>
-                <p class="text-muted">Voyagez responsable, soutenez l'économie locale.</p>
+                <div class="hero-tag" style="margin-bottom: 0.5rem;">Sélection Privilège</div>
+                <h1 style="font-family: 'Cormorant Garamond', serif; font-size: 3.5rem; margin: 0;">
+                    Nos Offres <em style="color: var(--gold);">Exclusives</em>
+                </h1>
+                <p class="hero-desc mb-0">Découvrez des opportunités de voyage orchestrées pour l'excellence.</p>
             </div>
-            <div class="col-md-5 text-end">
-                <input type="text" id="clientSearch" class="form-control rounded-pill px-4" placeholder="Rechercher une destination...">
+            <div class="col-md-5">
+                <div class="position-relative">
+                    <input type="text" id="clientSearch" class="form-control rounded-0 border-gold" 
+                           placeholder="Chercher une destination ou un titre..." 
+                           style="border: 0.5px solid var(--gold); padding: 12px 20px; font-style: italic;">
+                    <span style="position: absolute; right: 15px; top: 12px; color: var(--gold);">🔍</span>
+                </div>
             </div>
         </div>
 
-        <!-- Filtres Pilules -->
-        <div class="d-flex gap-2 mb-5">
-            <a href="{{ path('app_offre_client_index', {'cat': 'ALL'}) }}" class="filter-btn {{ active_cat == 'ALL' ? 'filter-active' : '' }}">🌟 All Offers</a>
-            <a href="{{ path('app_offre_client_index', {'cat': 'HOTEL'}) }}" class="filter-btn {{ active_cat == 'HOTEL' ? 'filter-active' : '' }}">🏨 Hotels</a>
-            <a href="{{ path('app_offre_client_index', {'cat': 'VOL'}) }}" class="filter-btn {{ active_cat == 'VOL' ? 'filter-active' : '' }}">✈️ Flights</a>
-            <a href="{{ path('app_offre_client_index', {'cat': 'TRANSPORT'}) }}" class="filter-btn {{ active_cat == 'TRANSPORT' ? 'filter-active' : '' }}">🚗 Transport</a>
+        <!-- Barre de Filtres (Pills en Or et Ink) -->
+        <div class="d-flex flex-wrap gap-3 mb-5 justify-content-center">
+            <a href="{{ path('app_offre_client_index', {'cat': 'ALL'}) }}" 
+               class="filter-pill {{ active_cat == 'ALL' ? 'active' : '' }}">🌟 Toutes les Offres</a>
+            <a href="{{ path('app_offre_client_index', {'cat': 'HOTEL'}) }}" 
+               class="filter-pill {{ active_cat == 'HOTEL' ? 'active' : '' }}">🏨 Hôtels d'Exception</a>
+            <a href="{{ path('app_offre_client_index', {'cat': 'VOL'}) }}" 
+               class="filter-pill {{ active_cat == 'VOL' ? 'active' : '' }}">✈️ Vols Privilèges</a>
+            <a href="{{ path('app_offre_client_index', {'cat': 'TRANSPORT'}) }}" 
+               class="filter-pill {{ active_cat == 'TRANSPORT' ? 'active' : '' }}">🚗 Transports</a>
         </div>
 
-        <!-- Grille des Cartes -->
+        <!-- Grille des Offres -->
         <div class="row g-4" id="offersGrid">
             {% for o in offres %}
             <div class="col-md-4 offer-item">
-                <div class="offer-card h-100 border-0 shadow-sm overflow-hidden">
-                    <div class="position-relative">
+                <div class="card h-100 border-0 rounded-0 shadow-hover" style="background: var(--cream); transition: all 0.4s ease;">
+                    <!-- Image Area -->
+                    <div class="position-relative overflow-hidden" style="height: 220px;">
                         <img src="{% if o.imageUrl starts with 'http' %}{{ o.imageUrl }}{% else %}{{ asset('images/' ~ o.imageUrl) }}{% endif %}" 
-                             class="w-100" style="height: 160px; object-fit: cover;">
-                        <span class="badge-remise position-absolute top-0 end-0 m-3">-{{ o.tauxRemise }}%</span>
+                             class="w-100 h-100 img-zoom" style="object-fit: cover;">
+                        <div class="position-absolute top-0 end-0 m-3 p-2" 
+                             style="background: var(--gold); color: white; font-weight: bold; letter-spacing: 0.1em; font-size: 0.85rem;">
+                            -{{ o.tauxRemise }}%
+                        </div>
                     </div>
-                    <div class="p-3">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="text-primary fw-bold small">📍 {{ o.labelDestination }}</span>
+
+                    <!-- Card Body -->
+                    <div class="p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span style="color: var(--gold); text-transform: uppercase; letter-spacing: 0.2em; font-size: 0.7rem; font-weight: 600;">
+                                📍 {{ o.labelDestination }}
+                            </span>
                             {% if o.isLocalSupport %}
                                 <span class="badge-odd">🤝 Soutien Local</span>
                             {% endif %}
                         </div>
-                        <h5 class="fw-bold mb-3" style="font-size: 1.1rem;">{{ o.titre }}</h5>
-                        <div class="d-flex align-items-center gap-2 mb-3">
-                            <span class="price-main text-orange h4 mb-0">{{ o.prixFinal }} DT</span>
-                            <span class="price-old text-muted small">{{ o.prixInitial }} DT</span>
+
+                        <h4 class="mb-3" style="font-family: 'Cormorant Garamond', serif; font-weight: 600; color: var(--ink);">
+                            {{ o.titre|upper }}
+                        </h4>
+
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <span style="font-size: 1.6rem; color: var(--ink); font-weight: 400;">{{ o.prixFinal }} DT</span>
+                            <span style="text-decoration: line-through; color: var(--muted); font-size: 0.9rem;">{{ o.prixInitial }} DT</span>
                         </div>
-                        <button class="btn btn-view w-100 rounded-pill" data-bs-toggle="modal" data-bs-target="#modal{{ o.id }}">
-                            Voir l'offre →
+
+                        <button class="btn-primary w-100 py-3 rounded-0" style="letter-spacing: 0.2em; font-size: 0.75rem;"
+                                data-bs-toggle="modal" data-bs-target="#modal{{ o.id }}">
+                            DÉCOUVRIR L'OFFRE
                         </button>
                     </div>
                 </div>
             </div>
             {% endfor %}
+            
+            <!-- Message de recherche vide -->
+            <div id="noResults" class="col-12 text-center py-5 d-none">
+                <h3 style="font-family: 'Cormorant Garamond', serif; color: var(--muted);">Aucune offre ne correspond à votre recherche prestigieuse.</h3>
+            </div>
         </div>
     </div>
 </div>
@@ -59,4 +91,43 @@
 {% for o in offres %}
     {% include 'offre/_detail_modal.html.twig' with {'o': o} %}
 {% endfor %}
+
+<style>
+    .shadow-hover:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(184, 150, 62, 0.15) !important;
+    }
+    .img-zoom { transition: transform 0.8s ease; }
+    .card:hover .img-zoom { transform: scale(1.1); }
+    .border-gold:focus { border-color: var(--gold) !important; box-shadow: 0 0 0 0.25rem rgba(184, 150, 62, 0.1) !important; }
+</style>
+
+<!-- SCRIPT DE RECHERCHE DYNAMIQUE -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('clientSearch');
+    const offerItems = document.querySelectorAll('.offer-item');
+    const noResults = document.getElementById('noResults');
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        let visibleCount = 0;
+
+        offerItems.forEach(item => {
+            const title = item.querySelector('h4').textContent.toLowerCase();
+            const destination = item.querySelector('span').textContent.toLowerCase();
+
+            if (title.includes(query) || destination.includes(query)) {
+                item.style.display = 'block';
+                visibleCount++;
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        if (visibleCount === 0) noResults.classList.remove('d-none');
+        else noResults.classList.add('d-none');
+    });
+});
+</script>
 {% endblock %}

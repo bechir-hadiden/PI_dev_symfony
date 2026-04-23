@@ -1,11 +1,12 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}New Offre{% endblock %}
-
 {% block body %}
-    <h1>Create new Offre</h1>
+<div class="container-fluid py-5" style="background-color: #F4F7FB; min-height: 100vh;">
+    <div class="text-center mb-5">
+        <h1 class="label-title">Nouvelle Promotion</h1>
+        <p class="text-muted">Créez une offre attractive pour vos voyageurs.</p>
+    </div>
 
     {{ include('offre/_form.html.twig') }}
-
-    <a href="{{ path('app_offre_index') }}">back to list</a>
+</div>
 {% endblock %}
