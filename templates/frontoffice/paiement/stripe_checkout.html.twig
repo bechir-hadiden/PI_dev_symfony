@@ -1,0 +1,377 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Paiement Sécurisé — VoyageElite{% endblock %}
+
+{% block body %}
+<div class="stripe-checkout-wrapper">
+    <div class="checkout-container fade-in">
+
+        <!-- LEFT: STRIPE FORM -->
+        <div class="stripe-form-column">
+            <div class="stripe-card shadow-premium">
+                <div class="stripe-header">
+                    <div class="stripe-logo-bar">
+                        <i class="fab fa-stripe" style="font-size: 2.5rem; color: #635bff;"></i>
+                        <span class="secure-badge"><i class="fas fa-lock"></i> Paiement Sécurisé</span>
+                    </div>
+                    <h2 class="stripe-title">Finaliser votre <em>Paiement</em></h2>
+                    <p class="stripe-sub">Entrez vos informations bancaires ci-dessous. Toutes les données sont encryptées.</p>
+                </div>
+
+                <!-- CARD ELEMENT -->
+                <div class="card-element-wrapper">
+                    <label class="card-label">Informations de la carte</label>
+                    <div id="card-element" class="card-element-box">
+                        <!-- Stripe Elements injecté ici -->
+                    </div>
+                    <div id="card-errors" class="card-errors" role="alert"></div>
+                </div>
+
+                <!-- BILLING SUMMARY -->
+                <div class="billing-recap">
+                    <div class="recap-row">
+                        <span class="recap-label"><i class="fas fa-user"></i> Client</span>
+                        <span class="recap-value">{{ paiement.prenom ?? '' }} {{ paiement.nom ?? '' }}</span>
+                    </div>
+                    <div class="recap-row">
+                        <span class="recap-label"><i class="fas fa-envelope"></i> Email</span>
+                        <span class="recap-value">{{ paiement.email ?? '—' }}</span>
+                    </div>
+                    {% if paiement.subscription %}
+                    <div class="recap-row">
+                        <span class="recap-label"><i class="fas fa-crown"></i> Abonnement</span>
+                        <span class="recap-value gold-txt">{{ paiement.subscription.plan|capitalize }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- ACTION -->
+                <button id="submit-btn" class="btn-pay-stripe" type="button">
+                    <span id="btn-text">
+                        <i class="fas fa-lock"></i> Payer {{ paiement.amount|number_format(2) }} TND
+                    </span>
+                    <span id="btn-spinner" class="spinner" style="display:none;">
+                        <i class="fas fa-circle-notch fa-spin"></i> Traitement…
+                    </span>
+                </button>
+
+                <!-- TRUST -->
+                <div class="trust-badges">
+                    <div class="trust-item"><i class="fas fa-shield-halved"></i> SSL 256-bit</div>
+                    <div class="trust-item"><i class="fab fa-cc-visa"></i><i class="fab fa-cc-mastercard"></i><i class="fab fa-cc-amex"></i></div>
+                    <div class="trust-item"><i class="fas fa-undo"></i> Remboursement</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: SUMMARY -->
+        <div class="stripe-summary-column">
+            <div class="order-summary-card shadow-premium">
+                <h3 class="summary-title">Récapitulatif</h3>
+
+                <div class="summary-line">
+                    <span class="summary-label">Référence</span>
+                    <span class="summary-value">#PAY-{{ paiement.id }}</span>
+                </div>
+                <div class="summary-line">
+                    <span class="summary-label">Méthode</span>
+                    <span class="summary-value"><i class="fab fa-stripe-s" style="color:#635bff;"></i> Stripe</span>
+                </div>
+                <div class="summary-line">
+                    <span class="summary-label">Date</span>
+                    <span class="summary-value">{{ paiement.datePaiement|date('d/m/Y H:i') }}</span>
+                </div>
+
+                <div class="summary-divider"></div>
+
+                <div class="summary-total-block">
+                    <span class="total-label">Total à payer</span>
+                    <div class="total-value-container">
+                        <span>{{ paiement.amount|number_format(2) }}</span>
+                        <span class="curr">TND</span>
+                    </div>
+                </div>
+
+                <ul class="summary-perks">
+                    <li><i class="fas fa-check-circle"></i> Cashback 5% crédité automatiquement</li>
+                    <li><i class="fas fa-check-circle"></i> +10 Points fidélité</li>
+                    <li><i class="fas fa-check-circle"></i> Facture PDF instantanée</li>
+                    <li><i class="fas fa-check-circle"></i> Support 24/7</li>
+                </ul>
+            </div>
+
+            <a href="{{ path('app_user_paiement_index') }}" class="btn-cancel-link">
+                <i class="fas fa-arrow-left"></i> Annuler et revenir
+            </a>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div id="success-modal" class="payment-modal" style="display:none;">
+        <div class="modal-content success-content">
+            <div class="modal-icon"><i class="fas fa-check-circle"></i></div>
+            <h2>Paiement Réussi !</h2>
+            <p>Votre transaction de <strong>{{ paiement.amount|number_format(2) }} TND</strong> a été confirmée.</p>
+            <a href="{{ path('app_user_paiement_index') }}" class="btn-modal">Voir mes paiements</a>
+        </div>
+    </div>
+
+    <!-- FAILURE MODAL -->
+    <div id="failure-modal" class="payment-modal" style="display:none;">
+        <div class="modal-content failure-content">
+            <div class="modal-icon error"><i class="fas fa-times-circle"></i></div>
+            <h2>Paiement Échoué</h2>
+            <p id="failure-message">Le paiement n'a pas pu être traité.</p>
+            <button onclick="document.getElementById('failure-modal').style.display='none'" class="btn-modal retry">Réessayer</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stripe-checkout-wrapper { padding: 8rem 5% 4rem; min-height: 100vh; background: var(--cream); }
+
+    .checkout-container { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 2.5rem; max-width: 1050px; margin: 0 auto; }
+
+    /* STRIPE CARD */
+    .stripe-card { background: #fff; border-radius: 28px; padding: 3rem; border: 1px solid rgba(0,0,0,0.04); }
+    .stripe-logo-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+    .secure-badge { background: #f0fdf4; color: #166534; padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem; }
+    .stripe-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--navy); margin-bottom: 0.4rem; }
+    .stripe-title em { color: var(--gold); font-style: italic; }
+    .stripe-sub { color: var(--muted); font-size: 0.85rem; margin-bottom: 2rem; }
+
+    /* CARD ELEMENT */
+    .card-element-wrapper { margin-bottom: 2rem; }
+    .card-label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--muted); margin-bottom: 0.8rem; }
+    .card-element-box { background: #f8fafc; border: 2px solid #e2e8f0; border-radius: 14px; padding: 1.2rem 1.2rem; transition: border-color 0.3s, box-shadow 0.3s; }
+    .card-element-box.StripeElement--focus { border-color: #635bff; box-shadow: 0 0 0 3px rgba(99,91,255,0.1); }
+    .card-element-box.StripeElement--invalid { border-color: #ef4444; }
+    .card-errors { color: #ef4444; font-size: 0.75rem; font-weight: 600; margin-top: 0.5rem; min-height: 1.2em; }
+
+    /* BILLING RECAP */
+    .billing-recap { background: #fafbfd; border-radius: 16px; padding: 1.2rem 1.5rem; margin-bottom: 2rem; border: 1px solid #f1f5f9; }
+    .recap-row { display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0; }
+    .recap-row:not(:last-child) { border-bottom: 1px solid #f1f5f9; }
+    .recap-label { font-size: 0.75rem; color: var(--muted); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+    .recap-label i { color: var(--gold); width: 16px; }
+    .recap-value { font-size: 0.8rem; font-weight: 700; color: var(--navy); }
+    .gold-txt { color: var(--gold) !important; }
+
+    /* PAY BUTTON */
+    .btn-pay-stripe { width: 100%; background: linear-gradient(135deg, #635bff, #7c3aed); border: none; color: #fff; padding: 1.2rem; border-radius: 16px; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.8rem; transition: all 0.3s; }
+    .btn-pay-stripe:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(99,91,255,0.35); }
+    .btn-pay-stripe:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+    .spinner { display: flex; align-items: center; gap: 0.5rem; }
+
+    /* TRUST */
+    .trust-badges { display: flex; justify-content: center; gap: 1.5rem; margin-top: 1.5rem; color: var(--muted); font-size: 0.65rem; font-weight: 600; }
+    .trust-item { display: flex; align-items: center; gap: 0.4rem; }
+    .trust-item i { font-size: 1rem; }
+
+    /* CANCEL */
+    .btn-cancel-link { display: block; text-align: center; margin-top: 1.5rem; color: var(--muted); text-decoration: none; font-size: 0.8rem; font-weight: 600; transition: color 0.3s; }
+    .btn-cancel-link:hover { color: var(--navy); }
+
+    /* MODALS */
+    .payment-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+    .modal-content { background: #fff; border-radius: 28px; padding: 3rem; max-width: 420px; text-align: center; animation: slideUp 0.4s ease; }
+    .modal-icon { font-size: 4rem; margin-bottom: 1.5rem; color: #10b981; }
+    .modal-icon.error { color: #ef4444; }
+    .modal-content h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; margin-bottom: 0.8rem; }
+    .modal-content p { color: var(--muted); margin-bottom: 2rem; }
+    .btn-modal { display: inline-block; background: var(--navy); color: #fff; padding: 0.9rem 2rem; border-radius: 14px; text-decoration: none; font-weight: 700; transition: all 0.3s; border: none; cursor: pointer; }
+    .btn-modal.retry { background: var(--gold); color: var(--navy); }
+
+    @media (max-width: 900px) {
+        .checkout-container { grid-template-columns: 1fr; }
+        .stripe-summary-column { order: -1; }
+    }
+
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* TEST MODE CARD */
+    .test-mode-helper { position: fixed; bottom: 2rem; right: 2rem; width: 280px; background: #0f172a; border-radius: 20px; padding: 1.5rem; color: #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); z-index: 1000; transition: all 0.3s; }
+    .test-mode-helper:hover { transform: translateY(-5px); }
+    .test-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem; }
+    .test-tag { background: var(--gold); color: var(--navy); font-size: 0.6rem; font-weight: 800; padding: 0.2rem 0.5rem; border-radius: 4px; text-transform: uppercase; }
+    .test-title { font-size: 0.75rem; font-weight: 700; opacity: 0.8; }
+    .test-body { display: flex; flex-direction: column; gap: 0.8rem; }
+    .test-field { display: flex; flex-direction: column; gap: 0.3rem; }
+    .test-label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; letter-spacing: 0.5px; }
+    .test-value-row { display: flex; align-items: center; justify-content: space-between; }
+    .test-value { font-family: 'Courier New', Courier, monospace; font-weight: 700; font-size: 0.9rem; color: #fff; }
+    .test-copy-btn { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; }
+    .test-copy-btn:hover { background: var(--gold); color: var(--navy); }
+    .copy-success { font-size: 0.6rem; color: #10b981; font-weight: 700; display: none; }
+</style>
+
+<!-- TEST MODE HELPER -->
+<div class="test-mode-helper fade-in delay-2">
+    <div class="test-header">
+        <span class="test-tag">Mode Test</span>
+        <span class="test-title">Données de test</span>
+    </div>
+    <div class="test-body">
+        <div class="test-field">
+            <span class="test-label">Numéro de carte</span>
+            <div class="test-value-row">
+                <span class="test-value" id="test-card-num">4242 4242 4242 4242</span>
+                <button class="test-copy-btn" onclick="copyTestValue('4242424242424242', this)">
+                    <i class="fas fa-copy"></i>
+                </button>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="test-field">
+                <span class="test-label">Exp</span>
+                <span class="test-value">12 / 34</span>
+            </div>
+            <div class="test-field">
+                <span class="test-label">CVC</span>
+                <span class="test-value">123</span>
+            </div>
+        </div>
+        <div id="copy-msg" class="copy-success">Copié !</div>
+    </div>
+</div>
+
+<script>
+    function copyTestValue(val, btn) {
+        navigator.clipboard.writeText(val);
+        const msg = document.getElementById('copy-msg');
+        msg.style.display = 'block';
+        const icon = btn.querySelector('i');
+        icon.className = 'fas fa-check';
+        setTimeout(() => { 
+            msg.style.display = 'none'; 
+            icon.className = 'fas fa-copy';
+        }, 2000);
+    }
+</script>
+
+<!-- STRIPE JS SDK -->
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    // ═══════════════════════════════════════════════════
+    //  Stripe Elements — Initialisation
+    // ═══════════════════════════════════════════════════
+
+    const stripe = Stripe('{{ stripe_public_key }}');
+    const elements = stripe.elements();
+
+    const style = {
+        base: {
+            color: '#0f172a',
+            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontSmoothing: 'antialiased',
+            fontSize: '16px',
+            '::placeholder': { color: '#94a3b8' }
+        },
+        invalid: {
+            color: '#ef4444',
+            iconColor: '#ef4444'
+        }
+    };
+
+    const cardElement = elements.create('card', { style: style, hidePostalCode: true });
+    cardElement.mount('#card-element');
+
+    // Afficher les erreurs de saisie de carte en temps réel
+    cardElement.on('change', (event) => {
+        const displayError = document.getElementById('card-errors');
+        displayError.textContent = event.error ? event.error.message : '';
+    });
+
+    // ═══════════════════════════════════════════════════
+    //  Soumission du paiement
+    // ═══════════════════════════════════════════════════
+
+    const submitBtn = document.getElementById('submit-btn');
+    const btnText = document.getElementById('btn-text');
+    const btnSpinner = document.getElementById('btn-spinner');
+
+    submitBtn.addEventListener('click', async () => {
+        // Désactiver le bouton pendant le traitement
+        submitBtn.disabled = true;
+        btnText.style.display = 'none';
+        btnSpinner.style.display = 'flex';
+
+        // Client Secret déjà stocké dans le PaymentIntent créé côté serveur
+        const clientSecret = '{{ paiement.stripePaymentIntentId ? "" : "" }}';
+
+        try {
+            // 1. Récupérer le client_secret via l'API
+            const intentResponse = await fetch('{{ path("api_stripe_create_payment_intent") }}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: {{ paiement.amount }},
+                    nom: '{{ paiement.nom ?? "" }}',
+                    prenom: '{{ paiement.prenom ?? "" }}',
+                    email: '{{ paiement.email ?? "" }}',
+                    telephone: '{{ paiement.telephone ?? "" }}',
+                    {% if paiement.subscription %}
+                    subscription_id: {{ paiement.subscription.id }},
+                    {% endif %}
+                })
+            });
+
+            // Si le paiement en base existe déjà avec un PI, on utilise le confirm endpoint
+            // Sinon on crée un nouveau PaymentIntent
+            let secret;
+            let paiementId = {{ paiement.id }};
+
+            if (intentResponse.ok) {
+                const data = await intentResponse.json();
+                secret = data.clientSecret;
+                paiementId = data.paiementId;
+            } else {
+                const err = await intentResponse.json();
+                throw new Error(err.error || 'Erreur lors de la création du paiement.');
+            }
+
+            // 2. Confirmer le paiement avec Stripe.js
+            const { error, paymentIntent } = await stripe.confirmCardPayment(secret, {
+                payment_method: {
+                    card: cardElement,
+                    billing_details: {
+                        name: '{{ paiement.prenom ?? "" }} {{ paiement.nom ?? "" }}',
+                        email: '{{ paiement.email ?? "" }}'
+                    }
+                }
+            });
+
+            if (error) {
+                // Échec côté client (carte refusée, etc.)
+                document.getElementById('card-errors').textContent = error.message;
+
+                // Notifier le serveur de l'échec
+                await fetch(`/stripe/confirm/${paiementId}`, { method: 'POST' });
+
+                // Afficher le modal d'échec
+                document.getElementById('failure-message').textContent = error.message;
+                document.getElementById('failure-modal').style.display = 'flex';
+            } else if (paymentIntent.status === 'succeeded') {
+                // Confirmer côté serveur
+                const confirmRes = await fetch(`/stripe/confirm/${paiementId}`, { method: 'POST' });
+                const confirmData = await confirmRes.json();
+
+                if (confirmData.status === 'success') {
+                    document.getElementById('success-modal').style.display = 'flex';
+                } else {
+                    document.getElementById('failure-message').textContent = confirmData.message || 'Erreur inattendue.';
+                    document.getElementById('failure-modal').style.display = 'flex';
+                }
+            }
+        } catch (err) {
+            document.getElementById('card-errors').textContent = err.message;
+            document.getElementById('failure-message').textContent = err.message;
+            document.getElementById('failure-modal').style.display = 'flex';
+        } finally {
+            submitBtn.disabled = false;
+            btnText.style.display = 'flex';
+            btnSpinner.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

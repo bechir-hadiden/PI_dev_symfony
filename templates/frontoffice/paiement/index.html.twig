@@ -1,0 +1,620 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Mon Portefeuille Elite - VoyageElite{% endblock %}
+
+{% block body %}
+<div class="portfolio-container">
+    <!-- BREADCRUMB & HEADER -->
+    <div class="portfolio-header fade-in">
+        <div class="breadcrumb-pro">
+            <a href="{{ path('app_client_dashboard') }}">Hub Elite</a>
+            <i class="fas fa-chevron-right"></i>
+            <span>Mon Portefeuille</span>
+        </div>
+        <div class="header-main-row">
+            <div>
+                <h1 class="portfolio-title">Gestion de Portefeuille</h1>
+                <div class="d-flex align-items-center">
+                    <p class="portfolio-subtitle mb-0">Pilotez vos actifs VoyageElite et suivez vos récompenses en temps réel.</p>
+                    <div class="location-badge-pro ms-4">
+                        <span class="badge-smart {{ detected_country == 'Tunisie' ? 'loc-local' : 'loc-inter' }}">
+                            <i class="fas fa-globe-africa me-2"></i>
+                            <span class="loc-text">Localisation : <strong>{{ detected_country }}</strong></span>
+                            {% if detected_country != 'Tunisie' %}
+                                <span class="loc-fee ms-2"><i class="fas fa-bolt"></i> +10% Frais</span>
+                            {% else %}
+                                <span class="loc-fee ms-2 text-success"><i class="fas fa-check-circle"></i> Frais Standards</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-actions">
+                <a href="{{ path('app_smart_payment_test') }}" class="btn-portfolio-outline" style="border-color: #10b981; color: #10b981;">
+                    <i class="fas fa-flask-vial"></i> SmartPay Lab
+                </a>
+                <a href="{{ path('app_user_paiement_export_pdf') }}" class="btn-portfolio-outline">
+                    <i class="fas fa-file-pdf"></i> Exporter Historique
+                </a>
+                <a href="{{ path('app_user_paiement_new') }}" class="btn-portfolio-gold">
+                    <i class="fas fa-plus-circle"></i> Nouveau Paiement
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- BALANCE & STATS GRID -->
+    <div class="stats-portfolio-grid fade-in delay-1">
+        <!-- WALLET CARD -->
+        <div class="glass-stat-card wallet">
+            <div class="g-card-icon"><i class="fas fa-wallet"></i></div>
+            <div class="g-card-content">
+                <span class="g-label">Solde Disponible</span>
+                <div class="g-value-box">
+                    <span class="g-currency">TND</span>
+                    <span class="g-number">{{ wallet_balance|number_format(2, '.', ' ') }}</span>
+                </div>
+                <!-- DYNAMIC CURRENCY CONVERSION (API) -->
+                <div class="g-value-eur" style="font-size: 0.9rem; font-weight: 600; color: #10b981; margin-top: -5px; margin-bottom: 10px;">
+                    <i class="fas fa-euro-sign me-1" style="font-size: 0.7rem;"></i>
+                    {{ (wallet_balance * eur_rate)|number_format(2) }} <small style="font-size: 0.6rem; opacity: 0.8;">EUR (Converti via API)</small>
+                </div>
+                <div class="g-verification">
+                    <i class="fas fa-shield-halved"></i>
+                    Statut : Compte Vérifié
+                </div>
+            </div>
+            <div class="g-card-accent"></div>
+        </div>
+
+        <!-- LOYALTY CARD -->
+        <div class="glass-stat-card loyalty">
+            <div class="g-card-icon"><i class="fas fa-crown"></i></div>
+            <div class="g-card-content">
+                <span class="g-label">Points Elite Accumulés</span>
+                <div class="g-value-box">
+                    <span class="g-number">{{ loyalty_points }}</span>
+                    <span class="g-currency">PTS</span>
+                </div>
+                <div class="g-verification gold">
+                    <i class="fas fa gem"></i>
+                    Membre Niveau Gold
+                </div>
+            </div>
+            <div class="g-card-accent gold"></div>
+        </div>
+    </div>
+    
+    <!-- CURRENCY CONVERTER WIDGET (RE-DESIGNED PREMIUM) -->
+    <div class="currency-converter-banner fade-in mb-5">
+        <div class="glass-lab-card">
+            <div class="lab-grid">
+                <div class="lab-info">
+                    <div class="lab-icon"><i class="fas fa-coins"></i></div>
+                    <div class="lab-text">
+                        <h5>Calculateur de Budget</h5>
+                        <p>Conversion EUR / TND en temps réel</p>
+                    </div>
+                </div>
+                
+                <div class="lab-inputs">
+                    <div class="lab-input-group">
+                        <span class="lab-tag">TND</span>
+                        <input type="number" id="budgetInput" placeholder="Entrez votre budget..." class="lab-field">
+                    </div>
+                    
+                    <div class="lab-divider">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
+
+                    <div id="budgetResultBox" class="lab-result">
+                        <span class="lab-res-label">Montant Estimé</span>
+                        <div class="lab-res-val">
+                             <span id="budgetResult">0.00</span>
+                             <small>€</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="lab-footer">
+                <i class="fas fa-info-circle"></i> Taux actuel : 1 TND = {{ eur_rate|number_format(4) }} EUR (Flux live via ExchangeRate-API)
+            </div>
+        </div>
+    </div>
+
+    <!-- IA RETENTION ENGINE (CANCEL PREDICTION) -->
+    <div class="retention-engine-banner fade-in delay-2 mb-5">
+        <div class="glass-ai-card retention">
+            <div class="ai-header">
+                <div class="ai-chip red">PREDICTIVE RETENTION</div>
+                <h6 class="mb-0 text-white"><i class="fas fa-bullseye me-2"></i> Prédiction d'Engagement Client</h6>
+            </div>
+            
+            <div class="ai-body">
+                {% set pending_count = pending_reservations|length %}
+                
+                {% if pending_count > 0 %}
+                    <div class="ai-retention-box">
+                        <div class="risk-gauge">
+                            <div class="gauge-fill" style="width: 85%;"></div>
+                            <span class="gauge-label">Risque d'Annulation : 85%</span>
+                        </div>
+                        <div class="retention-text ms-4">
+                            <p class="mb-1 text-white-50 small">L'IA détecte une hésitation sur la transaction <strong>#RES-{{ (pending_reservations|first).id }}</strong>.</p>
+                            <div class="d-flex gap-2">
+                                <button class="btn-retention-action assurance"><i class="fas fa-umbrella"></i> Offrir Assurance (-20%)</button>
+                                <button class="btn-retention-action reminder"><i class="fas fa-bell"></i> Envoyer Rappel SMS</button>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="ai-empty">
+                        <i class="fas fa-user-check me-2 text-gold"></i> Aucun ticket en attente. Engagement client optimal à 100%.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- IA RETRY OPTIMIZER (IA DECISION) -->
+    <div class="retry-optimizer-banner fade-in delay-2 mb-5">
+        <div class="glass-ai-card">
+            <div class="ai-header">
+                <div class="ai-chip">IA DECISION ENGINE</div>
+                <h6 class="mb-0 text-white"><i class="fas fa-brain me-2"></i> Optimiseur de Recouvrement</h6>
+            </div>
+            
+            <div class="ai-body">
+                {% set failed_count = 0 %}
+                {% for p in paiements %}
+                    {% if p.status == 'Refusé' %}{% set failed_count = failed_count + 1 %}{% endif %}
+                {% endfor %}
+
+                {% if failed_count > 0 %}
+                    <div class="ai-alert">
+                        <div class="ai-alert-icon"><i class="fas fa-robot"></i></div>
+                        <div class="ai-alert-text">
+                            <strong>{{ failed_count }} échec(s) détecté(s).</strong>
+                            L'IA recommande de ne pas réessayer immédiatement pour éviter le blocage bancaire. 
+                            <span class="text-gold">Moment optimal estimé : demain à 09:15.</span>
+                        </div>
+                        <button class="btn-ai-retry">Appliquer Planning IA</button>
+                    </div>
+                {% else %}
+                    <div class="ai-empty">
+                        <i class="fas fa-check-double me-2 text-success"></i> Flux financier optimal. Aucune optimisation de retry nécessaire pour le moment.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- TOOLBAR & TABLE -->
+    <div class="portfolio-main-card fade-in delay-2">
+        <div class="smart-toolbar">
+            <div class="toolbar-search">
+                <i class="fas fa-magnifying-glass"></i>
+                <input type="text" id="clientSearchInput" placeholder="Rechercher une référence, un montant...">
+            </div>
+            <div class="toolbar-filters">
+                <div class="filter-group">
+                    <i class="fas fa-sort"></i>
+                    <select onchange="location.href = this.value;">
+                        <option value="" disabled selected>Trier par...</option>
+                        <option value="{{ path('app_user_paiement_index', {sort: 'p.datePaiement', direction: 'DESC'}) }}" {{ current_sort == 'datePaiement' and current_direction == 'DESC' ? 'selected' : '' }}>Plus récents</option>
+                        <option value="{{ path('app_user_paiement_index', {sort: 'p.datePaiement', direction: 'ASC'}) }}" {{ current_sort == 'datePaiement' and current_direction == 'ASC' ? 'selected' : '' }}>Plus anciens</option>
+                        <option value="{{ path('app_user_paiement_index', {sort: 'p.amount', direction: 'DESC'}) }}" {{ current_sort == 'amount' and current_direction == 'DESC' ? 'selected' : '' }}>Montants croissants</option>
+                        <option value="{{ path('app_user_paiement_index', {sort: 'p.amount', direction: 'ASC'}) }}" {{ current_sort == 'amount' and current_direction == 'ASC' ? 'selected' : '' }}>Montants décroissants</option>
+                    </select>
+                </div>
+                <div class="operation-count">
+                    <strong>{{ paiements.getTotalItemCount }}</strong> Opérations
+                </div>
+            </div>
+        </div>
+
+        <div class="portfolio-table-wrapper">
+            <table class="elite-table" id="clientPaiementTable">
+                <thead>
+                    <tr>
+                        <th>Référence</th>
+                        <th>Montant & Cashback</th>
+                        <th>Méthode</th>
+                        <th>Abonnement</th>
+                        <th>Statut</th>
+                        <th>Horodatage</th>
+                        <th class="text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in paiements %}
+                        <tr class="paiement-row">
+                            <td class="ref-cell">#TR-{{ p.id|format('%03d') }}</td>
+                            <td>
+                                <div class="amount-val">{{ p.amount|number_format(2) }} TND</div>
+                                <div class="cashback-val">+{{ (p.amount * 0.05)|number_format(2) }} Pts</div>
+                            </td>
+                            <td>
+                                <span class="method-tag">
+                                    {% if p.methodePaiement|lower == 'stripe' %}
+                                        <i class="fab fa-stripe"></i>
+                                    {% else %}
+                                        <i class="fas fa-wallet"></i>
+                                    {% endif %}
+                                    {{ p.methodePaiement }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if p.subscription %}
+                                    <span class="sub-link">Plan {{ p.subscription.plan|capitalize }}</span>
+                                {% else %}
+                                    <span class="text-muted-pro">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="status-pill {{ p.status == 'Effectué' ? 'success' : (p.status == 'Refusé' ? 'danger' : 'warning') }}">
+                                    {{ p.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="date-txt">{{ p.datePaiement|date('d M Y') }}</div>
+                                <div class="time-txt">{{ p.datePaiement|date('H:i') }}</div>
+                            </td>
+                            <td class="text-right">
+                                <div class="action-btn-group">
+                                    {% if p.status == 'Refusé' %}
+                                        <button class="btn-action mini ai-retry" title="Planifier via IA" style="background: rgba(201, 168, 76, 0.1); border-color: var(--gold); color: var(--gold);">
+                                            <i class="fas fa-brain"></i>
+                                        </button>
+                                    {% endif %}
+                                    <a href="{{ path('app_user_paiement_export_single', {'id': p.id}) }}" class="btn-action mini pdf" title="Télécharger PDF">
+                                        <i class="fas fa-file-invoice"></i>
+                                    </a>
+                                    <a href="{{ path('app_user_paiement_edit', {'id': p.id}) }}" class="btn-action mini edit" title="Modifier">
+                                        <i class="fas fa-pen-to-square"></i>
+                                    </a>
+                                    <form method="post" action="{{ path('app_user_paiement_delete', {'id': p.id}) }}" style="display:inline-block" onsubmit="return confirm('Voulez-vous vraiment supprimer cet enregistrement ?');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ p.id) }}">
+                                        <button class="btn-action mini delete" title="Supprimer">
+                                            <i class="fas fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="empty-placeholder">
+                                <div class="empty-content">
+                                    <i class="fas fa-receipt"></i>
+                                    <p>Aucune transaction enregistrée dans votre historique.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- CUSTOM PREMIUM PAGINATION -->
+        <div class="portfolio-pagination-wrapper">
+            <div class="pagination-info">
+                Page <strong>{{ paiements.currentPageNumber }}</strong> sur <strong>{{ paiements.pageCount }}</strong> ({{ paiements.getTotalItemCount }} transactions)
+            </div>
+            <div class="navigation custom-pagination">
+                {% if paiements.currentPageNumber > 1 %}
+                    <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all|merge({page: paiements.currentPageNumber - 1})) }}" class="page-btn prev">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                {% endif %}
+
+                {% for page in 1..paiements.pageCount %}
+                    {% if page == paiements.currentPageNumber %}
+                        <span class="page-link active">{{ page }}</span>
+                    {% elseif page <= 3 or page >= paiements.pageCount - 1 or (page >= paiements.currentPageNumber - 1 and page <= paiements.currentPageNumber + 1) %}
+                        <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all|merge({page: page})) }}" class="page-link">{{ page }}</a>
+                    {% elseif page == 4 or page == paiements.pageCount - 2 %}
+                        <span class="page-sep">...</span>
+                    {% endif %}
+                {% endfor %}
+
+                {% if paiements.currentPageNumber < paiements.pageCount %}
+                    <a href="{{ path(app.request.attributes.get('_route'), app.request.query.all|merge({page: paiements.currentPageNumber + 1})) }}" class="page-btn next">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .portfolio-container { padding: 4rem 6% 6rem; background: var(--cream); min-height: 100vh; }
+    
+    /* HEADER */
+    .portfolio-header { margin-bottom: 3rem; }
+    .breadcrumb-pro { display: flex; align-items: center; gap: 0.8rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 1.5rem; }
+    .breadcrumb-pro a { color: var(--gold); text-decoration: none; transition: color 0.3s; }
+    .breadcrumb-pro a:hover { color: var(--navy); }
+    .header-main-row { display: flex; justify-content: space-between; align-items: flex-end; }
+    .portfolio-title { font-size: 2.5rem; color: var(--navy); margin-bottom: 0.5rem; }
+    .portfolio-subtitle { color: var(--muted); font-size: 1rem; max-width: 600px; }
+    .header-actions { display: flex; gap: 1rem; }
+    .btn-portfolio-gold { background: linear-gradient(135deg, var(--gold), var(--gold-l)); color: var(--navy); text-decoration: none; padding: 0.8rem 1.8rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 0.7rem; transition: all 0.3s; }
+    .btn-portfolio-gold:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(201,168,76,0.3); }
+    .btn-portfolio-outline { background: var(--white); border: 1px solid rgba(201,168,76,0.3); color: var(--navy); text-decoration: none; padding: 0.8rem 1.8rem; border-radius: 12px; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; gap: 0.7rem; transition: all 0.3s; }
+    .btn-portfolio-outline:hover { background: var(--navy); color: var(--gold); border-color: var(--navy); }
+
+    /* STATS GRID */
+    .stats-portfolio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+    .glass-stat-card { background: var(--white); border-radius: 24px; padding: 2.2rem; border: 1px solid rgba(201,168,76,0.1); position: relative; overflow: hidden; display: flex; gap: 1.8rem; align-items: center; box-shadow: var(--shadow); transition: transform 0.3s; }
+    .glass-stat-card:hover { transform: translateY(-5px); }
+    .g-card-icon { width: 60px; height: 60px; border-radius: 16px; background: rgba(13,27,42,0.05); color: var(--navy); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .wallet .g-card-icon { background: rgba(13,27,42,0.95); color: var(--gold); }
+    .g-label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); font-weight: 800; margin-bottom: 0.5rem; }
+    .g-value-box { display: flex; align-items: baseline; gap: 0.4rem; margin-bottom: 0.6rem; }
+    .g-number { font-size: 2.2rem; font-weight: 800; color: var(--navy); }
+    .g-currency { font-size: 1rem; font-weight: 700; color: var(--gold); }
+    .g-verification { display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem; font-weight: 700; color: #10b981; }
+    .g-verification.gold { color: var(--gold); }
+    .g-card-accent { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: var(--navy); }
+    .g-card-accent.gold { background: var(--gold); }
+
+    /* MAIN CARD & TOOLBAR */
+    .portfolio-main-card { background: var(--white); border-radius: 28px; border: 1px solid rgba(201,168,76,0.1); overflow: hidden; box-shadow: var(--shadow); }
+    .smart-toolbar { padding: 1.8rem 2.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; gap: 2rem; background: #fdfdfd; }
+    .toolbar-search { flex: 1; position: relative; max-width: 450px; }
+    .toolbar-search i { position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: var(--muted); }
+    .toolbar-search input { width: 100%; background: #f8f9fa; border: 1px solid rgba(0,0,0,0.08); padding: 0.8rem 1rem 0.8rem 3rem; border-radius: 12px; font-family: inherit; font-size: 0.9rem; transition: border-color 0.3s; }
+    .toolbar-search input:focus { border-color: var(--gold); outline: none; background: white; }
+    .toolbar-filters { display: flex; align-items: center; gap: 2rem; }
+    .filter-group { display: flex; align-items: center; gap: 0.8rem; color: var(--muted); font-size: 0.85rem; font-weight: 600; }
+    .filter-group select { background: transparent; border: none; font-family: inherit; font-weight: 700; color: var(--navy); cursor: pointer; outline: none; }
+    .operation-count { font-size: 0.8rem; background: var(--navy); color: white; padding: 0.4rem 1rem; border-radius: 50px; font-weight: 700; }
+    .operation-count strong { color: var(--gold); }
+
+    /* TABLE */
+    .portfolio-table-wrapper { padding: 1rem; }
+    .elite-table { width: 100%; border-collapse: collapse; text-align: left; }
+    .elite-table thead th { padding: 1.2rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 800; border-bottom: 2px solid #f8fafc; }
+    .elite-table tbody td { padding: 1.5rem 1.2rem; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
+    .elite-table tbody tr:hover { background: #fafbfc; }
+    
+    .ref-cell { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; color: var(--gold); font-size: 0.85rem; }
+    .amount-val { font-size: 1.05rem; font-weight: 800; color: var(--navy); }
+    .cashback-val { font-size: 0.7rem; font-weight: 700; color: #10b981; }
+    .method-tag { display: inline-flex; align-items: center; gap: 0.5rem; background: #f1f5f9; padding: 0.35rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; color: var(--navy); border: 1px solid #e2e8f0; }
+    .status-pill { padding: 0.4rem 1rem; border-radius: 50px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+    .status-pill.success { background: #ecfdf5; color: #059669; }
+    .status-pill.warning { background: #fffbeb; color: #d97706; }
+    .status-pill.danger { background: #fef2f2; color: #dc2626; }
+    .sub-link { font-size: 0.8rem; font-weight: 700; color: var(--navy); text-decoration: underline; text-decoration-color: var(--gold); }
+    .text-muted-pro { color: #cbd5e1; }
+    .date-txt { font-weight: 700; color: var(--navy); font-size: 0.85rem; }
+    .time-txt { color: var(--muted); font-size: 0.75rem; }
+    .action-btn-group { display: flex; justify-content: flex-end; gap: 0.5rem; }
+    .btn-action.mini { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; border-radius: 10px; text-decoration: none; transition: all 0.3s; border: 1px solid rgba(0,0,0,0.05); cursor: pointer; background: white; }
+    .btn-action.mini i { font-size: 0.85rem; }
+    .btn-action.mini.pdf { color: var(--navy); }
+    .btn-action.mini.edit { color: #3b82f6; }
+    .btn-action.mini.delete { color: #ef4444; }
+    .btn-action.mini:hover { transform: translateY(-3px); border-color: var(--gold); color: var(--gold); }
+
+    /* PREMIUM PAGINATION OVERRIDE - DEFAULT KNP STRUCTURE */
+    .portfolio-pagination-wrapper {
+        padding: 2rem 2.5rem;
+        background: #f8fafc !important;
+        border-top: 2px solid rgba(13, 27, 42, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom-left-radius: 28px;
+        border-bottom-right-radius: 28px;
+    }
+    
+    .pagination-info { 
+        font-size: 0.85rem; 
+        color: var(--navy) !important; 
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pagination-info::before {
+        content: '';
+        width: 4px;
+        height: 20px;
+        background: var(--gold);
+        border-radius: 10px;
+        display: block;
+    }
+
+    /* CUSTOM PREMIUM PAGINATION CSS */
+    .custom-pagination {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .page-link, .page-btn {
+        min-width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: white;
+        border: 1px solid rgba(13, 27, 42, 0.08);
+        color: var(--navy);
+        font-weight: 800;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        cursor: pointer;
+    }
+
+    .page-link.active {
+        background: linear-gradient(135deg, var(--navy), #1a3a5a);
+        color: var(--gold);
+        box-shadow: 0 8px 20px rgba(13, 27, 42, 0.2);
+        transform: scale(1.1);
+        border-color: var(--navy);
+    }
+
+    .page-link:not(.active):hover, .page-btn:hover {
+        border-color: var(--gold);
+        color: var(--gold);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px rgba(201, 168, 76, 0.15);
+    }
+
+    .page-sep {
+        color: var(--muted);
+        font-weight: 800;
+        padding: 0 5px;
+    }
+
+    .page-btn { 
+        background: rgba(201, 168, 76, 0.05);
+        border-color: rgba(201, 168, 76, 0.2);
+        color: var(--gold);
+    }
+
+
+
+    /* SMARTPAY LAB / BUDGET CALCULATOR */
+    .currency-converter-banner { margin-bottom: 3rem; }
+    .glass-lab-card {
+        background: var(--white);
+        border-radius: 28px;
+        padding: 2rem;
+        border: 1px solid rgba(201,168,76,0.15);
+        box-shadow: var(--shadow);
+    }
+    .lab-grid {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 3rem;
+    }
+    .lab-info {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        flex: 1;
+    }
+    .lab-icon {
+        width: 54px;
+        height: 54px;
+        background: rgba(13, 27, 42, 0.05);
+        color: var(--navy);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.4rem;
+    }
+    .lab-text h5 { margin: 0; color: var(--navy); font-weight: 800; font-size: 1.2rem; }
+    .lab-text p { margin: 0; color: var(--muted); font-size: 0.85rem; font-weight: 600; }
+
+    .lab-inputs {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        flex: 2;
+        background: #f8fafc;
+        padding: 1.2rem 2rem;
+        border-radius: 20px;
+        border: 1px solid rgba(0,0,0,0.03);
+    }
+    .lab-input-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: white;
+        padding: 0.6rem 1.2rem;
+        border-radius: 12px;
+        border: 1px solid rgba(13, 27, 42, 0.1);
+        flex: 1;
+    }
+    .lab-tag { font-weight: 800; color: var(--gold); font-size: 0.8rem; }
+    .lab-field { border: none; outline: none; font-weight: 700; color: var(--navy); width: 100%; font-size: 1rem; }
+    .lab-divider { color: var(--gold); font-size: 1.2rem; animation: pulse 2s infinite; }
+    
+    .lab-result {
+        flex: 1;
+        text-align: right;
+    }
+    .lab-res-label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); font-weight: 800; }
+    .lab-res-val { font-size: 1.8rem; font-weight: 800; color: var(--navy); }
+    .lab-res-val small { font-size: 1rem; color: var(--gold); margin-left: 4px; }
+
+    .lab-footer {
+        margin-top: 1.5rem;
+        padding-top: 1.2rem;
+        border-top: 1px solid rgba(0,0,0,0.05);
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* AI CARD STYLES */
+    .glass-ai-card { background: linear-gradient(135deg, rgba(13, 27, 42, 0.95), rgba(17, 34, 54, 0.98)); border-radius: 20px; padding: 20px; border: 1px solid rgba(201, 168, 76, 0.3); box-shadow: 0 15px 35px rgba(0,0,0,0.2); position: relative; overflow: hidden; }
+    .ai-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+    .ai-chip { font-size: 0.55rem; font-weight: 900; background: var(--gold); color: var(--navy); padding: 4px 10px; border-radius: 4px; letter-spacing: 1px; }
+    .ai-chip.red { background: #ef4444; color: white; }
+
+    /* RETENTION ENGINE SPECIFICS */
+    .ai-retention-box { display: flex; align-items: center; gap: 20px; }
+    .risk-gauge { width: 180px; height: 30px; background: rgba(255,255,255,0.1); border-radius: 10px; position: relative; overflow: hidden; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .gauge-fill { height: 100%; background: linear-gradient(90deg, #ef4444, #f87171); transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .gauge-label { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 800; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+    .btn-retention-action { padding: 6px 12px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.2); transition: all 0.3s; color: white; background: rgba(255,255,255,0.05); }
+    .btn-retention-action:hover { background: var(--gold); color: var(--navy); transform: translateY(-2px); }
+
+    /* RETRY OPTIMIZER SPECIFICS */
+    .ai-alert { display: flex; align-items: center; gap: 20px; background: rgba(255,255,255,0.03); padding: 15px; border-radius: 12px; border: 1px solid rgba(201,168,76,0.1); }
+    .ai-alert-icon { font-size: 1.5rem; color: var(--gold); animation: float 3s ease-in-out infinite; }
+    .ai-alert-text { flex: 1; font-size: 0.8rem; color: rgba(255,255,255,0.8); line-height: 1.4; }
+    .btn-ai-retry { background: var(--gold); color: var(--navy); border: none; padding: 8px 16px; border-radius: 8px; font-weight: 800; font-size: 0.75rem; transition: all 0.3s; }
+    .btn-ai-retry:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(201, 168, 76, 0.4); }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+    @keyframes pulse {
+        0% { transform: translateX(0); opacity: 0.6; }
+        50% { transform: translateX(5px); opacity: 1; }
+        100% { transform: translateX(0); opacity: 0.6; }
+    }
+</style>
+
+
+
+
+<script>
+    // Budget calculator
+    document.getElementById('budgetInput')?.addEventListener('input', function() {
+        const rate = {{ eur_rate }};
+        const val = this.value || 0;
+        document.getElementById('budgetResult').textContent = (val * rate).toFixed(2);
+    });
+
+    // Client search
+    document.getElementById('clientSearchInput')?.addEventListener('keyup', function() {
+        const val = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.paiement-row');
+        rows.forEach(row => {
+            row.style.display = row.innerText.toLowerCase().includes(val) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

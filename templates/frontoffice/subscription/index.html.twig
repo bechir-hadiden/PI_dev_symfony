@@ -1,0 +1,81 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Mon Abonnement - VoyageElite{% endblock %}
+
+{% block body %}
+<div class="user-dashboard-wrapper" style="padding: 10rem 5% 6rem; background: var(--cream); min-height: 100vh;">
+    <div class="dashboard-container" style="max-width: 800px; margin: 0 auto;">
+        
+        <!-- HEADER -->
+        <div class="dashboard-header fade-in" style="text-align: center; margin-bottom: 5rem;">
+            <span class="sub-label">Espace Membre Privilège</span>
+            <h1 class="main-title">Votre <em>Abonnement</em></h1>
+            <p class="sub-text" style="margin: 0 auto;">Retrouvez ici le détail de vos services exclusifs VoyageElite.</p>
+        </div>
+
+        {% if subscriptions is empty %}
+            <div class="empty-state-card fade-in delay-1" style="text-align: center; padding: 5rem; background: white; border-radius: 40px; box-shadow: var(--shadow); border: 2px dashed #e2e8f0;">
+                <div class="empty-icon" style="font-size: 4rem; color: #e2e8f0; margin-bottom: 2rem;"><i class="fa-solid fa-crown"></i></div>
+                <h3 style="font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 1rem;">Pas encore membre ?</h3>
+                <p style="color: var(--muted); margin-bottom: 2.5rem; max-width: 400px; margin-left: auto; margin-right: auto;">Accédez à des concierges privés, des réductions de 20% et des accès salons VIP.</p>
+                <a href="{{ path('app_user_paiement_new') }}" class="btn-primary">Choisir un Plan</a>
+            </div>
+        {% else %}
+            <div class="vip-pass-container fade-in delay-1">
+                {% for s in subscriptions %}
+                    <div class="vip-pass-card">
+                        <div class="vip-glow"></div>
+                        <span class="vip-pass-subtitle">Membre Officiel</span>
+                        <h2 class="vip-pass-title">{{ s.plan|upper }}</h2>
+                        
+                        <div style="display: flex; gap: 3rem; margin-top: 1rem;">
+                            <div class="vip-pass-detail">
+                                <label>Statut</label>
+                                <span class="value" style="color: {{ s.status == 'active' ? 'var(--gold)' : '#ff4d4d' }};">
+                                    {{ s.status|upper }}
+                                </span>
+                            </div>
+                            <div class="vip-pass-detail">
+                                <label>Validité</label>
+                                <span class="value">{{ s.endDate|date('d M Y') }}</span>
+                            </div>
+                        </div>
+
+                        <div class="usage-section" style="background: rgba(255,255,255,0.05); padding: 1.5rem; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); margin-top: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; font-size: 0.75rem; font-weight: 700;">
+                                <span style="opacity: 0.6;">Consommation du forfait</span>
+                                <span style="color: var(--gold);">{{ s.getProgressPercentage() }}%</span>
+                            </div>
+                            <div style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
+                                <div style="height: 100%; background: var(--gold); width: {{ s.getProgressPercentage() }}%; transition: width 1s ease;"></div>
+                            </div>
+                        </div>
+
+                        <div class="vip-pass-footer">
+                            <div class="vip-pass-detail" style="margin:0">
+                                <label>Jours Restants</label>
+                                <span class="value" style="font-size: 2rem; color: var(--gold);">{{ s.getRemainingDays() }}</span>
+                            </div>
+                            <div style="text-align: right;">
+                                <img src="https://img.icons8.com/ios-filled/50/ffffff/qr-code.png" style="width: 60px; opacity: 0.3; filter: brightness(0) invert(1);" alt="QR Code">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 3rem;">
+                        <a href="{{ path('app_user_paiement_new') }}" class="btn-navy" style="font-size: 0.8rem; padding: 0.8rem 2rem;">
+                            <i class="fa-solid fa-sync" style="margin-right: 8px;"></i> Renouveler ou Modifier
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .sub-label { color: var(--gold); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1rem; display: block; }
+    .main-title { font-family: 'Playfair Display', serif; font-size: 3.5rem; color: var(--navy); margin-bottom: 0.5rem; }
+    .sub-text { color: var(--muted); font-size: 1.1rem; max-width: 500px; }
+</style>
+{% endblock %}

@@ -1,0 +1,218 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Gestion des Paiements - Admin{% endblock %}
+
+{% block body %}
+<div class="admin-dashboard-wrapper">
+    <!-- TOP HEADER -->
+    <div class="admin-header fade-in">
+        <div class="header-content">
+            <span class="badge-gold-light">Panneau de Contrôle</span>
+            <h1 class="page-main-title">Transactions <em>Financières</em></h1>
+            <p class="page-subtitle">Visualisez et gérez l'ensemble des flux monétaires de la plateforme.</p>
+        </div>
+        <div class="header-actions-pro">
+            <a href="{{ path('app_smart_payment_test') }}" class="btn-action-outline" style="border-color: #ef4444; color: #ef4444;">
+                <i class="fa-solid fa-flask"></i> SmartPay Lab 🧪
+            </a>
+            <a href="{{ path('app_admin_paiement_export_pdf') }}" class="btn-action-outline">
+                <i class="fa-solid fa-download"></i> Exporter PDF
+            </a>
+            <a href="{{ path('app_admin_paiement_new') }}" class="btn-action-primary">
+                <i class="fa-solid fa-plus-circle"></i> Créer une transaction
+            </a>
+        </div>
+    </div>
+
+    <!-- METRICS OVERVIEW -->
+    <div class="metrics-container fade-in delay-1">
+        <div class="metric-box bg-pro-navy">
+            <div class="m-icon"><i class="fa-solid fa-chart-line"></i></div>
+            <div class="m-info">
+                <span class="m-label">CA Global (Validé)</span>
+                {% set totalCA = 0 %}
+                {% for p in paiements %}{% if p.status == 'Effectué' %}{% set totalCA = totalCA + p.amount %}{% endif %}{% endfor %}
+                <div class="m-val">{{ totalCA|number_format(2) }} <span>TND</span></div>
+            </div>
+        </div>
+        <div class="metric-box bg-pro-white">
+            <div class="m-icon icon-gold"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+            <div class="m-info">
+                <span class="m-label">Transactions Totales</span>
+                <div class="m-val">{{ paiements|length }} <span>Unités</span></div>
+            </div>
+        </div>
+        <div class="metric-box bg-pro-white">
+            <div class="m-icon icon-warning"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div class="m-info">
+                <span class="m-label">En attente de validation</span>
+                {% set pendingCount = 0 %}
+                {% for p in paiements %}{% if p.status == 'En attente' %}{% set pendingCount = pendingCount + 1 %}{% endif %}{% endfor %}
+                <div class="m-val text-warning">{{ pendingCount }} <span>Paiements</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATA TABLE SECTION -->
+    <div class="table-section-pro fade-in delay-2">
+        <div class="table-toolbar">
+            <div class="toolbar-left">
+                <div class="advanced-search">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" id="adminSearchInput" placeholder="Rechercher par e-mail, montant ou référence...">
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <div id="bulkActionsMenu" class="bulk-floating-bar" style="display: none;">
+                    <span class="count-badge"><span id="selectedCount">0</span> sélectionnés</span>
+                    <button type="button" onclick="submitBulk('valider')" class="bulk-btn b-val"><i class="fa-solid fa-check"></i> Approuver</button>
+                    <button type="button" onclick="submitBulk('supprimer')" class="bulk-btn b-del"><i class="fa-solid fa-trash"></i> Supprimer</button>
+                </div>
+                <div class="filter-dropdown">
+                    <select onchange="location.href = this.value;">
+                        <option value="" disabled selected>Filtrer/Trier</option>
+                        <option value="{{ path('app_admin_paiement_index', {sort: 'datePaiement', direction: 'DESC'}) }}">Plus récents</option>
+                        <option value="{{ path('app_admin_paiement_index', {sort: 'amount', direction: 'DESC'}) }}">Montant élevé</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <form id="bulkForm" method="post" action="{{ path('app_admin_paiement_bulk_action') }}">
+            <input type="hidden" name="action" id="bulkActionInput" value="">
+            <div class="pro-scroll-wrapper">
+                <table class="pro-admin-table" id="adminPaiementTable">
+                    <thead>
+                        <tr>
+                            <th class="w-ck"><input type="checkbox" id="selectAll"></th>
+                            <th>Référence</th>
+                            <th>Client / Bénéficiaire</th>
+                            <th>Produit / Service</th>
+                            <th>Montant</th>
+                            <th>Mode</th>
+                            <th>Statut</th>
+                            <th>🛡️ Score</th>
+                            <th>Date & Heure</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in paiements %}
+                            <tr class="pro-row">
+                                <td class="w-ck"><input type="checkbox" name="ids[]" value="{{ p.id }}" class="row-check"></td>
+                                <td><span class="ref-id">#{{ p.id }}</span></td>
+                                <td>
+                                    <div class="client-profile">
+                                        <div class="cl-avatar">{{ p.user.email|slice(0, 1)|upper }}</div>
+                                        <div class="cl-info">
+                                            <span class="cl-name">{{ p.nom ? p.prenom ~ ' ' ~ p.nom : p.user.email }}</span>
+                                            <span class="cl-sub">{{ p.user.email }} • ID:{{ p.user.id }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="product-badge">
+                                        {% if p.subscription %}
+                                            <i class="fa-solid fa-crown gold-txt"></i>
+                                            <span>Abonnement {{ p.subscription.plan|capitalize }}</span>
+                                        {% else %}
+                                            <i class="fa-solid fa-map-location-dot"></i>
+                                            <span>Voyage / Service Libre</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="price-cell">
+                                        <span class="val-main">{{ p.amount|number_format(2) }} <small>TND</small></span>
+                                        <span class="val-sub">+{{ (p.amount * 0.05)|number_format(2) }} pts</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="method-tag {{ p.methodePaiement|lower }}">
+                                        {% if p.methodePaiement|lower == 'stripe' %}<i class="fa-brands fa-stripe-s"></i>
+                                        {% else %}<i class="fa-solid fa-wallet"></i>{% endif %}
+                                        {{ p.methodePaiement }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge-status {{ p.status|lower|replace({' ': '_'}) == 'effectué' ? 'st-success' : (p.status|lower|replace({' ': '_'}) == 'en_attente' ? 'st-pending' : 'st-danger') }}">
+                                        {{ p.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="risk-badge" style="display:flex; align-items:center; gap:5px; font-weight:800; font-size:0.75rem; color: {{ p.scoreRisque > 0.6 ? '#ef4444' : (p.scoreRisque > 0.3 ? '#f59e0b' : '#10b981') }}">
+                                        <i class="fas fa-shield-alt"></i>
+                                        {{ p.scoreRisque|default('0.02')|number_format(2) }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="time-container">
+                                        <span class="t-date">{{ p.datePaiement|date('d M Y') }}</span>
+                                        <span class="t-hour">{{ p.datePaiement|date('H:i') }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-end">
+                                    <div class="pro-actions-menu">
+                                        {% if p.status == 'En attente' %}
+                                            <button type="button" class="btn-sq approve" onclick="submitSingle('{{ path('app_admin_paiement_valider', {id: p.id}) }}')" title="Approuver"><i class="fa-solid fa-check"></i></button>
+                                        {% endif %}
+                                        <a href="{{ path('app_admin_paiement_export_single', {id: p.id}) }}" class="btn-sq pdf" title="Télécharger PDF"><i class="fa-solid fa-file-pdf"></i></a>
+                                        <a href="{{ path('app_admin_paiement_edit', {id: p.id}) }}" class="btn-sq edit" title="Modifier"><i class="fa-solid fa-pen-to-square"></i></a>
+                                        <button type="button" class="btn-sq delete" onclick="if(confirm('Confirmer la suppression?')) submitSingle('{{ path('app_admin_paiement_delete', {id: p.id}) }}')" title="Supprimer"><i class="fa-solid fa-trash-can"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </form>
+    </div>
+</div>
+
+<form id="singleActionForm" method="post" style="display: none;"></form>
+
+<script>
+    function submitSingle(url) {
+        const form = document.getElementById('singleActionForm');
+        form.action = url;
+        form.submit();
+    }
+
+    function submitBulk(action) {
+        document.getElementById('bulkActionInput').value = action;
+        document.getElementById('bulkForm').submit();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        // Search
+        const searchInput = document.getElementById('adminSearchInput');
+        const rows = document.querySelectorAll('.pro-row');
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            rows.forEach(row => {
+                row.style.display = row.innerText.toLowerCase().includes(query) ? '' : 'none';
+            });
+        });
+
+        // Bulk
+        const selectAll = document.getElementById('selectAll');
+        const rowChecks = document.querySelectorAll('.row-check');
+        const bulkMenu = document.getElementById('bulkActionsMenu');
+        const selectedCount = document.getElementById('selectedCount');
+
+        const updateBulkMenu = () => {
+            const checked = document.querySelectorAll('.row-check:checked');
+            bulkMenu.style.display = checked.length > 0 ? 'flex' : 'none';
+            selectedCount.innerText = checked.length;
+        };
+
+        selectAll.addEventListener('change', () => {
+            rowChecks.forEach(c => c.checked = selectAll.checked);
+            updateBulkMenu();
+        });
+
+        rowChecks.forEach(c => c.addEventListener('change', updateBulkMenu));
+    });
+</script>
+{% endblock %}

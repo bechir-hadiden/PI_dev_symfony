@@ -1,0 +1,293 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Nouveau Paiement - Admin{% endblock %}
+
+{% block body %}
+<div class="edit-admin-wrapper">
+    <!-- HEADER -->
+    <div class="edit-header fade-in">
+        <div class="header-content">
+            <span class="section-label">Administration</span>
+            <h1 class="section-title">Nouvelle <em>Opération</em></h1>
+            <nav class="breadcrumb-nav">
+                <a href="{{ path('app_admin_paiement_index') }}">Transactions</a>
+                <i class="fa-solid fa-chevron-right"></i>
+                <span>Enregistrement Manuel</span>
+            </nav>
+        </div>
+        <div class="header-back">
+            <a href="{{ path('app_admin_paiement_index') }}" class="btn-navy-outline">
+                <i class="fa-solid fa-arrow-left"></i> Liste des paiements
+            </a>
+        </div>
+    </div>
+
+    <!-- FORM CARD -->
+    <div class="form-container-centered fade-in delay-1">
+        <div class="premium-form-card shadow-premium">
+            <div class="card-hero">
+                <div class="hero-icon info-mode"><i class="fa-solid fa-file-invoice-dollar"></i></div>
+                <div class="hero-text">
+                    <h2>Création Financière</h2>
+                    <p>Enregistrement d'un nouveau flux dans VoyageElite</p>
+                </div>
+            </div>
+
+            <form method="post" class="voyage-form needs-validation">
+                <!-- USER SELECTION -->
+                <div class="form-group-pro">
+                    <label for="user_id" class="input-label-pro">Utilisateur Bénéficiaire</label>
+                    <div class="input-wrapper-pro">
+                        <i class="fa-solid fa-user-tag"></i>
+                        <select name="user_id" id="user_id" class="input-pro select-pro" required>
+                            <option value="" selected disabled>Choisir un compte client...</option>
+                            {% for user in users %}
+                                <option value="{{ user.id }}" data-email="{{ user.email }}">{{ user.email }} (ID: {{ user.id }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group-pro">
+                    <label for="subscription_id" class="input-label-pro">Abonnement lié (optionnel)</label>
+                    <div class="input-wrapper-pro">
+                        <i class="fa-solid fa-crown"></i>
+                        <select name="subscription_id" id="subscription_id" class="input-pro select-pro">
+                            <option value="">Aucun abonnement</option>
+                            {% for sub in subscriptions %}
+                                <option value="{{ sub.id }}" data-user-id="{{ sub.user.id }}">
+                                    #{{ sub.id }} - {{ sub.plan|capitalize }} ({{ sub.user.email }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row-pro">
+                    <!-- AMOUNT -->
+                    <div class="form-group-pro">
+                        <label for="amount" class="input-label-pro">Montant Transaction (TND)</label>
+                        <div class="input-wrapper-pro">
+                            <i class="fa-solid fa-coins"></i>
+                            <input type="number" step="0.01" name="amount" id="amount" class="input-pro highlighted" placeholder="0.00" required autofocus>
+                        </div>
+                    </div>
+
+                    <!-- METHOD -->
+                    <div class="form-group-pro">
+                        <label for="methode_paiement" class="input-label-pro">Mode de Règlement</label>
+                        <div class="input-wrapper-pro">
+                            <i class="fa-solid fa-vault"></i>
+                            <select name="methode_paiement" id="methode_paiement" class="input-pro select-pro" required>
+                                <option value="" selected disabled>Choisir la méthode...</option>
+                                <option value="Stripe">💳 Carte Bancaire (Stripe)</option>
+                                <option value="Wallet">👛 Portefeuille VoyageElite</option>
+                                <option value="Espèces">💵 Règlement Espèces</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STATUS -->
+                <div class="form-group-pro">
+                    <label for="status" class="input-label-pro">Statut de la Transaction</label>
+                    <div class="input-wrapper-pro">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <select name="status" id="status" class="input-pro select-pro" required>
+                            <option value="En attente" selected>🕒 Mettre "En attente"</option>
+                            <option value="Effectué">✅ Valider Immédiatement (Générer Facture)</option>
+                            <option value="Refusé">❌ Marquer "Refusé"</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- BILLING DETAILS SECTION -->
+                <div class="billing-section mt-5 pt-4 border-top">
+                    <h3 class="input-label-pro text-navy mb-4"><i class="fa-solid fa-file-invoice me-2"></i>Détails de Facturation (Essentiel)</h3>
+                    
+                    <div class="form-row-pro">
+                        <div class="form-group-pro">
+                            <label for="nom" class="input-label-pro">Nom</label>
+                            <div class="input-wrapper-pro">
+                                <i class="fa-solid fa-address-card"></i>
+                                <input type="text" name="nom" id="nom" class="input-pro" placeholder="Nom du client" required>
+                            </div>
+                        </div>
+                        <div class="form-group-pro">
+                            <label for="prenom" class="input-label-pro">Prénom</label>
+                            <div class="input-wrapper-pro">
+                                <i class="fa-solid fa-user-pen"></i>
+                                <input type="text" name="prenom" id="prenom" class="input-pro" placeholder="Prénom du client" required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row-pro">
+                        <div class="form-group-pro">
+                            <label for="email" class="input-label-pro">Email Facturation</label>
+                            <div class="input-wrapper-pro">
+                                <i class="fa-solid fa-envelope"></i>
+                                <input type="email" name="email" id="email" class="input-pro" placeholder="facture@client.com" required>
+                            </div>
+                        </div>
+                        <div class="form-group-pro">
+                            <label for="telephone" class="input-label-pro">Téléphone</label>
+                            <div class="input-wrapper-pro">
+                                <i class="fa-solid fa-phone"></i>
+                                <input type="text" name="telephone" id="telephone" class="input-pro" placeholder="Huit chiffres" required maxlength="8">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUBMIT -->
+                <div class="form-actions-pro">
+                    <button type="submit" class="btn-submit-pro">
+                        <i class="fa-solid fa-check-double"></i> Confirmer l'Opération
+                    </button>
+                    
+                    <div class="info-badge-pro">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <p>Les paiements via <strong>Wallet</strong> créditent 5% de cashback à l'utilisateur.</p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const userSelect = document.getElementById('user_id');
+        const subscriptionSelect = document.getElementById('subscription_id');
+
+        if (!userSelect || !subscriptionSelect) {
+            return;
+        }
+
+        const subscriptionOptions = Array.from(subscriptionSelect.querySelectorAll('option[data-user-id]'));
+
+        const refreshSubscriptions = () => {
+            const selectedUserId = userSelect.value;
+            subscriptionSelect.value = '';
+
+            subscriptionOptions.forEach((option) => {
+                option.hidden = !selectedUserId || option.dataset.userId !== selectedUserId;
+            });
+        };
+
+        refreshSubscriptions();
+        userSelect.addEventListener('change', () => {
+            refreshSubscriptions();
+            // Pre-fill email
+            const selectedOption = userSelect.options[userSelect.selectedIndex];
+            const emailInput = document.getElementById('email');
+            if (selectedOption.dataset.email && emailInput) {
+                emailInput.value = selectedOption.dataset.email;
+            }
+        });
+
+        // --- REAL-TIME VALIDATION ---
+        const inputs = {
+            nom: { el: document.getElementById('nom'), regex: /^[a-zA-ZÀ-ÿ\s-]{2,30}$/ },
+            prenom: { el: document.getElementById('prenom'), regex: /^[a-zA-ZÀ-ÿ\s-]{2,30}$/ },
+            email: { el: document.getElementById('email'), regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
+            telephone: { el: document.getElementById('telephone'), regex: /^[0-9]{8}$/ },
+            amount: { el: document.getElementById('amount'), custom: (v) => parseFloat(v) > 0 }
+        };
+
+        const updateVisuals = (key) => {
+            const field = inputs[key];
+            if (!field.el) return;
+
+            const val = field.el.value;
+            let isValid = false;
+
+            if (field.regex) {
+                isValid = field.regex.test(val);
+            } else if (field.custom) {
+                isValid = field.custom(val);
+            }
+
+            if (isValid) {
+                field.el.style.borderColor = '#10b981';
+                field.el.style.backgroundColor = '#f6fffa';
+            } else {
+                field.el.style.borderColor = '#ef4444';
+                field.el.style.backgroundColor = '#fffafb';
+            }
+            return isValid;
+        };
+
+        Object.keys(inputs).forEach(key => {
+            inputs[key].el?.addEventListener('input', () => updateVisuals(key));
+        });
+
+        form?.addEventListener('submit', (e) => {
+            let formValid = true;
+            Object.keys(inputs).forEach(key => {
+                if (!updateVisuals(key)) formValid = false;
+            });
+
+            if (!formValid) {
+                e.preventDefault();
+                alert("Veuillez corriger les erreurs dans le formulaire (les champs en rouge).");
+            }
+        });
+    });
+</script>
+
+<style>
+    .edit-admin-wrapper { padding: 4rem 5% 6rem; background: var(--cream); min-height: 100vh; }
+    
+    /* HEADER */
+    .edit-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3.5rem; }
+    .breadcrumb-nav { display: flex; align-items: center; gap: 0.6rem; font-size: 0.75rem; color: var(--muted); margin-top: 0.8rem; }
+    .breadcrumb-nav a { color: var(--gold); text-decoration: none; font-weight: 600; }
+    .breadcrumb-nav i { font-size: 0.5rem; opacity: 0.5; }
+    
+    .btn-navy-outline { background: var(--navy); color: var(--gold); border: 1px solid rgba(201,168,76,0.3); padding: 0.8rem 1.6rem; border-radius: 10px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 0.6rem; transition: all 0.3s; }
+    .btn-navy-outline:hover { background: var(--gold); color: var(--navy); }
+
+    /* FORM CARD */
+    .form-container-centered { max-width: 750px; margin: 0 auto; }
+    .premium-form-card { background: var(--white); border-radius: 30px; overflow: hidden; padding: 3.5rem; border: 1px solid rgba(201,168,76,0.1); }
+    .shadow-premium { box-shadow: 0 20px 60px rgba(13,27,42,0.06); }
+
+    .card-hero { display: flex; align-items: center; gap: 2rem; margin-bottom: 3.5rem; }
+    .hero-icon { width: 70px; height: 70px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+    .hero-icon.info-mode { background: rgba(13, 27, 42, 0.05); color: #010816; }
+    .hero-text h2 { font-family: 'Playfair Display', serif; color: #010816; font-size: 1.8rem; margin-bottom: 0.3rem;}
+    .hero-text p { font-size: 0.75rem; color: #64748b; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    /* FORM STYLES */
+    .form-group-pro { margin-bottom: 2rem; }
+    .form-row-pro { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem; }
+    
+    .input-label-pro { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; color: #64748b; margin-bottom: 1rem; }
+    
+    .input-wrapper-pro { position: relative; display: flex; align-items: center; }
+    .input-wrapper-pro i { position: absolute; left: 1.25rem; color: #c9a84c; font-size: 1rem; pointer-events: none; }
+    
+    .input-pro { width: 100%; background: #f8fafb !important; border: 2px solid #f1f4f8; padding: 1.1rem 1.2rem 1.1rem 3.5rem; border-radius: 15px; font-weight: 700 !important; color: #010816 !important; font-family: 'Plus Jakarta Sans', sans-serif; outline: none; transition: all 0.3s; }
+    .input-pro:focus { background: white; border-color: #c9a84c; box-shadow: 0 10px 20px rgba(201,168,76,0.1); }
+    
+    .input-pro.highlighted { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 800; }
+    .input-pro.select-pro { cursor: pointer; appearance: none; }
+
+    /* SUBMIT */
+    .form-actions-pro { text-align: center; margin-top: 3.5rem; }
+    .btn-submit-pro { width: 100%; background: linear-gradient(135deg, #c9a84c, #e5c158); color: #010816; border: none; padding: 1.3rem; border-radius: 15px; font-weight: 800; font-size: 1.05rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.8rem; transition: transform 0.3s, box-shadow 0.3s; font-family: 'Plus Jakarta Sans', sans-serif; }
+    .btn-submit-pro:hover { transform: translateY(-3px); box-shadow: 0 15px 40px rgba(201,168,76,0.35); }
+    
+    .info-badge-pro { margin-top: 1.8rem; background: #f9fafb; padding: 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 0.8rem; font-size: 0.75rem; color: #64748b; border: 1px dashed #e5e7eb; }
+    .info-badge-pro i { color: #c9a84c; font-size: 1rem; }
+    .info-badge-pro strong { color: #010816; }
+
+    @media (max-width: 600px) {
+        .premium-form-card { padding: 2rem; }
+        .form-row-pro { grid-template-columns: 1fr; }
+        .card-hero { flex-direction: column; text-align: center; gap: 1rem; }
+    }
+</style>
+{% endblock %}

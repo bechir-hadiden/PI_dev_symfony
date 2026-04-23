@@ -1,0 +1,621 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Finaliser votre Réservation{% endblock %}
+
+{% block body %}
+<div class="checkout-wrapper">
+    <!-- STEPPER HEADER -->
+    <div class="checkout-stepper-container fade-in">
+        <ul class="checkout-stepper">
+            <li class="stepper-item active" data-step="1">
+                <span class="step-num">1</span>
+                <span class="step-txt">Détails</span>
+            </li>
+            <li class="stepper-divider"></li>
+            <li class="stepper-item" data-step="2">
+                <span class="step-num">2</span>
+                <span class="step-txt">Client</span>
+            </li>
+            <li class="stepper-divider"></li>
+            <li class="stepper-item" data-step="3">
+                <span class="step-num">3</span>
+                <span class="step-txt">Paiement</span>
+            </li>
+        </ul>
+    </div>
+
+    <div class="checkout-main-grid fade-in delay-1">
+        <!-- FORM COLUMN (LEFT) -->
+        <div class="checkout-form-column">
+            <form id="checkoutForm" method="post" class="checkout-form shadow-premium">
+                
+                {% for label, messages in app.flashes %}
+                    {% for message in messages %}
+                        <div class="payment-alert {{ label == 'error' ? 'error' : 'success' }}">
+                            <i class="fas {{ label == 'error' ? 'fa-exclamation-circle' : 'fa-check-circle' }}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endfor %}                <!-- SECURITY SESSION TIMER (PREMIUM REDESIGN) -->
+                <div class="security-clock-banner fade-in mb-4" id="timeoutBanner" data-expires="{{ reservation ? reservation.expiresAt|date('c') : (date()|date_modify('+15 minutes')|date('c')) }}">
+                    <div class="clock-glass-card">
+                        <div class="clock-content">
+                            <div class="clock-icon">
+                                <div class="pulse-ring"></div>
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="clock-text">
+                                <span class="clock-label">Session de Paiement Sécurisée</span>
+                                <div class="clock-countdown" id="countdownClock">15:00</div>
+                            </div>
+                        </div>
+                        <div class="clock-progress-track">
+                            <div class="clock-progress-fill" id="timeoutProgress"></div>
+                        </div>
+                    </div>
+                    <div class="clock-notice mt-2">
+                        <i class="fas fa-shield-alt"></i> Temps restant pour valider vos tarifs actuels et votre réservation.
+                    </div>
+                </div>
+
+                <style>
+                    .security-clock-banner {
+                        position: relative;
+                        z-index: 10;
+                    }
+                    .clock-glass-card {
+                        background: rgba(255, 255, 255, 0.4);
+                        backdrop-filter: blur(15px);
+                        border-radius: 20px;
+                        padding: 15px 25px;
+                        border: 1px solid rgba(255, 255, 255, 0.6);
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+                        display: flex;
+                        flex-direction: column;
+                        gap: 12px;
+                    }
+                    .clock-content {
+                        display: flex;
+                        align-items: center;
+                        gap: 20px;
+                    }
+                    .clock-icon {
+                        width: 50px;
+                        height: 50px;
+                        background: var(--navy);
+                        color: var(--gold);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1.4rem;
+                        position: relative;
+                    }
+                    .pulse-ring {
+                        position: absolute;
+                        width: 100%;
+                        height: 100%;
+                        border: 2px solid var(--gold);
+                        border-radius: 50%;
+                        animation: pulse-ring 2s infinite;
+                        opacity: 0;
+                    }
+                    @keyframes pulse-ring {
+                        0% { transform: scale(0.9); opacity: 0.5; }
+                        100% { transform: scale(1.5); opacity: 0; }
+                    }
+                    .clock-text { display: flex; flex-direction: column; }
+                    .clock-label { font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+                    .clock-countdown { font-size: 1.8rem; font-weight: 900; color: #010816; font-family: 'Courier New', monospace; }
+                    
+                    .clock-progress-track {
+                        height: 6px;
+                        background: #e2e8f0;
+                        border-radius: 10px;
+                        overflow: hidden;
+                    }
+                    .clock-progress-fill {
+                        height: 100%;
+                        width: 100%;
+                        background: linear-gradient(90deg, #10b981, #c9a84c);
+                        transition: width 1s linear;
+                    }
+                    .clock-notice {
+                        font-size: 0.7rem;
+                        font-weight: 700;
+                        color: #64748b;
+                        padding-left: 5px;
+                    }
+                    /* URGENCY STATE */
+                    .urgent-timer .clock-countdown { color: #ef4444; animation: blink-fast 1s infinite; }
+                    .urgent-timer .clock-progress-fill { background: #ef4444; }
+                    @keyframes blink-fast { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+                </style>
+
+                <!-- STEP 1: AMOUNT & SERVICE -->
+                <div class="step-pane active" id="step1">
+                    <div class="step-header-pro">
+                        <h2 class="step-title">Détails de la <em>Transaction</em></h2>
+                        <p class="step-subtitle">Saisissez le montant et choisissez le service associé.</p>
+                    </div>
+
+                    <div class="amount-hero-section">
+                        <label for="amount" class="input-label">Montant à régler</label>
+                        <div class="amount-input-wrapper">
+                            <input type="number" step="0.01" name="amount" id="amount" class="premium-amount-input" placeholder="0.00" required autofocus>
+                            <span class="currency-tag">TND</span>
+                        </div>
+                        <div class="amount-underline"></div>
+                        
+                        <!-- LIVE CURRENCY CONVERSION -->
+                        <div class="conversion-container mt-3 text-center" id="conversionContainer" style="display:none;">
+                            <span class="badge rounded-pill bg-dark-soft p-2 px-3" style="border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);">
+                                <i class="fas fa-exchange-alt text-gold me-2"></i>
+                                <span class="text-white-50 small">Équivalant à :</span>
+                                <strong class="text-white ms-1" id="eurAmount">0.00 €</strong>
+                                <span class="ms-2 badge bg-primary-soft text-primary small" style="font-size: 0.6rem;">TAUX: {{ eur_rate|number_format(3) }}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    {% if subscriptions is not empty %}
+                        <div class="sub-selection-block">
+                            <p class="input-label centered">Type de Réservation</p>
+                            <div class="subscription-select-wrapper">
+                                <i class="fas fa-crown"></i>
+                                <select name="subscription_id" id="subscription_id" class="subscription-select">
+                                    <option value="" data-name="Paiement Libre">Paiement Libre / Voyage</option>
+                                    {% for sub in subscriptions %}
+                                        <option value="{{ sub.id }}" data-name="Abonnement {{ sub.plan|capitalize }}">
+                                            Plan {{ sub.plan|capitalize }} - {{ sub.price }} TND
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="step-nav">
+                        <button type="button" class="btn-next" onclick="goToStep(2)">
+                            Suivant : Informations Client <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: BILLING INFO -->
+                <div class="step-pane" id="step2">
+                    <div class="step-header-pro">
+                        <h2 class="step-title">Informations <em>Personnelles</em></h2>
+                        <p class="step-subtitle">Ces détails apparaîtront sur votre facture officielle.</p>
+                    </div>
+
+                    <div class="billing-grid-pro">
+                        <div class="input-group-pro">
+                            <label>Prénom</label>
+                            <div class="input-wrapper-pro">
+                                <i class="fas fa-user-tag"></i>
+                                <input type="text" name="prenom" id="prenom" placeholder="Prénoms" required>
+                            </div>
+                            <span class="field-error-msg" id="error_prenom"></span>
+                        </div>
+                        <div class="input-group-pro">
+                            <label>Nom</label>
+                            <div class="input-wrapper-pro">
+                                <i class="fas fa-user-tie"></i>
+                                <input type="text" name="nom" id="nom" placeholder="Nom de famille" required>
+                            </div>
+                            <span class="field-error-msg" id="error_nom"></span>
+                        </div>
+                        <div class="input-group-pro full-width">
+                            <label>Adresse E-mail</label>
+                            <div class="input-wrapper-pro">
+                                <i class="fas fa-envelope"></i>
+                                <input type="email" name="email" id="email" placeholder="example@voyage-elite.com">
+                            </div>
+                            <span class="field-error-msg" id="error_email"></span>
+                        </div>
+                        <div class="input-group-pro full-width">
+                            <label>Téléphone</label>
+                            <div class="input-wrapper-pro">
+                                <i class="fas fa-phone"></i>
+                                <input type="tel" name="telephone" id="telephone" placeholder="+216 ...">
+                            </div>
+                            <span class="field-error-msg" id="error_telephone"></span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem;" id="step2_global_error"></div>
+
+                    <div class="step-nav dual">
+                        <button type="button" class="btn-back" onclick="goToStep(1)">
+                            <i class="fas fa-arrow-left"></i> Retour
+                        </button>
+                        <button type="button" class="btn-next" onclick="goToStep(3)">
+                            Suivant : Mode de Paiement <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: PAYMENT METHOD -->
+                <div class="step-pane" id="step3">
+                    <div class="step-header-pro">
+                        <h2 class="step-title">Mode de <em>Règlement</em></h2>
+                        <p class="step-subtitle">Sélectionnez votre canal de paiement sécurisé.</p>
+                    </div>
+
+                    <div class="methods-grid-pro">
+                        <div class="method-option-pro">
+                            <input type="radio" name="method" id="method_stripe" value="Stripe" checked>
+                            <label for="method_stripe" class="method-card-pro">
+                                <i class="fab fa-stripe-s"></i>
+                                <span>Carte Bancaire</span>
+                                <small>Sécurisé par Stripe</small>
+                                <div class="check-mark"><i class="fas fa-check"></i></div>
+                            </label>
+                        </div>
+                        <div class="method-option-pro">
+                            <input type="radio" name="method" id="method_wallet" value="Wallet">
+                            <label for="method_wallet" class="method-card-pro">
+                                <i class="fas fa-wallet"></i>
+                                <span>Mon Wallet</span>
+                                <small>Solde: {{ (user.walletBalance ?? 0)|number_format(2) }} TND</small>
+                                <div class="check-mark"><i class="fas fa-check"></i></div>
+                                <div class="tag-loyalty">+5% Pts</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="security-trust">
+                        <i class="fas fa-shield-halved"></i>
+                        <span>Transaction encryptée SSL 256-Bit</span>
+                    </div>
+
+                    <div class="step-nav dual">
+                        <button type="button" class="btn-back" onclick="goToStep(2)">
+                            <i class="fas fa-arrow-left"></i> Retour
+                        </button>
+                        <button type="submit" class="btn-submit-pro">
+                            Confirmer & Payer <i class="fas fa-lock"></i>
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+
+        <!-- SIDEBAR SUMMARY (RIGHT) -->
+        <div class="checkout-sidebar-column">
+            <div class="order-summary-card shadow-premium">
+                <h3 class="summary-title">Récapitulatif</h3>
+                
+                <div class="summary-line">
+                    <span class="summary-label">Objet</span>
+                    <span class="summary-value" id="summary_service">Paiement Libre</span>
+                </div>
+                <div class="summary-line">
+                    <span class="summary-label">Client</span>
+                    <span class="summary-value" id="summary_client">Non renseigné</span>
+                </div>
+                <div class="summary-divider"></div>
+                
+                <div class="summary-total-block">
+                    <span class="total-label">Total à payer</span>
+                    <div class="total-value-container">
+                        <span id="summary_total">0.00</span>
+                        <span class="curr">TND</span>
+                    </div>
+                </div>
+
+                <ul class="summary-perks">
+                    <li><i class="fas fa-check-circle"></i> Facture PDF instantanée</li>
+                    <li><i class="fas fa-check-circle"></i> Points de fidélité inclus</li>
+                    <li><i class="fas fa-check-circle"></i> Service client 24/7</li>
+                </ul>
+            </div>
+
+            <div class="help-micro-card">
+                <i class="fas fa-headset"></i>
+                <p>Besoin d'aide ? <span>Contactez le support</span></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --step-bg: #f8fafc;
+        --step-active: var(--gold);
+        --step-done: var(--navy);
+    }
+
+    .checkout-wrapper { padding: 8rem 5% 4rem; min-height: 100vh; background: var(--cream); }
+    
+    /* STEPPER UI */
+    .checkout-stepper-container { max-width: 600px; margin: 0 auto 3rem; }
+    .checkout-stepper { display: flex; align-items: center; justify-content: space-between; list-style: none; padding: 0; }
+    .stepper-item { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; position: relative; width: 80px; }
+    .step-num { width: 34px; height: 34px; border-radius: 50%; background: #fff; border: 2px solid #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--muted); transition: all 0.3s; }
+    .step-txt { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+    .stepper-divider { flex: 1; height: 2px; background: #e2e8f0; margin: 0 10px; margin-top: -15px; }
+
+    .stepper-item.active .step-num { background: var(--gold); border-color: var(--gold); color: var(--navy); box-shadow: 0 0 15px rgba(201,168,76,0.3); }
+    .stepper-item.active .step-txt { color: var(--navy); }
+    .stepper-item.done .step-num { background: var(--navy); border-color: var(--navy); color: #fff; }
+
+    /* LAYOUT GRID */
+    .checkout-main-grid { display: grid; grid-template-columns: 1fr 340px; gap: 2.5rem; max-width: 1100px; margin: 0 auto; }
+
+    /* FORMS & PANES */
+    .checkout-form { background: #fff; border-radius: 24px; padding: 3rem; border: 1px solid rgba(0,0,0,0.04); }
+    .step-pane { display: none; }
+    .step-pane.active { display: block; animation: slideUp 0.5s ease; }
+    
+    .step-header-pro { margin-bottom: 2.5rem; }
+    .step-title { font-family: 'Playfair Display', serif; font-size: 1.8rem; color: var(--navy); margin-bottom: 0.4rem; }
+    .step-subtitle { color: var(--muted); font-size: 0.85rem; }
+
+    /* HERO AMOUNT */
+    .amount-hero-section { text-align: center; margin-bottom: 3rem; background: #fcfcfd; padding: 2rem; border-radius: 20px; border: 1px dashed #e2e8f0; }
+    .premium-amount-input { background: transparent; border: none; outline: none; font-size: 4rem; font-weight: 800; color: var(--navy); width: 220px; text-align: center; font-family: 'Playfair Display', serif; }
+    .currency-tag { font-size: 1.5rem; font-weight: 700; color: var(--gold); }
+    .amount-underline { width: 60px; height: 4px; background: var(--gold); margin: 0 auto; border-radius: 10px; }
+
+    /* BILLING GRID */
+    .billing-grid-pro { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    .full-width { grid-column: span 2; }
+    .input-group-pro { display: flex; flex-direction: column; gap: 0.5rem; }
+    .input-group-pro label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; color: var(--muted); padding-left: 0.5rem; }
+    .input-wrapper-pro { position: relative; }
+    .input-wrapper-pro i { position: absolute; left: 1.1rem; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 0.9rem; }
+    .input-wrapper-pro input { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.85rem 1rem 0.85rem 3rem; color: var(--navy); font-weight: 600; outline: none; transition: all 0.3s; }
+    .input-wrapper-pro input:focus { border-color: var(--gold); background: #fff; box-shadow: 0 5px 15px rgba(201,168,76,0.1); }
+    
+    .input-wrapper-pro input.is-invalid { border-color: #ef4444 !important; background: #fff1f2 !important; }
+    .input-wrapper-pro input.is-valid { border-color: #10b981 !important; background: #f0fdf4 !important; }
+    
+    .field-error-msg { font-size: 0.65rem; color: #ef4444; font-weight: 700; margin-top: 0.35rem; padding-left: 0.5rem; display: none; }
+    .input-wrapper-pro input.is-invalid + i { color: #ef4444 !important; }
+
+    /* METHODS GRID */
+    .methods-grid-pro { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+    .method-option-pro input { display: none; }
+    .method-card-pro { display: flex; flex-direction: column; align-items: center; gap: 0.6rem; background: #f9fafb; border: 1px solid #e2e8f0; border-radius: 18px; padding: 1.8rem 1rem; cursor: pointer; transition: all 0.3s; position: relative; }
+    .method-card-pro i { font-size: 2rem; color: var(--muted); }
+    .method-card-pro span { font-weight: 700; color: var(--navy); font-size: 0.95rem; }
+    .method-card-pro small { font-size: 0.7rem; color: var(--muted); }
+    .check-mark { position: absolute; top: 0.8rem; right: 0.8rem; width: 22px; height: 22px; background: var(--gold); color: var(--navy); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; opacity: 0; transform: scale(0.5); transition: all 0.3s; }
+    
+    .method-option-pro input:checked + .method-card-pro { border-color: var(--gold); background: #fff; box-shadow: 0 10px 25px rgba(201,168,76,0.15); }
+    .method-option-pro input:checked + .method-card-pro i { color: var(--gold); }
+    .method-option-pro input:checked + .method-card-pro .check-mark { opacity: 1; transform: scale(1); }
+    .tag-loyalty { position: absolute; bottom: 10px; background: var(--gold); color: var(--navy); font-size: 0.6rem; font-weight: 800; padding: 0.15rem 0.5rem; border-radius: 5px; }
+
+    /* NAV BUTTONS */
+    .step-nav { margin-top: 3rem; }
+    .step-nav.dual { display: flex; justify-content: space-between; gap: 1rem; }
+    .btn-next, .btn-submit-pro { flex: 1; background: linear-gradient(135deg, var(--gold), var(--gold-l)); border: none; color: var(--navy); padding: 1.1rem; border-radius: 14px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.8rem; transition: all 0.3s; }
+    .btn-next:hover, .btn-submit-pro:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(201,168,76,0.4); }
+    .btn-back { background: transparent; border: 1px solid #e2e8f0; color: var(--muted); padding: 1.1rem 1.8rem; border-radius: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .btn-back:hover { border-color: var(--navy); color: var(--navy); }
+
+    /* SIDEBAR SUMMARY */
+    .order-summary-card { background: #fff; border-radius: 24px; padding: 2rem; position: sticky; top: 6rem; }
+    .summary-title { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 1.5rem; }
+    .summary-line { display: flex; justify-content: space-between; margin-bottom: 0.8rem; }
+    .summary-label { color: var(--muted); font-size: 0.75rem; font-weight: 600; }
+    .summary-value { color: var(--navy); font-size: 0.8rem; font-weight: 700; text-align: right; }
+    .summary-divider { height: 1px; background: #f1f5f9; margin: 1.2rem 0; }
+    .summary-total-block { margin-bottom: 1.5rem; }
+    .total-label { display: block; font-size: 0.65rem; color: var(--muted); font-weight: 700; text-transform: uppercase; margin-bottom: 0.3rem; }
+    .total-value-container { display: flex; align-items: baseline; gap: 0.3rem; color: var(--navy); font-size: 2.2rem; font-weight: 800; font-family: 'Playfair Display', serif; }
+    .total-value-container .curr { font-size: 1rem; color: var(--gold); }
+    .summary-perks { list-style: none; padding: 0.8rem; background: #fafbfd; border-radius: 12px; }
+    .summary-perks li { display: flex; align-items: center; gap: 0.6rem; font-size: 0.7rem; color: var(--muted); margin-bottom: 0.5rem; font-weight: 500; }
+    .summary-perks i { color: #10b981; }
+
+    .help-micro-card { margin-top: 1.5rem; text-align: center; padding: 1.5rem; }
+    .help-micro-card i { font-size: 1.5rem; color: var(--gold); margin-bottom: 0.6rem; }
+    .help-micro-card p { font-size: 0.75rem; color: var(--muted); }
+    .help-micro-card span { color: var(--gold); font-weight: 700; cursor: pointer; }
+
+    .security-trust { display: flex; align-items: center; justify-content: center; gap: 0.6rem; color: #64748b; font-size: 0.65rem; font-weight: 600; margin: 1.5rem 0; }
+    .security-trust i { color: #10b981; }
+
+    .sub-selection-block { margin-top: 2rem; }
+    .subscription-select { width: 100%; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 0.85rem 1rem 0.85rem 2.8rem; font-weight: 600; outline: none; }
+
+    /* TIMEOUT BANNER */
+    .reservation-timeout-banner { background: #0f172a; border-radius: 20px; overflow: hidden; margin-bottom: 2.5rem; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+    .timeout-content { display: flex; align-items: center; gap: 1.5rem; padding: 1.2rem 1.8rem; }
+    .timeout-icon { width: 45px; height: 45px; background: rgba(239,68,68,0.15); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #ef4444; }
+    .timeout-text { display: flex; flex-direction: column; }
+    .timeout-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.5px; font-weight: 800; color: #94a3b8; margin-bottom: 0.2rem;}
+    .timeout-clock { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.4rem; color: #fff; letter-spacing: -0.5px; }
+    .timeout-progress-bar { height: 4px; background: rgba(255,255,255,0.05); width: 100%; }
+    .timeout-progress { height: 100%; background: linear-gradient(90deg, #ef4444, #f87171); width: 100%; transition: width 1s linear; }
+
+    .pulse-red { animation: pulseRed 2s infinite; }
+    @keyframes pulseRed { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.7; } 100% { transform: scale(1); opacity: 1; } }
+    .urgent-timer .timeout-clock { color: #f87171; text-shadow: 0 0 10px rgba(239,68,68,0.4); }
+
+    @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 900px) {
+        .checkout-main-grid { grid-template-columns: 1fr; }
+        .checkout-sidebar-column { order: -1; }
+        .order-summary-card { position: relative; top: 0; margin-bottom: 1rem; }
+    }
+</style>
+
+<script>
+    function validateEmail(email) {
+        return String(email).toLowerCase().match(/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/);
+    }
+
+    function validatePhone(phone) {
+        return String(phone).match(/^[0-9]{1,8}$/);
+    }
+
+    function validateName(name) {
+        return name.length > 0 && name.length <= 15 && name.match(/^[a-zA-ZÀ-ÿ\s-]+$/);
+    }
+
+    // CURRENCY CONVERSION LOGIC
+    const amountInput = document.getElementById('amount');
+    const eurContainer = document.getElementById('conversionContainer');
+    const eurDisplay = document.getElementById('eurAmount');
+    const eurRate = {{ eur_rate }};
+
+    if (amountInput) {
+        amountInput.addEventListener('input', function() {
+            const val = parseFloat(this.value);
+            if (val > 0) {
+                const eur = (val * eurRate).toFixed(2);
+                eurDisplay.textContent = eur + ' €';
+                eurContainer.style.display = 'block';
+                eurContainer.style.opacity = '1';
+            } else {
+                eurContainer.style.display = 'none';
+            }
+        });
+    }
+
+    function goToStep(step) {
+        const panes = document.querySelectorAll('.step-pane');
+        const activePane = document.querySelector('.step-pane.active');
+        const currentStepId = activePane ? activePane.id : 'step1';
+        
+        // Validation for moving FORWARD
+        if (step > 1 && currentStepId === 'step1') {
+            const amount = document.getElementById('amount').value;
+            if (!amount || amount <= 0) {
+                alert('Veuillez entrer un montant valide supérieur à zéro.');
+                return;
+            }
+        }
+
+        if (step > 2 && currentStepId === 'step2') {
+            let isValid = true;
+            const nom = document.getElementById('nom');
+            const prenom = document.getElementById('prenom');
+            const email = document.getElementById('email');
+            const tel = document.getElementById('telephone');
+
+            if (!validateName(nom.value.trim())) { toggleError(nom, 'error_nom', 'Max 15 lettres, pas de chiffres', true); isValid = false; }
+            else { toggleError(nom, 'error_nom', '', false); }
+
+            if (!validateName(prenom.value.trim())) { toggleError(prenom, 'error_prenom', 'Max 15 lettres, pas de chiffres', true); isValid = false; }
+            else { toggleError(prenom, 'error_prenom', '', false); }
+
+            if (!validateEmail(email.value)) { toggleError(email, 'error_email', 'Email invalide', true); isValid = false; }
+            else { toggleError(email, 'error_email', '', false); }
+
+            if (!validatePhone(tel.value)) { toggleError(tel, 'error_telephone', 'Max 8 chiffres uniquement', true); isValid = false; }
+            else { toggleError(tel, 'error_telephone', '', false); }
+
+            if (!isValid) return;
+        }
+
+        // Switch panes
+        panes.forEach(p => p.classList.remove('active'));
+        document.getElementById('step' + step).classList.add('active');
+
+        // Update Stepper UI
+        document.querySelectorAll('.stepper-item').forEach(item => {
+            const s = parseInt(item.getAttribute('data-step'));
+            item.classList.remove('active', 'done');
+            if (s === step) item.classList.add('active');
+            if (s < step) item.classList.add('done');
+        });
+
+        window.scrollTo({ top: 150, behavior: 'smooth' });
+    }
+
+    function toggleError(input, errorId, msg, show) {
+        const errorEl = document.getElementById(errorId);
+        if (show) {
+            input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
+            if (errorEl) { errorEl.innerText = msg; errorEl.style.display = 'block'; }
+        } else {
+            input.classList.remove('is-invalid');
+            input.classList.add('is-valid');
+            if (errorEl) { errorEl.style.display = 'none'; }
+        }
+    }
+
+    // Live Sync & Real-time validation listeners
+    const trackedFields = ['amount', 'nom', 'prenom', 'email', 'telephone', 'subscription_id'];
+    trackedFields.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('input', () => {
+            updateSummary();
+            // instant validation as typing
+            if (id === 'email' && el.value) toggleError(el, 'error_email', 'Email invalide', !validateEmail(el.value));
+            if (id === 'telephone' && el.value) toggleError(el, 'error_telephone', 'Max 8 chiffres', !validatePhone(el.value));
+            if (id === 'nom' && el.value) toggleError(el, 'error_nom', 'Max 15 lettres', !validateName(el.value));
+            if (id === 'prenom' && el.value) toggleError(el, 'error_prenom', 'Max 15 lettres', !validateName(el.value));
+        });
+    });
+
+    function updateSummary() {
+        const amount = document.getElementById('amount').value || '0.00';
+        const nom = document.getElementById('nom').value || '';
+        const prenom = document.getElementById('prenom').value || '';
+        const subSelect = document.getElementById('subscription_id');
+        
+        document.getElementById('summary_total').innerText = parseFloat(amount).toFixed(2);
+        document.getElementById('summary_client').innerText = (prenom || nom) ? `${prenom} ${nom}` : 'Non renseigné';
+
+        if (subSelect && subSelect.selectedIndex > 0) {
+            const selectedText = subSelect.options[subSelect.selectedIndex].getAttribute('data-name');
+            document.getElementById('summary_service').innerText = selectedText;
+        } else {
+            document.getElementById('summary_service').innerText = "Paiement Simple";
+        }
+    }
+    
+    // Initial update
+    updateSummary();
+
+    // --- COUNTDOWN LOGIC ---
+    const timeoutBanner = document.getElementById('timeoutBanner');
+    if (timeoutBanner) {
+        const expiresAt = new Date(timeoutBanner.dataset.expires).getTime();
+        const countdownClock = document.getElementById('countdownClock');
+        const timeoutProgress = document.getElementById('timeoutProgress');
+        
+        // Initial distance for progress bar (assuming 15 mins = 900,000 ms)
+        const totalDuration = 15 * 60 * 1000;
+
+        const timerInterval = setInterval(() => {
+            const now = new Date().getTime();
+            const distance = expiresAt - now;
+
+            if (distance < 0) {
+                clearInterval(timerInterval);
+                countdownClock.innerText = "EXPIRÉ";
+                timeoutProgress.style.width = "0%";
+                alert("Le délai de réservation a expiré. Votre réservation a été annulée.");
+                window.location.href = "{{ path('app_user_paiement_index') }}";
+                return;
+            }
+
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            countdownClock.innerText = (minutes < 10 ? "0" : "") + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+            
+            // Progress Bar Update
+            const perc = (distance / totalDuration) * 100;
+            timeoutProgress.style.width = Math.min(100, perc) + "%";
+
+            // Urgency effect
+            if (distance < 3 * 60 * 1000) {
+                timeoutBanner.classList.add('urgent-timer');
+            }
+        }, 1000);
+    }
+</script>
+{% endblock %}

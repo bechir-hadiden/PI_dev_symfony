@@ -1,0 +1,205 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Gestion des Abonnements — VoyageElite Admin{% endblock %}
+
+{% block body %}
+<div class="admin-dashboard-wrapper">
+    <div class="container-fluid px-5">
+        
+        <!-- TOP NAVIGATION & STATS -->
+        <div class="glass-header mb-5 p-4 d-flex justify-content-between align-items-center">
+            <div>
+                <h1 class="premium-title mb-0">Gestion des <em>Abonnements</em></h1>
+                <p class="text-muted small mb-0">Moniteur de revenus et d'activité des voyageurs premium.</p>
+            </div>
+            <div class="d-flex gap-4">
+                <div class="glass-stat">
+                    <div class="icon-wrap bg-success-soft"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-content">
+                        <span class="label">ACTIFS</span>
+                        <span class="value">{{ stats.total_active }}</span>
+                    </div>
+                </div>
+                <div class="glass-stat">
+                    <div class="icon-wrap bg-gold-soft"><i class="fas fa-wallet"></i></div>
+                    <div class="stat-content">
+                        <span class="label">REVENUS</span>
+                        <span class="value">{{ stats.total_revenue|number_format(0) }} <small>TND</small></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT CARD -->
+        <div class="dashboard-card shadow-ultra border-0">
+            <div class="card-header-premium d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="accent-line"></div>
+                    <h5 class="mb-0 fw-800 text-navy">LISTE DES PLANS ACTIFS</h5>
+                </div>
+                <div class="search-premium">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Rechercher un membre...">
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover premium-table align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-4">MEMBRE</th>
+                            <th>PLAN</th>
+                            <th>VALIDITÉ</th>
+                            <th>STATUT</th>
+                            <th>PROGRESSION</th>
+                            <th class="text-end pe-4">GESTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if subscriptions is empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-5">
+                                    <div class="empty-state">
+                                        <i class="fas fa-crown fa-3x mb-3 text-gold-light"></i>
+                                        <p class="text-muted">Aucun abonnement actif pour le moment.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% else %}
+                            {% for s in subscriptions %}
+                            <tr class="premium-row">
+                                <td class="ps-4">
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-box">{{ s.user.email|slice(0, 1)|upper }}</div>
+                                        <div class="ms-3">
+                                            <div class="fw-800 text-navy mb-0">{{ s.user.email }}</div>
+                                            <span class="ref-text">REF-{{ s.id }}</span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="plan-pill {{ s.plan }}">
+                                        {{ s.plan|upper }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="date-group">
+                                        <span class="d-block small text-muted">Jusqu'au</span>
+                                        <span class="fw-700">{{ s.endDate|date('d M Y') }}</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if s.isActive %}
+                                        <div class="status-chip active">EN COURS</div>
+                                    {% elseif s.status == 'suspended' %}
+                                        <div class="status-chip suspended">SUSPENDU</div>
+                                    {% else %}
+                                        <div class="status-chip expired">EXPIRÉ</div>
+                                    {% endif %}
+                                </td>
+                                <td style="width: 200px;">
+                                    <div class="progress-container">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="percentage">{{ s.getProgressPercentage }}%</span>
+                                            <span class="remaining">{{ s.getRemainingDays }}j</span>
+                                        </div>
+                                        <div class="progress premium-progress">
+                                            <div class="progress-bar" style="width: {{ s.getProgressPercentage }}%"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end pe-4">
+                                    <div class="btn-group-premium">
+                                        {% if s.status == 'active' %}
+                                            <form action="{{ path('app_admin_subscription_suspend', {id: s.id}) }}" method="POST" class="d-inline">
+                                                <button class="btn-circle warning" title="Suspendre"><i class="fas fa-pause"></i></button>
+                                            </form>
+                                        {% elseif s.status == 'suspended' %}
+                                            <form action="{{ path('app_admin_subscription_activate', {id: s.id}) }}" method="POST" class="d-inline">
+                                                <button class="btn-circle success" title="Réactiver"><i class="fas fa-play"></i></button>
+                                            </form>
+                                        {% endif %}
+                                        <button class="btn-circle"><i class="fas fa-cog"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* GLOBAL WRAPPER */
+    .admin-dashboard-wrapper { padding-top: 140px; padding-bottom: 80px; background: #fdfdfd; min-height: 100vh; }
+    .fw-800 { font-weight: 800; }
+    .fw-700 { font-weight: 700; }
+
+    /* HEADER GLASSMORPHISM */
+    .glass-header { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.3); box-shadow: 0 8px 32px rgba(0,0,0,0.05); }
+    .premium-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: #0d1b2a; }
+    .premium-title em { color: #c9a84c; font-style: italic; }
+
+    /* GLASS STATS */
+    .glass-stat { display: flex; align-items: center; gap: 15px; padding: 10px 20px; background: white; border-radius: 18px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+    .icon-wrap { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+    .bg-success-soft { background: #ecfdf5; color: #10b981; }
+    .bg-gold-soft { background: #fffbeb; color: #c9a84c; }
+    .glass-stat .label { display: block; font-size: 0.65rem; letter-spacing: 1px; font-weight: 700; color: #94a3b8; }
+    .glass-stat .value { font-size: 1.4rem; font-weight: 800; color: #0d1b2a; line-height: 1; }
+    .glass-stat .value small { font-size: 0.7rem; color: #94a3b8; }
+
+    /* MAIN CARD */
+    .dashboard-card { background: white; border-radius: 30px; overflow: hidden; }
+    .shadow-ultra { box-shadow: 0 20px 60px rgba(13,27,42,0.06); }
+    .card-header-premium { padding: 30px 40px; background: #fff; border-bottom: 1px solid #f1f5f9; }
+    .accent-line { width: 4px; height: 24px; background: #c9a84c; border-radius: 10px; }
+    
+    .search-premium { position: relative; width: 300px; }
+    .search-premium i { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #cbd5e1; }
+    .search-premium input { width: 100%; padding: 12px 18px 12px 48px; border-radius: 15px; border: 1px solid #f1f5f9; background: #f8fafc; font-size: 0.85rem; transition: 0.3s; }
+    .search-premium input:focus { outline: none; border-color: #c9a84c; background: #fff; box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.1); }
+
+    /* TABLE STYLING */
+    .premium-table thead th { background: #f8fafc; padding: 20px; font-size: 0.7rem; letter-spacing: 1px; font-weight: 800; color: #94a3b8; border: none; }
+    .premium-row { transition: 0.3s; }
+    .premium-row:hover { background: #fafffb; }
+    
+    .avatar-box { width: 45px; height: 45px; background: #0d1b2a; color: #c9a84c; display: flex; align-items: center; justify-content: center; border-radius: 14px; font-weight: 800; font-size: 1.1rem; }
+    .ref-text { font-size: 0.65rem; color: #94a3b8; font-weight: 600; }
+
+    /* PLAN PILLS */
+    .plan-pill { display: inline-block; padding: 6px 14px; border-radius: 10px; font-size: 0.7rem; font-weight: 800; letter-spacing: 0.5px; }
+    .plan-pill.premium { background: linear-gradient(135deg, #fffbeb, #fef3c7); color: #92400e; border: 1px solid #fde68a; }
+    .plan-pill.basic { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+    /* STATUS CHIPS */
+    .status-chip { font-size: 0.65rem; font-weight: 800; padding: 5px 12px; border-radius: 50px; display: inline-flex; align-items: center; gap: 8px; }
+    .status-chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; }
+    .status-chip.active { background: #ecfdf5; color: #059669; }
+    .status-chip.active::before { background: #10b981; box-shadow: 0 0 8px #10b981; }
+    .status-chip.suspended { background: #fffbeb; color: #d97706; }
+    .status-chip.suspended::before { background: #f59e0b; }
+    .status-chip.expired { background: #fef2f2; color: #dc2626; }
+    .status-chip.expired::before { background: #ef4444; }
+
+    /* PROGRESSION */
+    .progress-container .percentage { font-size: 0.75rem; font-weight: 800; color: #0d1b2a; }
+    .progress-container .remaining { font-size: 0.65rem; font-weight: 600; color: #94a3b8; }
+    .premium-progress { height: 8px; border-radius: 20px; background: #f1f5f9; overflow: visible; }
+    .premium-progress .progress-bar { background: #c9a84c; border-radius: 20px; box-shadow: 0 4px 10px rgba(201, 168, 76, 0.3); }
+
+    /* BUTTONS */
+    .btn-group-premium { display: flex; gap: 10px; justify-content: flex-end; }
+    .btn-circle { width: 38px; height: 38px; border-radius: 50%; border: 1px solid #f1f5f9; background: white; color: #94a3b8; display: flex; align-items: center; justify-content: center; transition: 0.3s; cursor: pointer; }
+    .btn-circle:hover { transform: scale(1.1); box-shadow: 0 5px 15px rgba(0,0,0,0.08); color: #0d1b2a; }
+    .btn-circle.warning:hover { color: #f59e0b; border-color: #fce7ba; background: #fffbeb; }
+    .btn-circle.success:hover { color: #10b981; border-color: #bbf7d0; background: #f0fdf4; }
+
+    .empty-state { opacity: 0.4; }
+    .text-gold-light { color: #fde68a; }
+</style>
+{% endblock %}

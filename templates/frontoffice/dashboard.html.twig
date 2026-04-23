@@ -1,0 +1,243 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Mon Espace Elite - VoyageElite{% endblock %}
+
+{% block body %}
+<div class="elite-hub-container">
+    <!-- TOP HEADER -->
+    <header class="hub-header fade-in">
+        <div class="header-content">
+            <div class="welcome-tag">
+                <span class="status-indicator live"></span>
+                Espace Membre Privilège
+            </div>
+            <h1 class="hub-title">Bienvenue au Hub Elite, <em>{{ user.email|split('@')[0]|capitalize }}</em></h1>
+            <p class="hub-subtitle">Gérez vos privilèges, finances et mobilités en un seul lieu.</p>
+        </div>
+        <div class="header-meta">
+            <div class="meta-item">
+                <span class="m-label">Membre depuis</span>
+                <span class="m-value">2024</span>
+            </div>
+            <div class="divider-v"></div>
+            <div class="meta-item">
+                <span class="m-label">ID Membre</span>
+                <span class="m-value">#{{ user.id|format('%04d') }}</span>
+            </div>
+        </div>
+    </header>
+
+    <div class="hub-grid">
+        <!-- LEFT COLUMN: STATUS & WALLET -->
+        <div class="hub-col-side fade-in delay-1">
+            <!-- WALLET CARD (Redesigned & Fixed) -->
+            <div class="premium-hub-card wallet">
+                <div class="card-icon-top"><i class="fa-solid fa-wallet"></i></div>
+                <div class="wallet-body">
+                    <span class="card-label">Solde VoyageElite</span>
+                    <div class="wallet-balance-row">
+                        <span class="balance-amount">{{ user.walletBalance|number_format(2, '.', ' ') }}</span>
+                        <span class="currency">TND</span>
+                    </div>
+                    <div class="compte-badge">
+                        <i class="fa-solid fa-circle-check"></i>
+                        Compte Vérifié
+                    </div>
+                </div>
+                <div class="wallet-actions">
+                    <a href="{{ path('app_user_paiement_new') }}" class="btn-recharger-gold">
+                        <i class="fa-solid fa-circle-plus"></i> Recharger
+                    </a>
+                </div>
+            </div>
+
+            <!-- LOYALTY CARD -->
+            <div class="premium-hub-card loyalty">
+                <div class="loyalty-header">
+                    <i class="fa-solid fa-crown"></i>
+                    <span>Points Elite</span>
+                </div>
+                <div class="loyalty-value">{{ user.loyaltyPoints }}</div>
+                <div class="loyalty-footer">
+                    <div class="progress-bar-container">
+                        <div class="progress-fill" style="width: 70%;"></div>
+                    </div>
+                    <span class="loyalty-subtext">+10 pts par transaction validée</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER/RIGHT COLUMN: ACTIVITIES & HUB ACTIONS -->
+        <div class="hub-col-main fade-in delay-2">
+            <!-- QUICK ACTIONS GRID -->
+            <div class="hub-action-row">
+                <a href="{{ path('app_user_transport_index') }}" class="hub-action-box">
+                    <div class="hb-icon"><i class="fa-solid fa-car-side"></i></div>
+                    <div class="hb-text">
+                        <h5>Transports</h5>
+                        <p>Réserver un trajet</p>
+                    </div>
+                </a>
+                <a href="{{ path('app_user_paiement_index') }}" class="hub-action-box">
+                    <div class="hb-icon"><i class="fa-solid fa-file-invoice"></i></div>
+                    <div class="hb-text">
+                        <h5>Mes Factures</h5>
+                        <p>Historique complet</p>
+                    </div>
+                </a>
+                <a href="{{ path('voyage_index') }}" class="hub-action-box">
+                    <div class="hb-icon"><i class="fa-solid fa-plane"></i></div>
+                    <div class="hb-text">
+                        <h5>Voyages</h5>
+                        <p>Explorer le catalogue</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- COMBINED ACTIVITY FEED -->
+            <div class="hub-activity-container shadow-premium">
+                <div class="act-header">
+                    <h3><i class="fa-solid fa-bolt-lightning"></i> Activités Récentes</h3>
+                </div>
+                
+                <div class="hub-tabs-container">
+                    <div class="feed-section">
+                        <h4 class="feed-title">Finances</h4>
+                        <div class="feed-list">
+                            {% for p in recent_payments %}
+                                <div class="feed-item">
+                                    <div class="item-icon {{ p.status == 'Effectué' ? 'success' : 'pending' }}">
+                                        <i class="fa-solid fa-{{ p.status == 'Effectué' ? 'check' : 'hourglass-start' }}"></i>
+                                    </div>
+                                    <div class="item-details">
+                                        <div class="item-main">Achat / Recharge</div>
+                                        <div class="item-sub">{{ p.datePaiement|date('d/m/Y H:i') }}</div>
+                                    </div>
+                                    <div class="item-amount {{ p.status == 'Effectué' ? 'pos' : '' }}">
+                                        {{ p.amount|number_format(2) }} TND
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="empty-feed">Aucune transaction</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="feed-divider"></div>
+
+                    <div class="feed-section">
+                        <h4 class="feed-title">Transports</h4>
+                        <div class="feed-list">
+                            {% for t in recent_transports %}
+                                <div class="feed-item">
+                                    <div class="item-icon transport">
+                                        <i class="fa-solid fa-route"></i>
+                                    </div>
+                                    <div class="item-details">
+                                        <div class="item-main">{{ t.transport.trajet }}</div>
+                                        <div class="item-sub">{{ t.dateReservation|date('d/m/Y') }}</div>
+                                    </div>
+                                    <div class="item-status-mini">
+                                        {{ t.status }}
+                                    </div>
+                                </div>
+                            {% else %}
+                                <div class="empty-feed">Aucune réservation</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .elite-hub-container { padding: 4rem 8% 6rem; background: var(--cream); min-height: 100vh; }
+    
+    /* HEADER */
+    .hub-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3.5rem; }
+    .welcome-tag { display: inline-flex; align-items: center; gap: 0.8rem; background: var(--white); padding: 0.5rem 1.2rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700; color: var(--navy); border: 1px solid rgba(201,168,76,0.15); box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+    .status-indicator.live { width: 8px; height: 8px; background: #10b981; border-radius: 50%; box-shadow: 0 0 10px #10b981; }
+    .hub-title { font-size: 2.2rem; color: var(--navy); margin-top: 1rem; margin-bottom: 0.5rem; }
+    .hub-subtitle { color: var(--muted); font-size: 1rem; }
+    .header-meta { display: flex; align-items: center; gap: 2rem; }
+    .meta-item { text-align: right; }
+    .m-label { display: block; font-size: 0.65rem; text-transform: uppercase; color: var(--muted); letter-spacing: 1px; font-weight: 700; }
+    .m-value { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--gold); font-size: 1.1rem; }
+    .divider-v { width: 1px; height: 30px; background: rgba(0,0,0,0.1); }
+
+    /* GRID */
+    .hub-grid { display: grid; grid-template-columns: 350px 1fr; gap: 3rem; align-items: start; }
+
+    /* SIDE CARDS */
+    .premium-hub-card { border-radius: 28px; padding: 2.5rem; position: relative; overflow: hidden; margin-bottom: 2rem; box-shadow: var(--shadow); }
+    
+    .premium-hub-card.wallet { background: var(--navy); color: white; border: 1px solid rgba(201,168,76,0.3); }
+    .premium-hub-card.wallet::before { content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px; background: rgba(201,168,76,0.1); border-radius: 50%; opacity: 0.3; }
+    .card-icon-top { width: 50px; height: 50px; background: rgba(201,168,76,0.15); color: var(--gold); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 1.5rem; }
+    .card-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: rgba(255,255,255,0.5); font-weight: 700; margin-bottom: 0.5rem; display: block; }
+    .wallet-balance-row { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 1rem; }
+    .balance-amount { font-size: 2.5rem; font-weight: 800; }
+    .currency { font-size: 1.2rem; color: var(--gold); font-weight: 600; }
+    .compte-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(16,185,129,0.15); color: #10b981; padding: 0.4rem 0.8rem; border-radius: 8px; font-size: 0.75rem; font-weight: 700; }
+    .wallet-actions { margin-top: 2rem; }
+    .btn-recharger-gold { background: linear-gradient(135deg, var(--gold), var(--gold-l)); color: var(--navy); text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.8rem; padding: 1rem; border-radius: 12px; font-weight: 700; transition: all 0.3s; }
+    .btn-recharger-gold:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(201,168,76,0.3); }
+
+    .premium-hub-card.loyalty { background: var(--white); border: 1px solid rgba(201,168,76,0.1); }
+    .loyalty-header { display: flex; align-items: center; gap: 0.8rem; color: var(--gold); font-weight: 700; font-size: 0.9rem; margin-bottom: 1rem; }
+    .loyalty-value { font-size: 2.2rem; font-weight: 800; color: var(--navy); margin-bottom: 1.5rem; }
+    .progress-bar-container { height: 6px; background: rgba(0,0,0,0.05); border-radius: 3px; margin-bottom: 0.8rem; }
+    .progress-fill { height: 100%; background: var(--gold); border-radius: 3px; }
+    .loyalty-subtext { font-size: 0.7rem; color: var(--muted); }
+
+    /* HUB ACTIONS */
+    .hub-action-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 3rem; }
+    .hub-action-box { background: var(--white); border: 1px solid rgba(201,168,76,0.1); border-radius: 20px; padding: 1.5rem; text-decoration: none; display: flex; align-items: center; gap: 1.2rem; transition: all 0.3s; }
+    .hub-action-box:hover { transform: translateY(-5px); border-color: var(--gold); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+    .hb-icon { width: 45px; height: 45px; background: rgba(13,27,42,0.04); color: var(--navy); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: all 0.3s; }
+    .hub-action-box:hover .hb-icon { background: var(--navy); color: var(--gold); }
+    .hb-text h5 { color: var(--navy); margin: 0; font-size: 0.95rem; font-weight: 700; }
+    .hb-text p { color: var(--muted); margin: 0; font-size: 0.75rem; }
+
+    /* ACTIVITY FEED */
+    .hub-activity-container { background: var(--white); border-radius: 24px; border: 1px solid rgba(201,168,76,0.1); overflow: hidden; }
+    .act-header { padding: 1.5rem 2.5rem; border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .act-header h3 { font-size: 1rem; color: var(--navy); margin: 0; font-weight: 700; }
+    .act-header i { color: var(--gold); margin-right: 0.5rem; }
+
+    .hub-tabs-container { display: grid; grid-template-columns: 1fr 1px 1fr; padding: 2rem 2.5rem; gap: 2rem; }
+    .feed-divider { background: rgba(0,0,0,0.05); }
+    .feed-title { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); letter-spacing: 1.5px; font-weight: 800; margin-bottom: 1.5rem; }
+    
+    .feed-list { display: flex; flex-direction: column; gap: 1.2rem; }
+    .feed-item { display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border-radius: 12px; transition: background 0.2s; }
+    .feed-item:hover { background: #fcfcfd; }
+    .item-icon { width: 35px; height: 35px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; flex-shrink: 0; }
+    .item-icon.success { background: rgba(16,185,129,0.1); color: #10b981; }
+    .item-icon.pending { background: rgba(245,158,11,0.1); color: #f59e0b; }
+    .item-icon.transport { background: rgba(201,168,76,0.1); color: var(--gold); }
+    
+    .item-details { flex: 1; }
+    .item-main { font-size: 0.85rem; font-weight: 600; color: var(--navy); margin-bottom: 0.2rem; }
+    .item-sub { font-size: 0.7rem; color: var(--muted); }
+    .item-amount { font-size: 0.9rem; font-weight: 700; color: var(--navy); }
+    .item-amount.pos { color: #10b981; }
+    .item-status-mini { font-size: 0.65rem; background: #f1f5f9; padding: 0.2rem 0.6rem; border-radius: 5px; color: #64748b; font-weight: 700; }
+
+    .empty-feed { text-align: center; color: var(--muted); font-size: 0.8rem; font-style: italic; padding: 2rem 0; }
+
+    @media (max-width: 1100px) {
+        .hub-grid { grid-template-columns: 1fr; }
+        .hub-col-side { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .premium-hub-card { margin-bottom: 0; }
+    }
+    @media (max-width: 800px) {
+        .hub-tabs-container { grid-template-columns: 1fr; }
+        .feed-divider { display: none; }
+        .hub-action-row { grid-template-columns: 1fr; }
+        .hub-col-side { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}

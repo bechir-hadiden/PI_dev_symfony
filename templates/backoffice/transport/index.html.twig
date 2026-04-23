@@ -1,0 +1,134 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Gestion Transport - Admin{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="text-light mb-4">Backoffice - Gestion Transport</h1>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row">
+        <!-- Flotte de Véhicules -->
+        <div class="col-md-5">
+            <div class="card bg-dark text-light border-secondary mb-4 shadow">
+                <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Ma Flotte</h4>
+                    <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#modalVehicule">Ajouter</button>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush bg-dark">
+                        {% for v in vehicules %}
+                            <li class="list-group-item bg-dark text-light border-secondary d-flex justify-content-between">
+                                <div>
+                                    <strong>{{ v.marque }}</strong> <small class="text-muted">({{ v.matricule }})</small>
+                                    <br><span class="badge bg-info">{{ v.type }}</span> - {{ v.capacite }} places
+                                </div>
+                            </li>
+                        {% else %}
+                            <li class="list-group-item bg-dark text-muted border-secondary text-center">Aucun véhicule.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Offres de Transport -->
+        <div class="col-md-7">
+            <div class="card bg-dark text-light border-secondary shadow">
+                <div class="card-header border-secondary d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Offres de Transport</h4>
+                    <button class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#modalTransport">Coordonner un Trajet</button>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover small">
+                            <thead>
+                                <tr>
+                                    <th>Trajet</th>
+                                    <th>Date/Heure</th>
+                                    <th>Prix</th>
+                                    <th>Véhicule</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for t in transports %}
+                                    <tr>
+                                        <td>{{ t.trajet }}</td>
+                                        <td>{{ t.dateHeure|date('d/m H:i') }}</td>
+                                        <td class="text-success fw-bold">{{ t.prix }} TND</td>
+                                        <td>{{ t.vehicule.marque }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr><td colspan="4" class="text-center py-3">Aucune trajet programmé.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Véhicule -->
+<div class="modal fade" id="modalVehicule" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="post" action="{{ path('app_admin_vehicule_new') }}" class="modal-content bg-dark text-light border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title">Nouveau Véhicule</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Marque</label><input type="text" name="marque" class="form-control bg-secondary text-light border-0" required></div>
+        <div class="mb-3"><label class="form-label">Matricule</label><input type="text" name="matricule" class="form-control bg-secondary text-light border-0" required></div>
+        <div class="mb-3">
+            <label class="form-label">Type</label>
+            <select name="type" class="form-select bg-secondary text-light border-0">
+                <option>Bus</option><option>Taxi</option><option>Scooter</option><option>Voiture</option>
+            </select>
+        </div>
+        <div class="mb-3"><label class="form-label">Capacité (Places)</label><input type="number" name="capacite" class="form-control bg-secondary text-light border-0" required></div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="submit" class="btn btn-primary">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Transport -->
+<div class="modal fade" id="modalTransport" tabindex="-1">
+  <div class="modal-dialog">
+    <form method="post" action="{{ path('app_admin_transport_new') }}" class="modal-content bg-dark text-light border-secondary">
+      <div class="modal-header border-secondary">
+        <h5 class="modal-title">Nouveau Trajet</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Trajet (Depart -> Arrivée)</label><input type="text" name="trajet" class="form-control bg-secondary text-light border-0" placeholder="ex: Tunis -> Hammamet" required></div>
+        <div class="mb-3"><label class="form-label">Prix (TND)</label><input type="number" step="0.01" name="prix" class="form-control bg-secondary text-light border-0" required></div>
+        <div class="mb-3"><label class="form-label">Date & Heure</label><input type="datetime-local" name="date_heure" class="form-control bg-secondary text-light border-0" required></div>
+        <div class="mb-3">
+            <label class="form-label">Affecter un Véhicule</label>
+            <select name="vehicule_id" class="form-select bg-secondary text-light border-0">
+                {% for v in vehicules %}
+                    <option value="{{ v.id }}">{{ v.marque }} - {{ v.matricule }}</option>
+                {% endfor %}
+            </select>
+        </div>
+      </div>
+      <div class="modal-footer border-secondary">
+        <button type="submit" class="btn btn-success">Programmer</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
