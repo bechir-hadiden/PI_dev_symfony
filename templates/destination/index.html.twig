@@ -1,204 +1,177 @@
 {% extends 'base_dark.html.twig' %}
-{% block title %}Destinations – SmartTrip{% endblock %}
+
+{% block title %}Destinations{% endblock %}
+
+{% block stylesheets %}
+<style>
+/* ── PAGE HEADER ── */
+.page-header {
+    min-height: 38vh;
+    background: var(--ink);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 6rem 3.5rem 3.5rem;
+    position: relative; overflow: hidden;
+}
+.page-header::after {
+    content:'';
+    position: absolute; inset:0;
+    background: linear-gradient(135deg, rgba(201,168,76,0.08) 0%, transparent 60%);
+    pointer-events: none;
+}
+.page-header-tag {
+    font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase;
+    color: var(--gold); display: flex; align-items: center; gap: 0.7rem;
+    margin-bottom: 0.9rem;
+}
+.page-header-tag::before {
+    content:''; display:block; width:28px; height:0.5px; background:var(--gold);
+}
+.page-header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 4.2rem);
+    font-weight: 300;
+    color: var(--white);
+    line-height: 1.1;
+}
+.page-header h1 em { font-style: italic; color: var(--gold); }
+.page-header-sub {
+    font-size: 0.88rem;
+    color: rgba(245,240,232,0.5);
+    margin-top: 0.8rem;
+}
+
+/* ── SEARCH ── */
+.search-section {
+    padding: 2.5rem 3.5rem;
+    background: var(--sand);
+}
+.search-form {
+    display: flex;
+    max-width: 600px;
+}
+.search-input {
+    flex: 1;
+    padding: 0.9rem 1.3rem;
+    border: 1px solid rgba(201,168,76,0.4);
+}
+.search-btn {
+    padding: 0.9rem 1.8rem;
+    background: var(--gold);
+    border: none;
+    font-weight: 600;
+}
+
+/* ── GRID ── */
+.dest-section { padding: 5rem 3.5rem; }
+.dest-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5px;
+    background: rgba(201,168,76,0.15);
+}
+
+.dest-card {
+    position: relative;
+    overflow: hidden;
+    min-height: 380px;
+    background: var(--ink);
+    text-decoration: none;
+}
+
+.dest-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.75;
+}
+
+.dest-body {
+    position: absolute;
+    bottom: 0;
+    padding: 2rem;
+    color: white;
+}
+
+/* empty */
+.empty-state {
+    text-align: center;
+    padding: 6rem 2rem;
+    grid-column: 1 / -1;
+}
+</style>
+{% endblock %}
 
 {% block body %}
 
-{# ── PAGE HERO ── #}
-<div style="background:var(--navy);padding:7rem 5% 3rem;border-bottom:1px solid rgba(201,168,76,0.15);">
-  <div style="max-width:600px;">
-    <span class="section-label">Explorer</span>
-    <h1 class="section-title light">Toutes les Destinations</h1>
-    <p style="color:rgba(255,255,255,0.55);font-size:.95rem;line-height:1.75;margin-bottom:2rem;">
-      Découvrez notre sélection de destinations d'exception à travers le monde.
+<div class="page-header">
+    <div class="page-header-tag">SmartTrip · Catalogue</div>
+
+    <h1>Nos <em>Destinations</em></h1>
+
+    <p class="page-header-sub">
+        {{ destinations|length }} destination(s) disponible(s)
     </p>
-    <a href="{{ path('admin_destination_new') }}" class="btn-gold">
-      <i class="fas fa-plus"></i> Nouvelle destination
-    </a>
-  </div>
 </div>
 
-{# ── SEARCH BAR ── #}
-<div style="background:var(--cream);padding:2rem 5%;border-bottom:1px solid rgba(13,27,42,0.08);">
-  <form method="GET" style="display:flex;gap:1rem;align-items:center;max-width:600px;">
-    <div style="flex:1;position:relative;">
-      <i class="fas fa-search" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.875rem;"></i>
-      <input type="text" name="q" value="{{ query ?? '' }}"
-             placeholder="Rechercher une destination, un pays..."
-             style="width:100%;padding:.75rem 1rem .75rem 2.75rem;border:1px solid rgba(13,27,42,0.15);border-radius:50px;font-family:'Plus Jakarta Sans',sans-serif;font-size:.875rem;outline:none;background:var(--white);color:var(--navy);transition:border-color .3s;"
-             onfocus="this.style.borderColor='var(--gold)'"
-             onblur="this.style.borderColor='rgba(13,27,42,0.15)'">
-    </div>
-    <button type="submit" class="btn-primary" style="padding:.75rem 1.6rem;font-size:.875rem;">
-      Chercher
-    </button>
+{# SEARCH #}
+<div class="search-section">
+    <form class="search-form" method="GET">
+        <input type="text"
+               name="q"
+               class="search-input"
+               placeholder="Rechercher..."
+               value="{{ query ?? '' }}">
+
+        <button class="search-btn">Rechercher</button>
+    </form>
+
     {% if query %}
-      <a href="{{ path('admin_destination_index') }}" class="btn-navy" style="padding:.75rem 1.2rem;">
-        <i class="fas fa-times"></i>
-      </a>
+        <p style="margin-top:10px;font-size:12px;">
+            {{ destinations|length }} résultat(s) pour "{{ query }}"
+            · <a href="{{ path('client_destination_index') }}">Effacer</a>
+        </p>
     {% endif %}
-  </form>
 </div>
 
-{# ── CONTENU ── #}
-<div style="padding:3rem 5%;background:var(--cream);min-height:60vh;">
+{# GRID #}
+<section class="dest-section">
+    <div class="dest-grid">
 
-  {% if destinations is empty %}
-    <div style="text-align:center;padding:5rem 2rem;">
-      <div style="font-size:4rem;margin-bottom:1rem;">🌍</div>
-      <h3 style="font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--navy);margin-bottom:.75rem;">
-        {% if query %}Aucun résultat pour « {{ query }} »{% else %}Aucune destination{% endif %}
-      </h3>
-      <p style="color:var(--muted);margin-bottom:2rem;">
-        {% if query %}Essayez un autre terme de recherche.{% else %}Commencez par ajouter votre première destination.{% endif %}
-      </p>
-      <a href="{{ path('admin_destination_new') }}" class="btn-primary">
-        <i class="fas fa-plus"></i> Ajouter une destination
-      </a>
-    </div>
-
-  {% else %}
-    <p style="color:var(--muted);font-size:.82rem;margin-bottom:1.8rem;">
-      <i class="fas fa-map-marker-alt" style="color:var(--gold);"></i>
-      {{ destinations|length }} destination(s) trouvée(s)
-    </p>
-
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.4rem;">
-      {% for dest in destinations %}
-        {% set images = dest.allImages %}
-
-        <div style="background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(13,27,42,0.08);border:1px solid rgba(13,27,42,0.06);transition:transform .3s,box-shadow .3s;"
-             onmouseover="this.style.transform='translateY(-6px)';this.style.boxShadow='0 16px 40px rgba(13,27,42,0.14)'"
-             onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 12px rgba(13,27,42,0.08)'">
-
-          {# ── MINI SLIDER ── #}
-          <div style="position:relative;height:200px;overflow:hidden;background:var(--navy);"
-               data-slider="{{ dest.id }}">
-
-            {% if images|length > 0 %}
-              {% for img in images %}
-                <img src="{{ img }}"
-                     alt="{{ dest.nom }}"
-                     class="card-slide slide-{{ dest.id }}"
-                     style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
-                            opacity:{{ loop.first ? '1' : '0' }};
-                            transition:opacity .7s ease;">
-              {% endfor %}
-
-              {% if images|length > 1 %}
-                <div style="position:absolute;bottom:.6rem;left:50%;transform:translateX(-50%);display:flex;gap:.35rem;z-index:2;">
-                  {% for img in images %}
-                    <div class="cdot-{{ dest.id }}"
-                         style="width:6px;height:6px;border-radius:50%;
-                                background:{{ loop.first ? 'var(--gold)' : 'rgba(255,255,255,0.5)' }};
-                                transition:background .3s;"></div>
-                  {% endfor %}
-                </div>
-                <div class="ccount-{{ dest.id }}"
-                     style="position:absolute;top:.6rem;right:.6rem;background:rgba(13,27,42,0.75);
-                            color:#fff;font-size:.62rem;font-weight:700;padding:.2rem .55rem;
-                            border-radius:50px;z-index:2;">
-                  1 / {{ images|length }}
-                </div>
-              {% endif %}
-
-            {% else %}
-              <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:3.5rem;opacity:.3;">🗺️</div>
-            {% endif %}
-
-            <div style="position:absolute;top:.75rem;left:.75rem;display:flex;gap:.4rem;flex-wrap:wrap;z-index:2;">
-              {% if dest.codeIata %}
-                <span style="background:var(--gold);color:var(--navy);font-size:.65rem;font-weight:700;padding:.2rem .6rem;border-radius:50px;letter-spacing:.5px;">
-                  {{ dest.codeIata }}
-                </span>
-              {% endif %}
-              {% if images|length > 1 %}
-                <span style="background:rgba(13,27,42,0.75);color:#fff;font-size:.65rem;padding:.2rem .6rem;border-radius:50px;">
-                  <i class="fas fa-images"></i> {{ images|length }}
-                </span>
-              {% endif %}
+        {% if destinations is empty %}
+            <div class="empty-state">
+                <h3>Aucune destination trouvée</h3>
             </div>
+        {% else %}
 
-            {% if dest.voyages|length > 0 %}
-              <div style="position:absolute;bottom:.75rem;right:.75rem;background:rgba(13,27,42,0.85);color:var(--gold);font-size:.75rem;font-weight:700;padding:.3rem .75rem;border-radius:50px;z-index:2;">
-                À partir de {{ dest.voyages|first.prix|number_format(0,',',' ') }} TND
-              </div>
-            {% endif %}
-          </div>
+            {% for dest in destinations %}
 
-          {# Corps #}
-          <div style="padding:1.2rem;">
-            <h3 style="font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--navy);margin-bottom:.3rem;">
-              {{ dest.nom }}
-            </h3>
-            <p style="font-size:.82rem;color:var(--muted);margin-bottom:.6rem;">
-              <i class="fas fa-map-marker-alt" style="color:var(--gold);margin-right:.3rem;"></i>{{ dest.pays }}
-            </p>
-            {% if dest.description %}
-              <p style="font-size:.8rem;color:var(--muted);line-height:1.6;margin-bottom:.8rem;">
-                {{ dest.description|slice(0,85) }}{% if dest.description|length > 85 %}...{% endif %}
-              </p>
-            {% endif %}
-            {% if dest.voyages|length > 0 %}
-              <p style="font-size:.75rem;color:var(--muted);">
-                <i class="fas fa-plane" style="color:var(--gold);"></i>
-                {{ dest.voyages|length }} voyage(s) disponible(s)
-              </p>
-            {% endif %}
-          </div>
+                <a href="{{ path('client_destination_show', {id: dest.id}) }}"
+                   class="dest-card">
 
-          {# Footer actions #}
-          <div style="padding:.9rem 1.2rem;border-top:1px solid rgba(13,27,42,0.06);display:flex;justify-content:space-between;align-items:center;">
-            <a href="{{ path('admin_destination_show', {id: dest.id}) }}" class="btn-navy" style="padding:.5rem 1.1rem;font-size:.8rem;">
-              <i class="fas fa-eye"></i> Voir
-            </a>
-            <div style="display:flex;gap:.5rem;">
-              <a href="{{ path('admin_destination_edit', {id: dest.id}) }}" class="btn-gold" style="padding:.5rem 1rem;font-size:.8rem;">
-                <i class="fas fa-pen"></i>
-              </a>
-              <form method="POST" action="{{ path('admin_destination_delete', {id: dest.id}) }}"
-                    onsubmit="return confirm('Supprimer {{ dest.nom }} ?')">
-                <input type="hidden" name="_token" value="{{ csrf_token('delete_destination_' ~ dest.id) }}">
-                <button type="submit" class="btn-danger-sm" style="padding:.5rem 1rem;">
-                  <i class="fas fa-trash"></i>
-                </button>
-              </form>
-            </div>
-          </div>
-        </div>
-      {% endfor %}
+                    {% if dest.firstImage %}
+                        <img src="{{ dest.firstImage }}" alt="{{ dest.nom }}">
+                    {% else %}
+                        <div style="height:100%;background:linear-gradient(135deg,#1a3c5e,#c9a84c);"></div>
+                    {% endif %}
+
+                    <div class="dest-body">
+                        <div>{{ dest.pays }}</div>
+                        <h2>{{ dest.nom }}</h2>
+
+                        {% if dest.description %}
+                            <p style="font-size:12px;opacity:.7;">
+                                {{ dest.description|slice(0,80) }}...
+                            </p>
+                        {% endif %}
+                    </div>
+
+                </a>
+
+            {% endfor %}
+
+        {% endif %}
+
     </div>
-  {% endif %}
+</section>
 
-</div>
-{% endblock %}
-
-{% block javascripts %}
-{{ parent() }}
-<script>
-const sliders = {};
-{% for dest in destinations %}
-  {% set images = dest.allImages %}
-  {% if images|length > 1 %}
-  sliders['{{ dest.id }}'] = { current: 0, total: {{ images|length }} };
-  {% endif %}
-{% endfor %}
-
-function cardNextSlide(id) {
-  const s      = sliders[id];
-  const slides = document.querySelectorAll('.slide-' + id);
-  const dots   = document.querySelectorAll('.cdot-' + id);
-  const counter = document.querySelector('.ccount-' + id);
-  if (!slides.length) return;
-  slides[s.current].style.opacity = '0';
-  if (dots[s.current]) dots[s.current].style.background = 'rgba(255,255,255,0.5)';
-  s.current = (s.current + 1) % s.total;
-  slides[s.current].style.opacity = '1';
-  if (dots[s.current]) dots[s.current].style.background = 'var(--gold)';
-  if (counter) counter.textContent = (s.current + 1) + ' / ' + s.total;
-}
-
-Object.keys(sliders).forEach(id => {
-  setInterval(() => cardNextSlide(id), 3000);
-});
-</script>
 {% endblock %}

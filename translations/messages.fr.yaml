@@ -1,0 +1,106 @@
+# translations/messages.fr.yaml
+
+# ── NAVBAR ──
+nav.destinations: "Destinations"
+nav.voyages: "Voyages"
+nav.about: "À propos"
+nav.plan: "Planifier"
+nav.login: "Connexion"
+nav.logout: "Déconnexion"
+nav.add: "Ajouter"
+
+# ── HERO ──
+hero.badge: "Voyages d'exception"
+hero.title: "Découvrez le monde avec <em>élégance</em>"
+hero.subtitle: "Des expériences de voyage sur-mesure, conçues pour les esprits curieux et les âmes voyageuses."
+hero.btn_plan: "Planifier mon voyage"
+hero.btn_discover: "Découvrir nos offres"
+
+# ── SEARCH ──
+search.destination: "Destination"
+search.destination_placeholder: "Où voulez-vous aller ?"
+search.depart: "Départ"
+search.duration: "Durée"
+search.duration_placeholder: "Choisir"
+search.btn: "Rechercher"
+
+# ── DESTINATIONS ──
+dest.title: "Destinations <em>Populaires</em>"
+dest.label: "Nos destinations"
+dest.subtitle: "Explorez nos destinations soigneusement sélectionnées pour vous offrir des expériences uniques."
+dest.all: "Voir toutes les destinations"
+dest.from: "À partir de"
+
+# ── PACKAGES ──
+pkg.title: "Nos <em>Forfaits</em>"
+pkg.label: "Voyages organisés"
+pkg.subtitle: "Des formules tout compris adaptées à vos envies et votre budget."
+pkg.popular: "Populaire"
+pkg.per_person: "/pers."
+pkg.book: "Réserver"
+
+# ── ABOUT ──
+about.label: "Qui sommes-nous"
+about.title: "Votre partenaire de voyage de confiance"
+about.subtitle: "Depuis plus de 10 ans, Smart Trip crée des expériences inoubliables pour des voyageurs du monde entier."
+about.years: "Ans d'expérience"
+about.feat1_title: "Expertise locale"
+about.feat1_desc: "Des guides locaux passionnés dans chaque destination."
+about.feat2_title: "Sur-mesure"
+about.feat2_desc: "Chaque voyage est unique et personnalisé pour vous."
+about.feat3_title: "Support 24/7"
+about.feat3_desc: "Notre équipe est disponible à tout moment."
+about.feat4_title: "Meilleur prix"
+about.feat4_desc: "Les meilleures offres sans compromis sur la qualité."
+about.btn: "En savoir plus"
+
+# ── CONTACT ──
+contact.label: "Contactez-nous"
+contact.title: "Parlons de votre <em>voyage</em>"
+contact.subtitle: "Notre équipe est à votre disposition pour créer l'aventure de vos rêves."
+contact.phone: "Téléphone"
+contact.email: "Email"
+contact.address: "Adresse"
+contact.form_title: "Envoyez-nous un message"
+contact.firstname: "Prénom"
+contact.lastname: "Nom"
+contact.email_field: "Email"
+contact.subject: "Sujet"
+contact.message: "Message"
+contact.send: "Envoyer le message"
+
+# ── FOOTER ──
+footer.desc: "Votre partenaire de confiance pour des voyages d'exception."
+footer.destinations: "Destinations"
+footer.all_dest: "Toutes les destinations"
+footer.add_dest: "Ajouter une destination"
+footer.voyages: "Voyages"
+footer.all_voyages: "Tous les voyages"
+footer.create_voyage: "Créer un voyage"
+footer.info: "Informations"
+footer.about: "À propos"
+footer.contact: "Contact"
+footer.sarah: "Parler à Sarah ✈️"
+footer.rights: "Tous droits réservés."
+footer.made_with: "Conçu avec"
+footer.for: "pour les passionnés de voyage"
+
+# ── LOGIN MODAL ──
+login.title: "Connexion à votre espace"
+login.password_tab: "Mot de passe"
+login.faceid_tab: "Face ID"
+login.email: "Adresse Email"
+login.password: "Mot de passe"
+login.remember: "Se souvenir de moi"
+login.submit: "Se connecter"
+login.face_center: "Centrez votre visage dans l'ovale"
+login.face_scan: "Scanner mon visage"
+
+# ── SARAH CHAT ──
+sarah.welcome: "Bonjour ! Je suis <strong>Sarah</strong>, votre conseillère chez Smart Trip 🌍✈️"
+sarah.welcome_sub: "Dites-moi votre rêve de voyage, et je vous crée un séjour sur-mesure !"
+sarah.placeholder: "Tapez votre message..."
+sarah.typing: "Sarah rédige..."
+sarah.unavailable: "Sarah est momentanément indisponible. Veuillez réessayer."
+sarah.voyage_created: "🎉 Votre voyage a été créé ! Un e-mail de confirmation vous a été envoyé."
+sarah.powered_by: "Propulsé par"

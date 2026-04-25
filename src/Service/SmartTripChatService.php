@@ -6,25 +6,8 @@ namespace App\Service;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-/**
- * Communique avec le webhook N8N "Chat avec Sarah" (Smart Trip).
- *
- * URL N8N  : https://bechir1919.app.n8n.cloud/webhook/sarah-smart-trip/chat
- * Méthode  : POST application/json
- *
- * Corps envoyé à N8N :
- *   { "action": "sendMessage", "sessionId": "...", "chatInput": "..." }
- *
- * Réponse N8N :
- *   { "output": "Réponse de Sarah..." }
- *
- * En fin de parcours, Sarah insère dans sa réponse les balises :
- *   DESTINATION_FINALE, PAYS_FINALE, PAYS_DEPART, BUDGET_FINAL, DUREE_FINALE, PERIODE_FINALE
- * Ce service détecte ces balises pour signaler que le voyage a été créé.
- */
 class SmartTripChatService
 {
-    // Balises de fin de workflow insérées par Sarah quand les 7 infos sont collectées
     private const BALISES_FIN = [
         'DESTINATION_FINALE',
         'PAYS_FINALE',
@@ -38,37 +21,58 @@ class SmartTripChatService
 
         #[Autowire('%env(N8N_WEBHOOK_URL)%')]
         private readonly string $webhookUrl,
+
+        #[Autowire('%env(N8N_WEBHOOK_PDF)%')]
+        private readonly string $webhookPdf,
     ) {
     }
 
-    /**
-     * Envoie un message à Sarah et retourne :
-     *   [
-     *     'reply'       => string,   // Réponse de Sarah (balises nettoyées)
-     *     'voyage_cree' => bool,     // true si N8N vient de créer le voyage
-     *   ]
-     */
     public function sendMessage(string $message, string $sessionId): array
     {
         try {
             $response = $this->httpClient->request('POST', $this->webhookUrl, [
                 'headers' => ['Content-Type' => 'application/json'],
                 'json'    => [
-                    'action'     => 'sendMessage',   // Format attendu par chatTrigger N8N
-                    'sessionId'  => $sessionId,
-                    'chatInput'  => $message,
+                    'action'    => 'sendMessage',
+                    'sessionId' => $sessionId,
+                    'chatInput' => $message,
                 ],
-                'timeout' => 30, // Sarah peut prendre quelques secondes (Mistral + MySQL)
+                'timeout' => 60,
             ]);
+
+            $statusCode = $response->getStatusCode();
+            if ($statusCode !== 200) {
+                return [
+                    'reply'       => 'ERREUR HTTP ' . $statusCode,
+                    'voyage_cree' => false,
+                ];
+            }
 
             $data   = $response->toArray();
             $output = $data['output'] ?? $data['reply'] ?? $data['message'] ?? '';
 
-            // Détecter si Sarah a terminé la collecte (balises présentes dans la réponse)
             $voyageCree = $this->detecterFinWorkflow($output);
 
-            // Nettoyer les balises techniques avant d'afficher à l'utilisateur
+            // Extraire les données depuis les balises
+            $destination = $this->extraireBalise('DESTINATION_FINALE', $output);
+            $pays        = $this->extraireBalise('PAYS_FINALE', $output);
+            $budget      = $this->extraireBalise('BUDGET_FINAL', $output);
+            $duree       = $this->extraireBalise('DUREE_FINALE', $output);
+            $veutPdf     = strtoupper(trim($this->extraireBalise('VEUT_PDF', $output) ?? 'NON'));
+
+            // Nettoyer les balises du texte affiché
             $replyPropre = $this->nettoyerBalises($output);
+
+            // ✅ Générer le lien PDF directement dans Symfony
+            if ($voyageCree && $veutPdf === 'OUI' && $destination) {
+                $lienPdf = $this->webhookPdf
+                    . '?dest='   . urlencode($destination)
+                    . '&pays='   . urlencode($pays ?? '')
+                    . '&budget=' . urlencode($budget ?? '')
+                    . '&duree='  . urlencode($duree ?? '');
+
+                $replyPropre .= "\n\n📄 [Cliquez ici pour télécharger votre devis en PDF](" . $lienPdf . ")";
+            }
 
             return [
                 'reply'       => $replyPropre,
@@ -77,16 +81,20 @@ class SmartTripChatService
 
         } catch (\Throwable $e) {
             return [
-                // 👇 C'est cette ligne qui a été modifiée pour afficher l'erreur
                 'reply'       => 'ERREUR TECHNIQUE : ' . $e->getMessage(),
                 'voyage_cree' => false,
             ];
         }
     }
 
-    /**
-     * Vérifie si toutes les balises de fin sont présentes dans la réponse.
-     */
+    private function extraireBalise(string $balise, string $output): ?string
+    {
+        if (preg_match('/' . $balise . '\s*:\s*(.+)/i', $output, $m)) {
+            return trim($m[1]);
+        }
+        return null;
+    }
+
     private function detecterFinWorkflow(string $output): bool
     {
         foreach (self::BALISES_FIN as $balise) {
@@ -97,14 +105,10 @@ class SmartTripChatService
         return true;
     }
 
-    /**
-     * Supprime les lignes de balises techniques de la réponse visible par le client.
-     * Ex: "DESTINATION_FINALE: Paris" → retiré
-     */
     private function nettoyerBalises(string $output): string
     {
-        $lignes   = explode("\n", $output);
-        $balises  = array_merge(self::BALISES_FIN, ['PAYS_DEPART']);
+        $lignes  = explode("\n", $output);
+        $balises = array_merge(self::BALISES_FIN, ['PAYS_DEPART', 'VEUT_PDF']);
         $filtrees = [];
 
         foreach ($lignes as $ligne) {

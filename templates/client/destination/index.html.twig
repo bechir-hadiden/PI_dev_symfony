@@ -1,12 +1,12 @@
 {% extends 'base_dark.html.twig' %}
-    
+
 {% block title %}Destinations{% endblock %}
 
 {% block extra_css %}
 /* ── PAGE HEADER ── */
 .page-header {
     min-height: 38vh;
-    background: var(--ink);
+    background: var(--navy);
     display: flex; flex-direction: column; justify-content: flex-end;
     padding: 6rem 3.5rem 3.5rem;
     position: relative; overflow: hidden;
@@ -22,7 +22,9 @@
     color: var(--gold); display: flex; align-items: center; gap: 0.7rem;
     margin-bottom: 0.9rem;
 }
-.page-header-tag::before { content:''; display:block; width:28px; height:0.5px; background:var(--gold); }
+.page-header-tag::before {
+    content:''; display:block; width:28px; height:0.5px; background:var(--gold);
+}
 .page-header h1 {
     font-family: 'Playfair Display', serif;
     font-size: clamp(2.5rem, 5vw, 4.2rem); font-weight: 300;
@@ -37,7 +39,7 @@
 /* ── SEARCH BAR ── */
 .search-section {
     padding: 2.5rem 3.5rem;
-    background: var(--sand);
+    background: var(--cream);
     border-bottom: 0.5px solid rgba(201,168,76,0.2);
 }
 .search-form {
@@ -47,16 +49,16 @@
     flex: 1; padding: 0.9rem 1.3rem;
     border: 0.5px solid rgba(201,168,76,0.4); border-right: none;
     background: var(--white); font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.84rem; color: var(--ink); outline: none;
+    font-size: 0.84rem; color: var(--navy); outline: none;
 }
 .search-input::placeholder { color: #aaa; }
-.search-btn {
+.search-btn-bar {
     padding: 0.9rem 1.8rem; background: var(--gold); border: none;
     font-size: 0.76rem; font-weight: 600; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--ink); cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif; transition: background 0.2s;
+    text-transform: uppercase; color: var(--navy); cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif; transition: background 0.2s, color 0.2s;
 }
-.search-btn:hover { background: var(--ink); color: var(--white); }
+.search-btn-bar:hover { background: var(--navy); color: var(--white); }
 .search-meta {
     font-size: 0.78rem; color: var(--muted); margin-top: 0.8rem;
     display: flex; align-items: center; gap: 0.5rem;
@@ -64,9 +66,10 @@
 .search-clear {
     color: var(--gold); text-decoration: none; font-weight: 500;
 }
+.search-clear:hover { text-decoration: underline; }
 
 /* ── GRID ── */
-.dest-section { padding: 5rem 3.5rem; }
+.dest-section { padding: 5rem 3.5rem; background: var(--navy-2); }
 .dest-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -75,7 +78,7 @@
 }
 .dest-card {
     position: relative; overflow: hidden; cursor: pointer;
-    background: var(--ink); min-height: 380px;
+    background: var(--navy); min-height: 380px;
     text-decoration: none; display: block;
     transition: transform 0.4s;
 }
@@ -96,12 +99,13 @@
 }
 .dest-country {
     font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--gold-lt); margin-bottom: 0.4rem;
+    color: var(--gold-l); margin-bottom: 0.4rem;
     display: flex; align-items: center; gap: 0.5rem;
 }
 .dest-iata {
     background: rgba(201,168,76,0.2); border: 0.5px solid rgba(201,168,76,0.4);
     padding: 0.1rem 0.5rem; font-size: 0.62rem; letter-spacing: 0.15em;
+    color: var(--gold-l);
 }
 .dest-name {
     font-family: 'Playfair Display', serif;
@@ -119,13 +123,13 @@
     width: 34px; height: 34px;
     border: 0.5px solid rgba(201,168,76,0.5);
     display: flex; align-items: center; justify-content: center;
-    color: var(--gold-lt); font-size: 0.95rem;
+    color: var(--gold-l); font-size: 0.95rem;
     opacity: 0; transform: translateY(-6px);
     transition: opacity 0.3s, transform 0.3s;
 }
 .dest-card:hover .dest-arrow { opacity: 1; transform: translateY(0); }
 
-/* ── EMPTY ── */
+/* ── EMPTY STATE ── */
 .empty-state {
     text-align: center; padding: 6rem 2rem;
     grid-column: 1 / -1;
@@ -140,25 +144,86 @@
 }
 .empty-state p { font-size: 0.84rem; color: var(--muted); }
 
-/* ── PALETTE IMAGES DE REMPLACEMENT ── */
+/* ── GRADIENTS PLACEHOLDER ── */
 .ph-1 { background: linear-gradient(155deg,#1a3c5e 0%,#2a5f8a 40%,#c9a84c 100%); }
 .ph-2 { background: linear-gradient(155deg,#0e4a4a 0%,#1a8080 50%,#b8e0e0 100%); }
 .ph-3 { background: linear-gradient(155deg,#2d1a3e 0%,#6b3fa0 50%,#e87b8b 100%); }
 .ph-4 { background: linear-gradient(155deg,#5a2200 0%,#c45a1a 50%,#f0c080 100%); }
 .ph-5 { background: linear-gradient(155deg,#1a1a2e 0%,#3a3a6e 50%,#b0b0d8 100%); }
 .ph-6 { background: linear-gradient(155deg,#1a2e1a 0%,#2e6e3a 50%,#a0d0b0 100%); }
+
+/* ── PAGINATION ── */
+.pagination-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 3.5rem;
+    padding-top: 2.5rem;
+    border-top: 0.5px solid rgba(201,168,76,0.15);
+}
+.pagination-btns {
+    display: flex;
+    gap: .4rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.pag-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 40px; height: 40px;
+    padding: 0 .9rem;
+    border: 0.5px solid rgba(201,168,76,0.25);
+    color: rgba(255,255,255,0.55);
+    text-decoration: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .82rem;
+    transition: border-color .2s, color .2s, background .2s;
+    background: transparent;
+}
+.pag-btn:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: rgba(201,168,76,0.07);
+}
+.pag-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--navy);
+    font-weight: 700;
+    cursor: default;
+}
+.pag-btn.nav-btn {
+    padding: 0 1.2rem;
+    color: var(--gold);
+    border-color: rgba(201,168,76,0.35);
+    gap: .4rem;
+    font-weight: 500;
+}
+.pag-btn.nav-btn:hover {
+    background: rgba(201,168,76,0.1);
+}
+.pag-info {
+    font-size: .75rem;
+    color: rgba(255,255,255,0.28);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: .04em;
+}
 {% endblock %}
 
 {% block body %}
 
-{# ── PAGE HEADER ── #}
-<div class="page-header">
-    <div class="page-header-tag">SmartTrip· Catalogue</div>
+{# ══ PAGE HEADER ══════════════════════════════════════════════════ #}
+<div class="page-header" style="padding-top:100px;">
+    <div class="page-header-tag">SmartTrip · Catalogue</div>
     <h1>Nos <em>Destinations</em></h1>
-    <p class="page-header-sub">{{ destinations|length }} destination{{ destinations|length > 1 ? 's' : '' }} sélectionnée{{ destinations|length > 1 ? 's' : '' }} pour vous</p>
+    <p class="page-header-sub">
+        {{ destinations.getTotalItemCount }}
+        destination{{ destinations.getTotalItemCount > 1 ? 's' : '' }}
+        sélectionnée{{ destinations.getTotalItemCount > 1 ? 's' : '' }} pour vous
+    </p>
 </div>
 
-{# ── SEARCH ── #}
+{# ══ BARRE DE RECHERCHE ═══════════════════════════════════════════ #}
 <div class="search-section">
     <form class="search-form" method="GET" action="{{ path('client_destination_index') }}">
         <input
@@ -169,19 +234,28 @@
             value="{{ query }}"
             autocomplete="off"
         >
-        <button type="submit" class="search-btn">Rechercher</button>
+        <button type="submit" class="search-btn-bar">
+            <i class="fas fa-search"></i> Rechercher
+        </button>
     </form>
+
     {% if query %}
         <div class="search-meta">
-            {{ destinations|length }} résultat{{ destinations|length > 1 ? 's' : '' }} pour « <strong>{{ query }}</strong> »
+            <i class="fas fa-filter" style="color:var(--gold);font-size:.7rem;"></i>
+            {{ destinations.getTotalItemCount }}
+            résultat{{ destinations.getTotalItemCount > 1 ? 's' : '' }}
+            pour «&nbsp;<strong>{{ query }}</strong>&nbsp;»
             &nbsp;·&nbsp;
-            <a href="{{ path('client_destination_index') }}" class="search-clear">Effacer</a>
+            <a href="{{ path('client_destination_index') }}" class="search-clear">
+                <i class="fas fa-times"></i> Effacer
+            </a>
         </div>
     {% endif %}
 </div>
 
-{# ── GRID ── #}
+{# ══ GRILLE + PAGINATION ══════════════════════════════════════════ #}
 <section class="dest-section">
+
     <div class="dest-grid">
         {% if destinations is empty %}
             <div class="empty-state">
@@ -193,11 +267,12 @@
             {% for dest in destinations %}
                 {% set palettes = ['ph-1','ph-2','ph-3','ph-4','ph-5','ph-6'] %}
                 {% set ph = palettes[loop.index0 % 6] %}
+
                 <a href="{{ path('client_destination_show', {id: dest.id}) }}" class="dest-card">
 
-                    {# Image ou gradient #}
+                    {# Image ou gradient de remplacement #}
                     {% if dest.firstImage %}
-                        <img src="{{ dest.firstImage }}" alt="{{ dest.nom }}">
+                        <img src="{{ dest.firstImage }}" alt="{{ dest.nom }}" loading="lazy">
                     {% else %}
                         <div class="dest-placeholder {{ ph }}"></div>
                     {% endif %}
@@ -216,10 +291,64 @@
                             <div class="dest-desc">{{ dest.description }}</div>
                         {% endif %}
                     </div>
+
                 </a>
             {% endfor %}
         {% endif %}
     </div>
+
+    {# ══ PAGINATION ══════════════════════════════════════════════ #}
+    {% if destinations.pageCount > 1 %}
+        <div class="pagination-area">
+            <div class="pagination-btns">
+
+                {# ← Précédent #}
+                {% if destinations.currentPageNumber > 1 %}
+                    <a class="pag-btn nav-btn"
+                       href="{{ path('client_destination_index', app.request.query.all|merge({page: destinations.currentPageNumber - 1, q: query})) }}">
+                        <i class="fas fa-chevron-left" style="font-size:.7rem;"></i> Précédent
+                    </a>
+                {% else %}
+                    <span class="pag-btn nav-btn" style="opacity:.3;cursor:default;pointer-events:none;">
+                        <i class="fas fa-chevron-left" style="font-size:.7rem;"></i> Précédent
+                    </span>
+                {% endif %}
+
+                {# Numéros de pages #}
+                {% for page in destinations.paginationData.pagesInRange %}
+                    {% if page == destinations.currentPageNumber %}
+                        <span class="pag-btn active">{{ page }}</span>
+                    {% else %}
+                        <a class="pag-btn"
+                           href="{{ path('client_destination_index', app.request.query.all|merge({page: page, q: query})) }}">
+                            {{ page }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+
+                {# Suivant → #}
+                {% if destinations.currentPageNumber < destinations.pageCount %}
+                    <a class="pag-btn nav-btn"
+                       href="{{ path('client_destination_index', app.request.query.all|merge({page: destinations.currentPageNumber + 1, q: query})) }}">
+                        Suivant <i class="fas fa-chevron-right" style="font-size:.7rem;"></i>
+                    </a>
+                {% else %}
+                    <span class="pag-btn nav-btn" style="opacity:.3;cursor:default;pointer-events:none;">
+                        Suivant <i class="fas fa-chevron-right" style="font-size:.7rem;"></i>
+                    </span>
+                {% endif %}
+
+            </div>
+
+            {# Infos #}
+            <p class="pag-info">
+                Page {{ destinations.currentPageNumber }} / {{ destinations.pageCount }}
+                &nbsp;·&nbsp;
+                {{ destinations.getTotalItemCount }} destinations au total
+            </p>
+        </div>
+    {% endif %}
+
 </section>
 
 {% endblock %}

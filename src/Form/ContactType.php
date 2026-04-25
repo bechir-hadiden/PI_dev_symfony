@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Form;  // ← doit être exactement ça
+namespace App\Form;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -11,6 +10,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Email;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Length;
 
 class ContactType extends AbstractType
 {
@@ -18,43 +18,54 @@ class ContactType extends AbstractType
     {
         $builder
             ->add('prenom', TextType::class, [
-                'constraints' => [new NotBlank()],
-                'attr'        => ['placeholder' => 'Mohamed'],
+                'constraints' => [
+                    new NotBlank(message: 'Le prénom est obligatoire.'),
+                    new Length(min: 2, minMessage: 'Le prénom doit contenir au moins 2 caractères.'),
+                ],
+                'attr' => ['placeholder' => 'Votre prénom'],
             ])
             ->add('nom', TextType::class, [
-                'constraints' => [new NotBlank()],
-                'attr'        => ['placeholder' => 'Ben Ali'],
+                'constraints' => [
+                    new NotBlank(message: 'Le nom est obligatoire.'),
+                    new Length(min: 2, minMessage: 'Le nom doit contenir au moins 2 caractères.'),
+                ],
+                'attr' => ['placeholder' => 'Votre nom'],
             ])
             ->add('email', EmailType::class, [
-                'constraints' => [new NotBlank(), new Email()],
-                'attr'        => ['placeholder' => 'email@example.com'],
+                'constraints' => [
+                    new NotBlank(message: 'L\'email est obligatoire.'),
+                    new Email(message: 'Veuillez entrer un email valide.'),
+                ],
+                'attr' => ['placeholder' => 'votre@email.com'],
             ])
             ->add('telephone', TextType::class, [
                 'required' => false,
-                'attr'     => ['placeholder' => '+216 ...'],
+                'attr' => ['placeholder' => '+216 XX XXX XXX'],
             ])
             ->add('destinationSouhaitee', TextType::class, [
                 'required' => false,
-                'attr'     => ['placeholder' => 'Paris, Bali...'],
+                'attr' => ['placeholder' => 'Ex: Paris, Bali...'],
             ])
-            ->add('budget', ChoiceType::class, [
+            ->add('budget', TextType::class, [
                 'required' => false,
-                'choices'  => [
-                    '- 500 TND'          => '- 500 TND',
-                    '500 – 1 500 TND'    => '500 – 1 500 TND',
-                    '1 500 – 3 000 TND'  => '1 500 – 3 000 TND',
-                    '+ 3 000 TND'        => '+ 3 000 TND',
-                ],
-                'placeholder' => 'Choisir...',
+                'attr' => ['placeholder' => 'Ex: 2 000 TND'],
             ])
             ->add('message', TextareaType::class, [
-                'constraints' => [new NotBlank()],
-                'attr'        => ['placeholder' => 'Décrivez votre voyage idéal, dates, nombre de voyageurs...', 'rows' => 4],
+                'constraints' => [
+                    new NotBlank(message: 'Le message est obligatoire.'),
+                    new Length(min: 10, minMessage: 'Le message doit contenir au moins 10 caractères.'),
+                ],
+                'attr' => [
+                    'placeholder' => 'Décrivez votre projet de voyage...',
+                    'rows' => 4,
+                ],
             ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
-        $resolver->setDefaults([]);
+        $resolver->setDefaults([
+            'attr' => ['novalidate' => 'novalidate'],
+        ]);
     }
 }

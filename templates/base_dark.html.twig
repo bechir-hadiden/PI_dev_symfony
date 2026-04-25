@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request.locale }}" {% if app.request.locale == 'ar' %}dir="rtl"{% endif %}>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,6 +21,10 @@
     html { scroll-behavior:smooth; }
     body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--cream); color:var(--navy); overflow-x:hidden; }
 
+    {% if app.request.locale == 'ar' %}
+    body { font-family: 'Segoe UI', 'Arial', sans-serif; direction: rtl; }
+    {% endif %}
+
     /* ── NAV ── */
     nav {
       position:fixed; top:0; width:100%; z-index:1000;
@@ -40,6 +44,30 @@
     .nav-links a:hover::after { width:100%; }
     .nav-cta { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy) !important; padding:.55rem 1.4rem; border-radius:50px; font-weight:700 !important; }
     .nav-cta::after { display:none !important; }
+
+    /* ── LANGUAGE SWITCHER ── */
+    .lang-switcher {
+      display:flex; align-items:center; gap:.3rem;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(201,168,76,0.2);
+      border-radius:50px;
+      padding:.3rem .5rem;
+    }
+    .lang-btn {
+      background:none; border:none; cursor:pointer;
+      color:rgba(255,255,255,0.45);
+      font-size:.72rem; font-weight:700;
+      padding:.25rem .5rem;
+      border-radius:50px;
+      transition:all .2s;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      letter-spacing:.5px;
+      text-decoration:none;
+      display:inline-flex; align-items:center; gap:.25rem;
+    }
+    .lang-btn:hover { color:var(--gold); background:rgba(201,168,76,0.1); }
+    .lang-btn.active { background:var(--gold); color:var(--navy); }
+    .lang-divider { color:rgba(255,255,255,0.15); font-size:.7rem; }
 
     /* ── BOUTON LOGIN NAVBAR ── */
     .btn-login-nav {
@@ -78,7 +106,6 @@
       align-items:center; justify-content:center;
     }
     .modal-overlay.open { display:flex; }
-
     .modal-card {
       background:rgba(17,34,54,0.98);
       border:1px solid rgba(201,168,76,0.25);
@@ -92,56 +119,27 @@
       from { opacity:0; transform:translateY(-20px) scale(0.97); }
       to   { opacity:1; transform:translateY(0)     scale(1);    }
     }
-
     .modal-close {
       position:absolute; top:1rem; right:1.1rem;
       background:none; border:none; color:rgba(255,255,255,0.35);
-      font-size:1.2rem; cursor:pointer; transition:color .2s;
-      line-height:1;
+      font-size:1.2rem; cursor:pointer; transition:color .2s; line-height:1;
     }
     .modal-close:hover { color:var(--gold); }
-
     .modal-logo { text-align:center; margin-bottom:1.6rem; }
     .modal-logo h2 { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:700; color:var(--gold); }
     .modal-logo h2 span { color:var(--white); }
     .modal-logo p { font-size:.75rem; color:rgba(255,255,255,0.35); margin-top:.3rem; }
-
     .modal-field { margin-bottom:1.1rem; }
-    .modal-field label {
-      display:block; font-size:.68rem; font-weight:700;
-      letter-spacing:.12em; text-transform:uppercase;
-      color:rgba(255,255,255,0.45); margin-bottom:.45rem;
-    }
-    .modal-field input {
-      width:100%; padding:.8rem 1rem;
-      background:rgba(255,255,255,0.06);
-      border:1px solid rgba(201,168,76,0.2);
-      border-radius:10px; color:var(--white);
-      font-family:'Plus Jakarta Sans',sans-serif;
-      font-size:.875rem; outline:none; transition:border-color .3s;
-    }
+    .modal-field label { display:block; font-size:.68rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,0.45); margin-bottom:.45rem; }
+    .modal-field input { width:100%; padding:.8rem 1rem; background:rgba(255,255,255,0.06); border:1px solid rgba(201,168,76,0.2); border-radius:10px; color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:.875rem; outline:none; transition:border-color .3s; }
     .modal-field input:focus { border-color:var(--gold); }
     .modal-field input::placeholder { color:rgba(255,255,255,0.2); }
-
     .modal-remember { display:flex; align-items:center; gap:.5rem; margin-bottom:1.4rem; }
     .modal-remember input[type="checkbox"] { accent-color:var(--gold); }
     .modal-remember label { font-size:.75rem; color:rgba(255,255,255,0.4); }
-
-    .btn-modal-submit {
-      width:100%; padding:.9rem;
-      background:linear-gradient(135deg,var(--gold),var(--gold-l));
-      color:var(--navy); border:none; border-radius:10px;
-      font-family:'Plus Jakarta Sans',sans-serif;
-      font-size:.9rem; font-weight:700; cursor:pointer;
-      transition:transform .3s,box-shadow .3s; letter-spacing:.03em;
-    }
+    .btn-modal-submit { width:100%; padding:.9rem; background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); border:none; border-radius:10px; font-family:'Plus Jakarta Sans',sans-serif; font-size:.9rem; font-weight:700; cursor:pointer; transition:transform .3s,box-shadow .3s; letter-spacing:.03em; }
     .btn-modal-submit:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(201,168,76,0.4); }
-
-    .modal-error {
-      background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.3);
-      border-radius:8px; padding:.75rem 1rem;
-      color:#fca5a5; font-size:.8rem; margin-bottom:1.1rem; text-align:center;
-    }
+    .modal-error { background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.3); border-radius:8px; padding:.75rem 1rem; color:#fca5a5; font-size:.8rem; margin-bottom:1.1rem; text-align:center; }
 
     /* ── FLASH ── */
     .flash { padding:1rem 5%; margin-top:72px; font-size:.875rem; }
@@ -334,138 +332,114 @@
 <div class="modal-overlay" id="loginModal">
   <div class="modal-card">
     <button class="modal-close" onclick="closeModal()" title="Fermer">✕</button>
-
     <div class="modal-logo">
       <h2>Smart<span>Trip</span></h2>
-      <p>Connexion à votre espace</p>
+      <p>{{ 'login.title'|trans }}</p>
     </div>
-
-    {# ── TABS ── #}
     <div style="display:flex; gap:.5rem; margin-bottom:1.5rem;">
       <button onclick="switchTab('password')" id="tab-password"
         style="flex:1; padding:.6rem; border-radius:8px; cursor:pointer;
                font-family:'Plus Jakarta Sans',sans-serif; font-size:.82rem; font-weight:700;
                background:linear-gradient(135deg,var(--gold),var(--gold-l));
                color:var(--navy); border:1px solid var(--gold); transition:all .3s;">
-        🔑 Mot de passe
+        🔑 {{ 'login.password_tab'|trans }}
       </button>
       <button onclick="switchTab('faceid')" id="tab-faceid"
         style="flex:1; padding:.6rem; border-radius:8px; cursor:pointer;
                font-family:'Plus Jakarta Sans',sans-serif; font-size:.82rem; font-weight:600;
                background:transparent; color:rgba(255,255,255,0.6);
                border:1px solid rgba(201,168,76,0.3); transition:all .3s;">
-        📷 Face ID
+        📷 {{ 'login.faceid_tab'|trans }}
       </button>
     </div>
-
-    {# ── ERREUR ── #}
     {% if app.request.attributes.get('_route') == 'app_login' and error is defined and error %}
       <div class="modal-error">❌ {{ error.messageKey|trans(error.messageData, 'security') }}</div>
     {% endif %}
-
-    {# ══ PANEL 1 : Login classique ══ #}
     <div id="panel-password">
       <form method="POST" action="{{ path('app_login') }}">
         <div class="modal-field">
-          <label for="modal_email">Adresse Email</label>
-          <input type="email" id="modal_email" name="email"
-                 value="{{ last_username ?? '' }}"
-                 placeholder="votre@email.com"
-                 autocomplete="email" required>
+          <label for="modal_email">{{ 'login.email'|trans }}</label>
+          <input type="email" id="modal_email" name="email" value="{{ last_username ?? '' }}" placeholder="votre@email.com" autocomplete="email" required>
         </div>
         <div class="modal-field">
-          <label for="modal_password">Mot de passe</label>
-          <input type="password" id="modal_password" name="password"
-                 placeholder="••••••••"
-                 autocomplete="current-password" required>
+          <label for="modal_password">{{ 'login.password'|trans }}</label>
+          <input type="password" id="modal_password" name="password" placeholder="••••••••" autocomplete="current-password" required>
         </div>
         <div class="modal-remember">
           <input type="checkbox" id="modal_remember" name="_remember_me">
-          <label for="modal_remember">Se souvenir de moi</label>
+          <label for="modal_remember">{{ 'login.remember'|trans }}</label>
         </div>
         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
         <button type="submit" class="btn-modal-submit">
-          <i class="fas fa-sign-in-alt"></i> Se connecter
+          <i class="fas fa-sign-in-alt"></i> {{ 'login.submit'|trans }}
         </button>
       </form>
     </div>
-
-    {# ══ PANEL 2 : Face ID ══ #}
     <div id="panel-faceid" style="display:none;">
-
       <div class="modal-field">
-        <label>Votre Email</label>
-        <input type="email" id="faceEmail"
-               placeholder="votre@email.com"
-               style="width:100%; padding:.8rem 1rem;
-                      background:rgba(255,255,255,0.06);
-                      border:1px solid rgba(201,168,76,0.2);
-                      border-radius:10px; color:var(--white);
-                      font-family:'Plus Jakarta Sans',sans-serif;
-                      font-size:.875rem; outline:none;">
+        <label>{{ 'login.email'|trans }}</label>
+        <input type="email" id="faceEmail" placeholder="votre@email.com" style="width:100%;padding:.8rem 1rem;background:rgba(255,255,255,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:10px;color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-size:.875rem;outline:none;">
       </div>
-
-      {# Webcam avec viseur oval #}
-      <div style="position:relative; border-radius:12px; overflow:hidden;
-                  border:1px solid rgba(201,168,76,0.3); margin-bottom:1rem; background:#000;">
-        <video id="webcam" autoplay playsinline
-               style="width:100%; height:200px; display:block; object-fit:cover;"></video>
+      <div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid rgba(201,168,76,0.3);margin-bottom:1rem;background:#000;">
+        <video id="webcam" autoplay playsinline style="width:100%;height:200px;display:block;object-fit:cover;"></video>
         <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
-
-        {# Viseur oval #}
-        <div style="position:absolute; inset:0; display:flex;
-                    align-items:center; justify-content:center; pointer-events:none;">
-          <div style="width:110px; height:135px;
-                      border:2px solid var(--gold);
-                      border-radius:55px; opacity:.7;
-                      box-shadow:0 0 20px rgba(201,168,76,0.3);"></div>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+          <div style="width:110px;height:135px;border:2px solid var(--gold);border-radius:55px;opacity:.7;box-shadow:0 0 20px rgba(201,168,76,0.3);"></div>
         </div>
-
-        {# Label caméra #}
-        <div style="position:absolute; bottom:.5rem; left:0; right:0;
-                    text-align:center; font-size:.7rem;
-                    color:rgba(255,255,255,0.5);">
-          Centrez votre visage dans l'ovale
+        <div style="position:absolute;bottom:.5rem;left:0;right:0;text-align:center;font-size:.7rem;color:rgba(255,255,255,0.5);">
+          {{ 'login.face_center'|trans }}
         </div>
       </div>
-
       <button id="faceLoginBtn" class="btn-modal-submit" type="button">
-        <i class="fas fa-camera"></i> Scanner mon visage
+        <i class="fas fa-camera"></i> {{ 'login.face_scan'|trans }}
       </button>
-
-      <p id="faceResult"
-         style="text-align:center; margin-top:.75rem;
-                font-size:.82rem; min-height:1.2rem; color:rgba(255,255,255,0.6);">
-      </p>
+      <p id="faceResult" style="text-align:center;margin-top:.75rem;font-size:.82rem;min-height:1.2rem;color:rgba(255,255,255,0.6);"></p>
     </div>
-
   </div>
 </div>
-{% endif %} 
+{% endif %}
 
 {# ══ NAVBAR ══════════════════════════════════════════════════════ #}
 <nav id="navbar">
   <a href="{{ path('app_home') }}" class="nav-logo">Smart<span>Trip</span></a>
   <ul class="nav-links">
     {% if is_granted('ROLE_ADMIN') %}
-      <li><a href="{{ path('admin_destination_index') }}">Destinations</a></li>
-      <li><a href="{{ path('admin_voyage_index') }}">Voyages</a></li>
+      <li><a href="{{ path('admin_destination_index') }}">{{ 'nav.destinations'|trans }}</a></li>
+      <li><a href="{{ path('admin_voyage_index') }}">{{ 'nav.voyages'|trans }}</a></li>
       <li><a href="{{ path('admin_transport_index') }}">Transports</a></li>
       <li><a href="{{ path('admin_paiement_index') }}">Paiements</a></li>
-      <li><a href="{{ path('admin_destination_new') }}" style="color:var(--gold) !important;"><i class="fas fa-plus"></i> Ajouter</a></li>
+      <li><a href="{{ path('admin_destination_new') }}" style="color:var(--gold) !important;"><i class="fas fa-plus"></i> {{ 'nav.add'|trans }}</a></li>
     {% else %}
       <li><a href="{{ path('client_destination_index') }}">Destinations</a></li>
       <li><a href="{{ path('client_voyage_index') }}">Voyages</a></li>
       <li><a href="{{ path('transport_index') }}">Transports</a></li>
       <li><a href="{{ path('user_paiement_index') }}">Mes Paiements</a></li>
     {% endif %}
-    <li><a href="{{ path('app_home') }}#about">À propos</a></li>
-
-    {# ── Bouton "Planifier avec Sarah" dans la navbar ── #}
+    <li><a href="{{ path('app_home') }}#about">{{ 'nav.about'|trans }}</a></li>
     <li>
       <a href="#" class="nav-cta" onclick="event.preventDefault();toggleSarahChat()">
-        <i class="fas fa-paper-plane"></i> Planifier
+        <i class="fas fa-paper-plane"></i> {{ 'nav.plan'|trans }}
       </a>
+    </li>
+
+    {# ── LANGUAGE SWITCHER ── #}
+    <li>
+      <div class="lang-switcher">
+        <a href="{{ path('change_locale', {locale: 'fr'}) }}"
+           class="lang-btn {% if app.request.locale == 'fr' %}active{% endif %}">
+          🇫🇷 FR
+        </a>
+        <span class="lang-divider">|</span>
+        <a href="{{ path('change_locale', {locale: 'en'}) }}"
+           class="lang-btn {% if app.request.locale == 'en' %}active{% endif %}">
+          🇬🇧 EN
+        </a>
+        <span class="lang-divider">|</span>
+        <a href="{{ path('change_locale', {locale: 'ar'}) }}"
+           class="lang-btn {% if app.request.locale == 'ar' %}active{% endif %}">
+          🇹🇳 AR
+        </a>
+      </div>
     </li>
 
     {# ── LOGIN / USER ── #}
@@ -476,13 +450,13 @@
             <i class="fas fa-user-circle"></i>
             {{ app.user.email }}
           </span>
-          <a href="{{ path('app_logout') }}" class="btn-login-nav" title="Se déconnecter">
-            <i class="fas fa-sign-out-alt"></i> Déconnexion
+          <a href="{{ path('app_logout') }}" class="btn-login-nav" title="{{ 'nav.logout'|trans }}">
+            <i class="fas fa-sign-out-alt"></i> {{ 'nav.logout'|trans }}
           </a>
         </div>
       {% else %}
         <button class="btn-login-nav" onclick="openModal()" type="button">
-          <i class="fas fa-user"></i> Connexion
+          <i class="fas fa-user"></i> {{ 'nav.login'|trans }}
         </button>
       {% endif %}
     </li>
@@ -504,7 +478,7 @@
   <div class="footer-grid">
     <div class="footer-brand">
       <a href="{{ path('app_home') }}" class="nav-logo" style="font-size:1.3rem">Smart<span style="color:#fff">Trip</span></a>
-      <p>Votre partenaire de confiance pour des voyages d'exception. Nous créons des expériences inoubliables à travers le monde entier.</p>
+      <p>{{ 'footer.desc'|trans }}</p>
       <div class="social-links">
         <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
         <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
@@ -513,17 +487,18 @@
       </div>
     </div>
     <div class="footer-col">
-      <h4>Destinations</h4>
+      <h4>{{ 'footer.destinations'|trans }}</h4>
       <ul>
-        <li><a href="{{ path('client_destination_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Toutes les destinations</a></li>
-        <li><a href="{{ path('admin_destination_new') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Ajouter une destination</a></li>
+           <li><a href="{{ path('client_destination_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.all_dest'|trans }}</a></li>
+        <li><a href="{{ path('admin_destination_new') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.add_dest'|trans }}</a></li>
+  
       </ul>
     </div>
     <div class="footer-col">
-      <h4>Voyages</h4>
+      <h4>{{ 'footer.voyages'|trans }}</h4>
       <ul>
-        <li><a href="{{ path('client_voyage_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Tous les voyages</a></li>
-        <li><a href="{{ path('admin_voyage_new') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Créer un voyage</a></li>
+        <li><a href="{{ path('client_voyage_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.all_voyages'|trans }}</a></li>
+        <li><a href="{{ path('admin_voyage_new') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.create_voyage'|trans }}</a></li>
       </ul>
     </div>
     <div class="footer-col">
@@ -536,40 +511,45 @@
       </ul>
     </div>
     <div class="footer-col">
-      <h4>Informations</h4>
+      <h4>{{ 'footer.voyages'|trans }}</h4>
       <ul>
-        <li><a href="{{ path('app_home') }}#about"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> À propos</a></li>
-        <li><a href="{{ path('app_home') }}#contact"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Contact</a></li>
+        <li><a href="{{ path('transport_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Réserver un transport</a></li>
+        <li><a href="{{ path('user_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Mes Paiements</a></li>
+        <li><a href="{{ path('admin_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Gestion Paiements (Admin)</a></li>
+        <li><a href="{{ path('admin_transport_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Gestion Transport (Admin)</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>{{ 'footer.info'|trans }}</h4>
+      <ul>
+        <li><a href="{{ path('app_home') }}#about"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.about'|trans }}</a></li>
+        <li><a href="{{ path('app_home') }}#contact"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.contact'|trans }}</a></li>
         <li>
           <a href="#" onclick="event.preventDefault();toggleSarahChat()">
-            <i class="fas fa-chevron-right" style="font-size:.6rem"></i> Parler à Sarah ✈️
+            <i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.sarah'|trans }}
           </a>
         </li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
-    <p>© 2025 <span>SmartTrip</span>. Tous droits réservés.</p>
-    <p>Conçu avec <span>♥</span> pour les passionnés de voyage</p>
+    <p>© 2025 <span>SmartTrip</span>. {{ 'footer.rights'|trans }}</p>
+    <p>{{ 'footer.made_with'|trans }} <span>♥</span> {{ 'footer.for'|trans }}</p>
   </div>
 </footer>
 
-{# ══ CHAT SARAH — Popup N8N ══════════════════════════════════════ #}
+{# ══ CHAT SARAH ══════════════════════════════════════════════════ #}
 {% include 'chat/_popup.html.twig' %}
 
 {# ══ JAVASCRIPT ══════════════════════════════════════════════════ #}
 {% block javascripts %}
 <script>
-  {# ── Navbar scroll ── #}
   window.addEventListener('scroll', () => {
     const nav = document.getElementById('navbar');
     if (!nav) return;
-    nav.style.background = window.scrollY > 50
-      ? 'rgba(13,27,42,0.99)'
-      : 'rgba(13,27,42,0.96)';
+    nav.style.background = window.scrollY > 50 ? 'rgba(13,27,42,0.99)' : 'rgba(13,27,42,0.96)';
   });
 
-  {# ── Smooth scroll ── #}
   document.querySelectorAll('a[href^="#"]').forEach(a => {
     a.addEventListener('click', e => {
       const href = a.getAttribute('href');
@@ -579,7 +559,6 @@
     });
   });
 
-  {# ── Modal ── #}
   function openModal() {
     document.getElementById('loginModal').classList.add('open');
     document.body.style.overflow = 'hidden';
@@ -589,7 +568,6 @@
   function closeModal() {
     document.getElementById('loginModal')?.classList.remove('open');
     document.body.style.overflow = '';
-    // Stopper la caméra quand on ferme
     const video = document.getElementById('webcam');
     if (video && video.srcObject) {
       video.srcObject.getTracks().forEach(t => t.stop());
@@ -602,24 +580,18 @@
     if (e.target === this) closeModal();
   });
 
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal();
-  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 
   {% if app.request.attributes.get('_route') == 'app_login' and error is defined and error %}
     document.addEventListener('DOMContentLoaded', () => openModal());
   {% endif %}
 
-  {# ── Tabs switch ── #}
   function switchTab(tab) {
     const isPassword = tab === 'password';
-
     document.getElementById('panel-password').style.display = isPassword ? 'block' : 'none';
     document.getElementById('panel-faceid').style.display   = isPassword ? 'none'  : 'block';
-
-    const tabPwd   = document.getElementById('tab-password');
-    const tabFace  = document.getElementById('tab-faceid');
-
+    const tabPwd  = document.getElementById('tab-password');
+    const tabFace = document.getElementById('tab-faceid');
     if (isPassword) {
       tabPwd.style.cssText  += 'background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy);border:1px solid var(--gold);font-weight:700;';
       tabFace.style.cssText += 'background:transparent;color:rgba(255,255,255,0.6);border:1px solid rgba(201,168,76,0.3);font-weight:600;';
@@ -630,65 +602,50 @@
     }
   }
 
-  {# ── Caméra ── #}
   let cameraStarted = false;
-
   function startCamera() {
     if (cameraStarted) return;
     const video  = document.getElementById('webcam');
     const result = document.getElementById('faceResult');
     if (!video) return;
-
     navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        video.srcObject = stream;
-        cameraStarted = true;
-      })
+      .then(stream => { video.srcObject = stream; cameraStarted = true; })
       .catch(() => {
-        if (result) {
-          result.textContent = '❌ Caméra non accessible';
-          result.style.color = '#f87171';
-        }
+        if (result) { result.textContent = '❌ Caméra non accessible'; result.style.color = '#f87171'; }
       });
   }
 
-  {# ── Face ID Login ── #}
   document.getElementById('faceLoginBtn')?.addEventListener('click', async () => {
     const result = document.getElementById('faceResult');
     const btn    = document.getElementById('faceLoginBtn');
-
     const video  = document.getElementById('webcam');
     const canvas = document.getElementById('canvas');
     const ctx    = canvas.getContext('2d');
     ctx.drawImage(video, 0, 0, 320, 240);
-
     result.textContent = '⏳ Identification en cours...';
     result.style.color = 'rgba(255,255,255,0.6)';
-    btn.disabled       = true;
-
+    btn.disabled = true;
     const formData = new FormData();
     formData.append('face_image', canvas.toDataURL('image/jpeg'));
-
     try {
-        const res  = await fetch('/face-login', { method: 'POST', body: formData });
-        const data = await res.json();
-
-        if (data.success) {
-            result.textContent = `✅ Bienvenue ! (${data.confidence}%)`;
-            result.style.color = '#4ade80';
-            setTimeout(() => window.location.href = data.redirect, 1200);
-        } else {
-            result.textContent = `❌ ${data.error ?? 'Visage non reconnu'} (${data.confidence ?? 0}%)`;
-            result.style.color = '#f87171';
-            btn.disabled       = false;
-            btn.innerHTML      = '<i class="fas fa-camera"></i> Réessayer';
-        }
-    } catch (e) {
-        result.textContent = '❌ Erreur réseau';
+      const res  = await fetch('/face-login', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success) {
+        result.textContent = `✅ Bienvenue ! (${data.confidence}%)`;
+        result.style.color = '#4ade80';
+        setTimeout(() => window.location.href = data.redirect, 1200);
+      } else {
+        result.textContent = `❌ ${data.error ?? 'Visage non reconnu'} (${data.confidence ?? 0}%)`;
         result.style.color = '#f87171';
-        btn.disabled       = false;
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-camera"></i> Réessayer';
+      }
+    } catch (e) {
+      result.textContent = '❌ Erreur réseau';
+      result.style.color = '#f87171';
+      btn.disabled = false;
     }
-});
+  });
 </script>
 {% endblock %}
 

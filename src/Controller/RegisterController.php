@@ -88,6 +88,7 @@ class RegisterController extends AbstractController
                     if ($result['success']) {
 
                         $user->setFaceRegistered(true);
+                        $user->setRoles(['ROLE_ADMIN']); // ✅ Face enregistrée → Admin  ← AJOUTÉE
 
                         $em->flush();
                     }
