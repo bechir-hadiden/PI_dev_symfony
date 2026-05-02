@@ -1,0 +1,128 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}SmartTrip - Publier un avis{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="glass-card p-5 fade-in">
+                <div class="text-center mb-4">
+                    <i class="fas fa-pen-alt fa-3x text-primary mb-3"></i>
+                    <h2 class="fw-bold">Partagez votre expérience</h2>
+                    <p class="text-muted">Votre avis aide d'autres voyageurs à faire le bon choix</p>
+                </div>
+
+                {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'class': 'needs-validation'}}) }}
+                    
+                    <!-- Nom -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-user me-2 text-primary"></i>Nom complet
+                        </label>
+                        {{ form_widget(form.nomClient, {
+                            'attr': {
+                                'class': 'form-control form-control-lg' ~ (form.nomClient.vars.errors|length > 0 ? ' is-invalid'),
+                                'placeholder': 'Entrez votre nom'
+                            }
+                        }) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.nomClient) }}
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-envelope me-2 text-primary"></i>Email
+                        </label>
+                        {{ form_widget(form.email, {
+                            'attr': {
+                                'class': 'form-control form-control-lg' ~ (form.email.vars.errors|length > 0 ? ' is-invalid'),
+                                'placeholder': 'exemple@email.com'
+                            }
+                        }) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.email) }}
+                        </div>
+                    </div>
+
+                    <!-- Note -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-star me-2 text-primary"></i>Note
+                        </label>
+                        <div class="rating-input">
+                            {% for child in form.note %}
+                                <div class="form-check form-check-inline">
+                                    {{ form_widget(child, {'attr': {'class': 'btn-check'}}) }}
+                                    <label for="{{ child.vars.id }}" class="btn btn-outline-warning">
+                                        {% for i in 1..child.vars.value %}⭐{% endfor %}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Commentaire -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-comment me-2 text-primary"></i>Commentaire
+                        </label>
+                        {{ form_widget(form.commentaire, {
+                            'attr': {
+                                'class': 'form-control' ~ (form.commentaire.vars.errors|length > 0 ? ' is-invalid'),
+                                'rows': 5,
+                                'placeholder': 'Partagez votre expérience en détail...'
+                            }
+                        }) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.commentaire) }}
+                        </div>
+                    </div>
+
+                    <!-- Voyage ID -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-plane me-2 text-primary"></i>ID du voyage
+                        </label>
+                        {{ form_widget(form.voyageId, {
+                            'attr': {
+                                'class': 'form-control form-control-lg' ~ (form.voyageId.vars.errors|length > 0 ? ' is-invalid'),
+                                'placeholder': 'Ex: 1, 2, 3...',
+                                'min': 1
+                            }
+                        }) }}
+                        <div class="invalid-feedback">
+                            {{ form_errors(form.voyageId) }}
+                        </div>
+                    </div>
+
+                    <!-- Boutons -->
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-gradient btn-lg">
+                            <i class="fas fa-paper-plane me-2"></i>Publier mon avis
+                        </button>
+                        <a href="{{ path('app_avis_index') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Retour à la liste
+                        </a>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.rating-input .btn-check:checked + .btn-outline-warning {
+    background: linear-gradient(45deg, #ffc107, #ff9f43);
+    color: white;
+    border-color: #ffc107;
+}
+.rating-input .btn-outline-warning {
+    border-width: 2px;
+    font-size: 1.1rem;
+    padding: 10px 20px;
+}
+</style>
+{% endblock %}

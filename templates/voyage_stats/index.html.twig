@@ -1,0 +1,192 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}SmartTrip - Statistiques et recommandations voyage{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/avis.css') }}">
+    <style>
+        .stats-card {
+            transition: transform 0.2s;
+        }
+        .stats-card:hover {
+            transform: translateY(-5px);
+        }
+        .recommendation-badge {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .risk-badge {
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .keyword-badge {
+            background: #f0f0f0;
+            color: #555;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-size: 0.7rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            display: inline-block;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container py-4">
+    <h1 class="mb-4">📊 Analyse des voyages</h1>
+    
+    <!-- Statistiques globales -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-chart-line text-primary me-2"></i>Vue d'ensemble</h5>
+                    <div class="row mt-3">
+                        <div class="col-md-3 text-center">
+                            <div class="display-4 text-primary">{{ stats_globales.total_avis }}</div>
+                            <small class="text-muted">Avis analysés</small>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="display-4 text-success">{{ stats_globales.note_moyenne_globale }}/5</div>
+                            <small class="text-muted">Note moyenne</small>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="display-4 text-info">{{ stats_globales.satisfaction_moyenne_globale ?? '-' }}%</div>
+                            <small class="text-muted">Satisfaction moyenne</small>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <span class="badge bg-success me-2">😊 {{ stats_globales.sentiments.positif }}</span>
+                            <span class="badge bg-secondary me-2">😐 {{ stats_globales.sentiments.neutre }}</span>
+                            <span class="badge bg-danger">😞 {{ stats_globales.sentiments.negatif }}</span>
+                            <div><small class="text-muted">Répartition des sentiments</small></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recommandations -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3><i class="fas fa-star text-warning me-2"></i>Top 5 voyages recommandés</h3>
+            <div class="row mt-3">
+                {% for rec in recommendations %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card stats-card h-100 shadow-sm border-0 rounded-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Voyage #{{ rec.voyage_id }}</h5>
+                                <div class="mb-2">
+                                    <span class="recommendation-badge">{{ rec.recommendation_level }}</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="text-warning">⭐ {{ rec.note_moyenne }}/5</span>
+                                    {% if rec.satisfaction_moyenne %}
+                                        <span class="ms-3 text-info">📊 {{ rec.satisfaction_moyenne }}% satisfaction</span>
+                                    {% endif %}
+                                </div>
+                                <div class="mb-2">
+                                    <small class="text-muted">{{ rec.total_avis }} avis</small>
+                                </div>
+                                <div class="mt-2">
+                                    {% if rec.risque %}
+                                        <span class="risk-badge bg-{{ rec.risque.couleur }} text-white">Risque {{ rec.risque.niveau }}</span>
+                                    {% endif %}
+                                </div>
+                                {% if rec.top_keywords|length %}
+                                    <div class="mt-3">
+                                        <small class="text-muted">Mots-clés fréquents :</small><br>
+                                        {% for keyword, count in rec.top_keywords %}
+                                            <span class="keyword-badge">{{ keyword }} ({{ count }})</span>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="card-footer bg-transparent border-0">
+                                <a href="#" class="btn btn-sm btn-outline-primary w-100">Voir les détails</a>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info">Aucun avis disponible pour générer des recommandations.</div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tous les voyages -->
+    <div class="row">
+        <div class="col-12">
+            <h3><i class="fas fa-globe me-2"></i>Liste complète des voyages</h3>
+            <div class="table-responsive mt-3">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID Voyage</th>
+                            <th>Nombre d'avis</th>
+                            <th>Note moyenne</th>
+                            <th>Satisfaction moyenne</th>
+                            <th>Recommandation</th>
+                            <th>Risque</th>
+                            <th>Mots-clés populaires</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for voyage in voyages %}
+                        <tr>
+                            <td>#{{ voyage.voyage_id }}</td>
+                            <td>{{ voyage.total_avis }}</td>
+                            <td>
+                                <span class="text-warning">{{ voyage.note_moyenne }}/5</span>
+                            </td>
+                            <td>
+                                {% if voyage.satisfaction_moyenne %}
+                                    <span class="text-info">{{ voyage.satisfaction_moyenne }}%</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge 
+                                    {% if voyage.recommendation_level == 'Fortement recommandé' %}bg-success
+                                    {% elseif voyage.recommendation_level == 'Recommandé' %}bg-primary
+                                    {% elseif voyage.recommendation_level == 'Moyennement recommandé' %}bg-warning text-dark
+                                    {% elseif voyage.recommendation_level == 'Déconseillé' %}bg-danger
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ voyage.recommendation_level }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if voyage.risque %}
+                                    <span class="badge bg-{{ voyage.risque.couleur }}">{{ voyage.risque.niveau }}</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% for keyword, count in voyage.top_keywords|slice(0,3) %}
+                                    <span class="keyword-badge">{{ keyword }} ({{ count }})</span>
+                                {% endfor %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center">Aucun voyage avec avis trouvé</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

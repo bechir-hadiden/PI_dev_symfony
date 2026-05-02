@@ -1,9 +1,3 @@
-# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
-
-parameters:
-    images_directory: '%kernel.project_dir%/public/uploads/destinations'
-    n8n_webhook_url: 'https://bechir19.app.n8n.cloud/webhook/smart-trip-itineraire'
-
 services:
     _defaults:
         autowire: true
@@ -11,6 +5,10 @@ services:
 
     App\:
         resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
 
     App\Service\AiTransportService:
         arguments:
@@ -19,3 +17,17 @@ services:
     App\Service\ContactService:
         arguments:
             $adminEmail: '%env(ADMIN_EMAIL)%'
+
+    App\Service\PhotoService:
+        arguments:
+            $unsplashAccessKey: '%env(UNSPLASH_ACCESS_KEY)%'
+
+    App\Service\FlightService:
+        arguments:
+            $aviationStackApiKey: '%env(AVIATIONSTACK_API_KEY)%'
+
+    App\Service\BoardingPassService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+            $baseUrl: 'http://localhost:8000'

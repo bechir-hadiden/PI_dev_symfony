@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}SmartTrip - Voyages et Avis{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>✈️</text></svg>">
+        
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        
+        {% block stylesheets %}
+            <style>
+                body {
+                    font-family: 'Inter', sans-serif;
+                    background: #f8f9fa;
+                }
+                .navbar-brand {
+                    font-weight: 700;
+                    font-size: 1.5rem;
+                }
+                .navbar-brand i {
+                    margin-right: 8px;
+                }
+                .nav-link {
+                    font-weight: 500;
+                    transition: all 0.2s;
+                }
+                .nav-link:hover {
+                    color: #0d6efd !important;
+                }
+                .nav-link.active {
+                    color: #0d6efd !important;
+                    background: rgba(13, 110, 253, 0.1);
+                    border-radius: 8px;
+                }
+                .dropdown-menu {
+                    border-radius: 12px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+                    border: none;
+                    margin-top: 10px;
+                }
+                .dropdown-item {
+                    padding: 8px 20px;
+                    transition: all 0.2s;
+                }
+                .dropdown-item:hover {
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    color: white;
+                }
+                .dropdown-item i {
+                    width: 20px;
+                    margin-right: 8px;
+                }
+                .footer {
+                    background: #343a40;
+                    color: #adb5bd;
+                    padding: 2rem 0;
+                    margin-top: 3rem;
+                }
+                .footer a {
+                    color: #adb5bd;
+                    text-decoration: none;
+                }
+                .footer a:hover {
+                    color: white;
+                }
+                .btn-primary {
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    border: none;
+                }
+                .btn-primary:hover {
+                    background: linear-gradient(135deg, #5a67d8, #6b46c1);
+                }
+                .badge-notification {
+                    position: relative;
+                    top: -8px;
+                    right: 5px;
+                    font-size: 0.65rem;
+                }
+                .admin-badge {
+                    background: #dc3545;
+                    color: white;
+                    padding: 2px 8px;
+                    border-radius: 20px;
+                    font-size: 0.7rem;
+                    margin-left: 10px;
+                }
+
+                /* ================= CHATBOT AI STYLES ================= */
+                #chat-widget-container {
+                    position: fixed;
+                    bottom: 25px;
+                    right: 25px;
+                    width: 350px;
+                    z-index: 2000;
+                }
+                #chat-window {
+                    display: none;
+                    flex-direction: column;
+                    height: 450px;
+                    background: white;
+                    border-radius: 15px;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+                    border: 1px solid rgba(0,0,0,0.1);
+                    overflow: hidden;
+                    margin-bottom: 15px;
+                }
+                #chat-header {
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    color: white;
+                    padding: 15px;
+                    font-weight: 600;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                #chat-content {
+                    flex: 1;
+                    padding: 15px;
+                    overflow-y: auto;
+                    background: #fdfdfd;
+                    font-size: 0.9rem;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                .chat-message {
+                    padding: 8px 12px;
+                    border-radius: 12px;
+                    max-width: 85%;
+                    word-wrap: break-word;
+                }
+                .msg-user {
+                    background: #667eea;
+                    color: white;
+                    align-self: flex-end;
+                    border-bottom-right-radius: 2px;
+                }
+                .msg-ai {
+                    background: #f1f0f0;
+                    color: #333;
+                    align-self: flex-start;
+                    border-bottom-left-radius: 2px;
+                    border-left: 3px solid #764ba2;
+                }
+                #chat-input-area {
+                    padding: 12px;
+                    border-top: 1px solid #eee;
+                    display: flex;
+                    gap: 8px;
+                }
+                #chat-btn-toggle {
+                    width: 60px;
+                    height: 60px;
+                    border-radius: 50%;
+                    background: linear-gradient(135deg, #667eea, #764ba2);
+                    color: white;
+                    border: none;
+                    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                    cursor: pointer;
+                    font-size: 24px;
+                    transition: transform 0.2s;
+                    float: right;
+                }
+                #chat-btn-toggle:hover { transform: scale(1.1); }
+            </style>
+        {% endblock %}
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+            <div class="container">
+                <a class="navbar-brand" href="/avis">
+                    <i class="fas fa-plane"></i> SmartTrip
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link {% if app.request.get('_route') == 'app_avis_index' %}active{% endif %}" href="/avis">
+                                <i class="fas fa-star me-1"></i> Avis
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/statistiques">
+                                <i class="fas fa-chart-line me-1"></i> Statistiques
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/mes-reservations">
+                                <i class="fas fa-ticket-alt me-1"></i> Mes réservations
+                            </a>
+                        </li>
+                        
+                        {# ========== PARTIE ADMIN ========== #}
+                        {% if app.user and 'ROLE_ADMIN' in app.user.roles %}
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-shield me-1"></i> Admin
+                                    <span class="admin-badge">admin</span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="adminDropdown">
+                                    <li>
+                                        <a class="dropdown-item" href="/admin">
+                                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="/admin/avis">
+                                            <i class="fas fa-star"></i> Gérer les avis
+                                            <span class="badge bg-warning text-dark float-end" id="pendingAvisCount">0</span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/admin/reservations">
+                                            <i class="fas fa-calendar-check"></i> Gérer les réservations
+                                            <span class="badge bg-warning text-dark float-end" id="pendingReservationsCount">0</span>
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" href="/admin/statistiques">
+                                            <i class="fas fa-chart-pie"></i> Statistiques avancées
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/admin/boarding-passes">
+                                            <i class="fas fa-qrcode"></i> Billets électroniques
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item text-danger" href="/admin/logout">
+                                            <i class="fas fa-sign-out-alt"></i> Déconnexion
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        {% else %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="/admin/login">
+                                    <i class="fas fa-lock me-1"></i> Admin
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <main>
+            {% block body %}{% endblock %}
+        </main>
+
+        <div id="chat-widget-container">
+            <div id="chat-window">
+                <div id="chat-header">
+                    <span><i class="fas fa-robot me-2"></i> Assistant SmartTrip</span>
+                    <button class="btn-close btn-close-white" onclick="toggleChat()"></button>
+                </div>
+                <div id="chat-content">
+                    <div class="chat-message msg-ai">Bonjour ! Je suis votre concierge virtuel. Comment puis-je vous aider aujourd'hui ?</div>
+                </div>
+                <div id="chat-input-area">
+                    <input type="text" id="chat-input" class="form-control form-control-sm" placeholder="Posez votre question...">
+                    <button class="btn btn-primary btn-sm" onclick="sendChatMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+            <button id="chat-btn-toggle" onclick="toggleChat()">
+                <i class="fas fa-comment-dots"></i>
+            </button>
+        </div>
+
+        <footer class="footer">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <h5>SmartTrip</h5>
+                        <p class="small">Votre partenaire de confiance pour des voyages inoubliables. Découvrez les meilleures destinations et partagez vos expériences.</p>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <h5>Liens utiles</h5>
+                        <ul class="list-unstyled small">
+                            <li><a href="/avis">Avis clients</a></li>
+                            <li><a href="/statistiques">Statistiques voyages</a></li>
+                            <li><a href="/mes-reservations">Mes réservations</a></li>
+                            <li><a href="#">Conditions générales</a></li>
+                            <li><a href="#">Contact</a></li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <h5>Suivez-nous</h5>
+                        <div class="d-flex gap-3">
+                            <a href="#" class="text-white-50"><i class="fab fa-facebook-f fa-lg"></i></a>
+                            <a href="#" class="text-white-50"><i class="fab fa-twitter fa-lg"></i></a>
+                            <a href="#" class="text-white-50"><i class="fab fa-instagram fa-lg"></i></a>
+                            <a href="#" class="text-white-50"><i class="fab fa-linkedin-in fa-lg"></i></a>
+                        </div>
+                        <hr class="bg-secondary my-2">
+                        <p class="small mb-0">&copy; {{ "now"|date("Y") }} SmartTrip. Tous droits réservés.</p>
+                    </div>
+                </div>
+            </div>
+        </footer>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        
+        <script>
+            // Animation au scroll (Existant)
+            $(window).scroll(function() {
+                $('.fade-in').each(function() {
+                    var elementTop = $(this).offset().top;
+                    var viewportTop = $(window).scrollTop();
+                    if (elementTop < viewportTop + $(window).height() - 100) {
+                        $(this).css('opacity', '1').css('transform', 'translateY(0)');
+                    }
+                });
+            });
+            
+            // Activer le lien actif (Existant)
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.href === window.location.href) {
+                    link.classList.add('active');
+                }
+            });
+            
+            // ========== CHARGER LES NOTIFICATIONS ADMIN (Existant) ==========
+            {% if app.user and 'ROLE_ADMIN' in app.user.roles %}
+            function loadAdminNotifications() {
+                fetch('/admin/api/pending-count')
+                    .then(response => response.json())
+                    .then(data => {
+                        const pendingBadge = document.getElementById('pendingAvisCount');
+                        if (pendingBadge) {
+                            const count = data.avis_pending || 0;
+                            pendingBadge.textContent = count;
+                            pendingBadge.style.display = count > 0 ? 'inline-block' : 'none';
+                        }
+                    })
+                    .catch(error => console.error('Erreur chargement avis:', error));
+                
+                fetch('/admin/api/pending-reservations-count')
+                    .then(response => response.json())
+                    .then(data => {
+                        const pendingBadge = document.getElementById('pendingReservationsCount');
+                        if (pendingBadge) {
+                            const count = data.pending || 0;
+                            pendingBadge.textContent = count;
+                            pendingBadge.style.display = count > 0 ? 'inline-block' : 'none';
+                        }
+                    })
+                    .catch(error => console.error('Erreur chargement réservations:', error));
+            }
+            
+            loadAdminNotifications();
+            setInterval(loadAdminNotifications, 30000);
+            {% endif %}
+
+            // ================= CHATBOT LOGIC (Nouveau) =================
+            function toggleChat() {
+                const win = document.getElementById('chat-window');
+                win.style.display = (win.style.display === 'none' || win.style.display === '') ? 'flex' : 'none';
+            }
+
+            async function sendChatMessage() {
+                const input = document.getElementById('chat-input');
+                const content = document.getElementById('chat-content');
+                const message = input.value.trim();
+
+                if (!message) return;
+
+                // Message Utilisateur
+                content.innerHTML += `<div class="chat-message msg-user">${message}</div>`;
+                input.value = '';
+                content.scrollTop = content.scrollHeight;
+
+                // Loading
+                const loadingId = "ai-load-" + Date.now();
+                content.innerHTML += `<div class="chat-message msg-ai" id="${loadingId}"><i class="fas fa-circle-notch fa-spin"></i> SmartTrip réfléchit...</div>`;
+                content.scrollTop = content.scrollHeight;
+
+                try {
+                    const response = await fetch('/api/chatbot', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: message })
+                    });
+
+                    const data = await response.json();
+                    document.getElementById(loadingId).remove();
+
+                    // Réponse IA
+                    content.innerHTML += `<div class="chat-message msg-ai">${data.reply}</div>`;
+                    content.scrollTop = content.scrollHeight;
+                } catch (e) {
+                    document.getElementById(loadingId).innerHTML = "<span class='text-danger'>Service indisponible.</span>";
+                }
+            }
+
+            document.getElementById('chat-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') sendChatMessage();
+            });
+        </script>
+        
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>
