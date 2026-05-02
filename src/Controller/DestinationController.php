@@ -13,14 +13,20 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class DestinationController extends AbstractController
 {
+    #[Route('/destination-test', name: 'destination_test')]
+    public function test(): Response
+    {
+        return $this->json(['status' => 'ok', 'message' => 'Test route works']);
+    }
+
     #[Route('/destination/{destination}', name: 'app_destination_show')]
     public function show(
         string $destination,
         GeocodingService $geocoding,
         WeatherService $weather,
         AvisRepository $avisRepository,
-        PhotoService $photoService,
-        FlightService $flightService
+        ?PhotoService $photoService = null,
+        ?FlightService $flightService = null
     ): Response {
         // 1. Géolocalisation de la destination
         $location = $geocoding->geocode($destination);
@@ -50,12 +56,20 @@ class DestinationController extends AbstractController
         }
         $allPhotos = array_values($uniquePhotos);
         
-        // 5. Photos Unsplash de la destination
-        $destinationPhotos = $photoService->searchPhotos($location['city'] ?? $destination, 20);
-        $unsplashPhotos = $destinationPhotos['success'] ? $destinationPhotos['photos'] : [];
+        // 5. Photos Unsplash de la destination (si service disponible)
+        $unsplashPhotos = [];
+        if ($photoService) {
+            $destinationPhotos = $photoService->searchPhotos($location['city'] ?? $destination, 20);
+            $unsplashPhotos = $destinationPhotos['success'] ? $destinationPhotos['photos'] : [];
+        }
         
-        // 6. VOLS VERS LA DESTINATION (AVIATIONSTACK)
-        $flights = $flightService->getAllFlightsToDestination($location['city'] ?? $destination, 15);
+        // 6. VOLS VERS LA DESTINATION (si service disponible)
+        $flights = [];
+        $airportCode = null;
+        if ($flightService) {
+            $flights = $flightService->getAllFlightsToDestination($location['city'] ?? $destination, 15);
+            $airportCode = $flightService->getAirportCode($location['city'] ?? $destination);
+        }
         
         // 7. Statistiques des avis
         $stats = [
@@ -72,9 +86,6 @@ class DestinationController extends AbstractController
         
         // 8. Conseils météo
         $tips = $weatherData ? $weather->getWeatherTips($weatherData['temperature'], $weatherData['description']) : [];
-        
-        // 9. Code IATA de l'aéroport
-        $airportCode = $flightService->getAirportCode($location['city'] ?? $destination);
         
         return $this->render('destination/show.html.twig', [
             'destination' => $destination,
