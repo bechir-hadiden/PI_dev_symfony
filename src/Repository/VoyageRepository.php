@@ -62,7 +62,8 @@ class VoyageRepository extends ServiceEntityRepository
     //     return $qb->getQuery();
     // }
 
-    public function findDisponiblesQuery(?int $destinationId = null)    {
+    public function findDisponiblesQuery(?int $destinationId = null)
+    {
         $qb = $this->createQueryBuilder('v');
 
         if ($destinationId) {
@@ -70,5 +71,17 @@ class VoyageRepository extends ServiceEntityRepository
                 ->setParameter('dest', $destinationId);
         }
 
-        return $qb->getQuery();    }
+        return $qb->getQuery();
+    }
+
+    public function findForHome(int $limit = 4): array
+    {
+        return $this->createQueryBuilder('v')
+            ->leftJoin('v.destinationRel', 'd')
+            ->addSelect('d')
+            ->orderBy('v.id', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

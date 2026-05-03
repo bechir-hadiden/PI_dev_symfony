@@ -9,7 +9,7 @@
   min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  padding-top: 72px; /* navbar height */
+  padding-top: 72px;
 }
 
 /* ── LEFT PANEL ── */
@@ -78,7 +78,6 @@
   display: flex;
   gap: 2.2rem;
 }
-.vstat { }
 .vstat-num {
   font-family: 'Playfair Display', serif;
   font-size: 1.7rem;
@@ -314,6 +313,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  min-height: 200px;
 }
 .face-cam-wrap video {
   width: 100%;
@@ -322,6 +322,7 @@
   object-fit: cover;
 }
 .face-cam-wrap canvas { display: none; }
+
 /* oval guide overlay */
 .face-guide {
   position: absolute;
@@ -352,6 +353,7 @@
   font-size: .68rem;
   color: rgba(255,255,255,0.4);
 }
+
 /* scan line animation */
 .face-scan-line {
   position: absolute;
@@ -369,6 +371,7 @@
   90%  { opacity: .8; }
   100% { top: 80%; opacity: 0; }
 }
+
 .face-actions {
   padding: .9rem 1.2rem;
   display: flex;
@@ -463,7 +466,7 @@
   box-shadow: 0 14px 35px rgba(201,168,76,0.4);
 }
 
-/* Error / Success alerts */
+/* Alerts */
 .reg-alert {
   border-radius: 10px;
   padding: .8rem 1.1rem;
@@ -559,7 +562,7 @@
         </div>
       </div>
 
-      {# Flash / Errors — keys must match controller addFlash() calls #}
+      {# Flash messages #}
       {% for msg in app.flashes('error') %}
         <div class="reg-alert reg-alert-error"><i class="fas fa-circle-exclamation"></i> {{ msg }}</div>
       {% endfor %}
@@ -576,7 +579,7 @@
         <input type="hidden" name="_token" value="{{ csrf_token('register') }}">
         <input type="hidden" name="face_image" id="faceInput">
 
-        {# Name #}
+        {# Nom #}
         <div class="reg-field">
           <label for="reg_name">Nom complet</label>
           <div class="reg-input-wrap">
@@ -610,7 +613,7 @@
           </div>
         </div>
 
-        {# Password #}
+        {# Mot de passe #}
         <div class="reg-field">
           <label for="reg_password">Mot de passe</label>
           <div class="reg-input-wrap">
@@ -638,7 +641,7 @@
 
         <div class="reg-divider">Authentification biométrique</div>
 
-        {# Face ID Section #}
+        {# Face ID #}
         <div class="face-section">
           <div class="face-header">
             <div class="face-header-icon"><i class="fas fa-camera"></i></div>
@@ -650,7 +653,8 @@
           </div>
 
           <div class="face-cam-wrap" id="faceCamWrap">
-            <video id="webcam" autoplay playsinline></video>
+            {# ✅ FIX ÉCRAN NOIR : muted requis pour l'autoplay dans Chrome/Firefox/Safari #}
+            <video id="webcam" autoplay playsinline muted></video>
             <canvas id="canvas" width="320" height="240"></canvas>
             <div class="face-guide">
               <div class="face-guide-oval"></div>
@@ -669,7 +673,7 @@
           </div>
         </div>
 
-        {# Terms #}
+        {# Conditions #}
         <div class="reg-terms">
           <input type="checkbox" id="reg_terms" name="terms" required>
           <label for="reg_terms">
@@ -678,7 +682,7 @@
           </label>
         </div>
 
-        {# Submit #}
+        {# Soumettre #}
         <button type="submit" class="btn-register" id="submitBtn">
           <i class="fas fa-rocket"></i> Créer mon compte
         </button>
@@ -697,101 +701,142 @@
    PASSWORD STRENGTH
 ──────────────────────────────────────────── */
 function checkStrength(val) {
-  const bars   = [bar1, bar2, bar3, bar4];
-  const label  = document.getElementById('pwdLabel');
-  let score    = 0;
-  if (val.length >= 8)                       score++;
-  if (/[A-Z]/.test(val))                     score++;
-  if (/[0-9]/.test(val))                     score++;
-  if (/[^A-Za-z0-9]/.test(val))             score++;
+  var bars = [
+    document.getElementById('bar1'),
+    document.getElementById('bar2'),
+    document.getElementById('bar3'),
+    document.getElementById('bar4')
+  ];
+  var label = document.getElementById('pwdLabel');
+  var score = 0;
+  if (val.length >= 8)           score++;
+  if (/[A-Z]/.test(val))         score++;
+  if (/[0-9]/.test(val))         score++;
+  if (/[^A-Za-z0-9]/.test(val)) score++;
 
-  const cls   = score <= 1 ? 'weak' : score <= 2 ? 'medium' : score <= 3 ? 'medium' : 'strong';
-  const labels = ['','Trop faible','Faible','Moyen','Fort'];
-  const colors = ['','#f87171','#fbbf24','#fbbf24','#4ade80'];
+  var cls    = score <= 1 ? 'weak' : score <= 3 ? 'medium' : 'strong';
+  var labels = ['', 'Trop faible', 'Faible', 'Moyen', 'Fort'];
+  var colors = ['', '#f87171', '#fbbf24', '#fbbf24', '#4ade80'];
 
-  bars.forEach((b, i) => {
+  bars.forEach(function (b, i) {
     b.className = 'pwd-bar';
     if (i < score) b.classList.add(cls);
   });
 
-  label.textContent  = val.length ? labels[score] || '' : 'Entrez un mot de passe';
-  label.style.color  = val.length ? colors[score] : 'rgba(255,255,255,0.35)';
+  label.textContent = val.length ? (labels[score] || '') : 'Entrez un mot de passe';
+  label.style.color = val.length ? colors[score] : 'rgba(255,255,255,0.35)';
 }
 
 /* ────────────────────────────────────────────
    STEP PROGRESS
 ──────────────────────────────────────────── */
 function setStep(n) {
-  for (let i = 1; i <= 3; i++) {
-    const dot   = document.getElementById(`step${i}dot`);
-    const label = document.getElementById(`step${i}label`);
+  for (var i = 1; i <= 3; i++) {
+    var dot   = document.getElementById('step' + i + 'dot');
+    var lbl   = document.getElementById('step' + i + 'label');
     if (!dot) continue;
     dot.classList.remove('active', 'done');
-    if (label) label.classList.remove('active');
+    if (lbl) lbl.classList.remove('active');
     if (i < n)  { dot.classList.add('done');   dot.innerHTML = '✓'; }
-    if (i === n) { dot.classList.add('active'); if (label) label.classList.add('active'); }
-    if (i > n)  { dot.innerHTML = i; }
+    if (i === n) { dot.classList.add('active'); if (lbl) lbl.classList.add('active'); }
+    if (i > n)  { dot.innerHTML = String(i); }
   }
 }
 
 /* ────────────────────────────────────────────
    CAMERA & FACE CAPTURE
+   ✅ FIX 1 : DOMContentLoaded  → DOM prêt avant exécution
+   ✅ FIX 2 : muted sur <video> → autoplay autorisé par le navigateur
+   ✅ FIX 3 : video.play()      → force la lecture du stream
 ──────────────────────────────────────────── */
-const video    = document.getElementById('webcam');
-const canvas   = document.getElementById('canvas');
-const scanLine = document.getElementById('scanLine');
+document.addEventListener('DOMContentLoaded', function () {
 
-// Auto-start camera on load
-navigator.mediaDevices.getUserMedia({ video: true, audio: false })
-  .then(stream => {
-    video.srcObject = stream;
-    setStep(2);
-  })
-  .catch(() => {
-    const wrap = document.getElementById('faceCamWrap');
-    if (wrap) wrap.innerHTML = `
-      <div style="padding:2rem;text-align:center;color:rgba(255,255,255,0.4);font-size:.82rem;">
-        <i class="fas fa-camera-slash" style="font-size:2rem;color:rgba(201,168,76,0.4);display:block;margin-bottom:.7rem;"></i>
-        Caméra non accessible.<br>
-        <span style="font-size:.72rem;">Vous pouvez ignorer cette étape.</span>
-      </div>`;
-    document.getElementById('captureBtn').disabled = true;
-  });
+  var video      = document.getElementById('webcam');
+  var canvas     = document.getElementById('canvas');
+  var scanLine   = document.getElementById('scanLine');
+  var captureBtn = document.getElementById('captureBtn');
 
-document.getElementById('captureBtn').addEventListener('click', () => {
-  const btn    = document.getElementById('captureBtn');
-  const status = document.getElementById('faceStatus');
+  /* ── Helper : affiche un message d'erreur dans le bloc caméra ── */
+  function showCameraError(icon, title, sub) {
+    var wrap = document.getElementById('faceCamWrap');
+    if (!wrap) return;
+    wrap.innerHTML =
+      '<div style="padding:2rem;text-align:center;color:rgba(255,255,255,0.4);font-size:.82rem;width:100%;">' +
+        '<i class="' + icon + '" style="font-size:2rem;color:rgba(201,168,76,0.4);display:block;margin-bottom:.7rem;"></i>' +
+        '<strong style="color:rgba(255,255,255,0.6);">' + title + '</strong><br>' +
+        '<span style="font-size:.72rem;">' + sub + '</span>' +
+      '</div>';
+    if (captureBtn) captureBtn.disabled = true;
+  }
 
-  // Animate scan
-  scanLine.classList.add('scanning');
-  btn.disabled    = true;
-  btn.innerHTML   = '<i class="fas fa-spinner fa-spin"></i> Analyse…';
-  status.className = 'face-status';
-  status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Capture…';
+  /* ── Démarrage de la caméra ── */
+  if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
 
-  setTimeout(() => {
-    // Draw frame
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0, 320, 240);
-    const imageData = canvas.toDataURL('image/jpeg');
-    document.getElementById('faceInput').value = imageData;
+    navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+      .then(function (stream) {
+        video.srcObject = stream;
 
-    scanLine.classList.remove('scanning');
-    status.className = 'face-status captured';
-    status.innerHTML = '<i class="fas fa-circle-check"></i> Capturé !';
-    btn.innerHTML    = '<i class="fas fa-check"></i> Recapturer';
-    btn.disabled     = false;
-    setStep(3);
-  }, 1200);
-});
+        /* ✅ FIX ÉCRAN NOIR : appel explicite de play() après assignation du stream */
+        video.play().catch(function (err) {
+          console.warn('Autoplay bloqué :', err);
+        });
 
-/* ────────────────────────────────────────────
-   FORM SUBMIT — basic client validation
-──────────────────────────────────────────── */
-document.getElementById('registerForm').addEventListener('submit', function(e) {
-  const btn = document.getElementById('submitBtn');
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création en cours…';
-  btn.disabled  = true;
-});
+        setStep(2);
+      })
+      .catch(function (err) {
+        console.warn('Accès caméra refusé :', err);
+        showCameraError(
+          'fas fa-camera-slash',
+          'Caméra non accessible.',
+          'Autorisez la caméra dans votre navigateur, ou ignorez cette étape.'
+        );
+      });
+
+  } else {
+    /* Site en HTTP (hors localhost) → getUserMedia indisponible */
+    showCameraError(
+      'fas fa-lock',
+      'Connexion sécurisée requise (HTTPS).',
+      'La caméra n\'est pas disponible en HTTP. Vous pouvez ignorer cette étape.'
+    );
+  }
+
+  /* ── Bouton Capturer ── */
+  if (captureBtn) {
+    captureBtn.addEventListener('click', function () {
+      var status = document.getElementById('faceStatus');
+
+      scanLine.classList.add('scanning');
+      captureBtn.disabled  = true;
+      captureBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse…';
+      status.className     = 'face-status';
+      status.innerHTML     = '<i class="fas fa-spinner fa-spin"></i> Capture…';
+
+      setTimeout(function () {
+        var ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, 320, 240);
+        document.getElementById('faceInput').value = canvas.toDataURL('image/jpeg');
+
+        scanLine.classList.remove('scanning');
+        status.className     = 'face-status captured';
+        status.innerHTML     = '<i class="fas fa-circle-check"></i> Capturé !';
+        captureBtn.innerHTML = '<i class="fas fa-check"></i> Recapturer';
+        captureBtn.disabled  = false;
+        setStep(3);
+      }, 1200);
+    });
+  }
+
+  /* ── Validation formulaire au submit ── */
+  var form = document.getElementById('registerForm');
+  if (form) {
+    form.addEventListener('submit', function () {
+      var btn = document.getElementById('submitBtn');
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création en cours…';
+      btn.disabled  = true;
+    });
+  }
+
+}); // fin DOMContentLoaded
 </script>
 {% endblock %}

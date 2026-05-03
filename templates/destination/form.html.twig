@@ -1,4 +1,6 @@
-{% extends 'base_dark.html.twig' %}
+
+{% extends 'BackOffice/base_admin.html.twig' %}
+
 {% block title %}{{ mode == 'new' ? 'Nouvelle destination' : 'Modifier ' ~ destination.nom }}{% endblock %}
 
 {% block body %}
@@ -168,6 +170,136 @@
   </div>
 
   {{ form_end(form) }}
+<script>
+(function () {
+  // ── Sélecteurs des champs Symfony ──────────────────────────────────────────
+  const fieldNom      = document.querySelector('[name="destination[nom]"]');
+  const fieldPays     = document.querySelector('[name="destination[pays]"]');
+  const fieldCodeIata = document.querySelector('[name="destination[codeIata]"]');
+  const fieldDesc     = document.querySelector('[name="destination[description]"]');
+ 
+  if (!fieldNom) return;
+ 
+  let debounceInfo = null;
+  let debounceDesc = null;
+ 
+  // ── Indicateurs de chargement ───────────────────────────────────────────────
+  function makeLoader(text) {
+    const el = document.createElement('div');
+    el.style.cssText = 'display:none;font-size:.72rem;color:#c9a84c;margin-top:.3rem;align-items:center;gap:.4rem;';
+    el.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + text;
+    return el;
+  }
+ 
+  const loaderInfo = makeLoader('Récupération pays & IATA...');
+  const loaderDesc = makeLoader('Génération description IA...');
+ 
+  fieldNom.parentNode.appendChild(loaderInfo);
+  if (fieldDesc) fieldDesc.parentNode.appendChild(loaderDesc);
+ 
+  // ── Flash doré sur un champ ─────────────────────────────────────────────────
+  function flashField(field) {
+    field.style.borderColor = '#c9a84c';
+    field.style.boxShadow   = '0 0 0 3px rgba(201,168,76,0.25)';
+    field.style.transition  = 'all .3s';
+    setTimeout(() => {
+      field.style.borderColor = 'rgba(13,27,42,0.15)';
+      field.style.boxShadow   = 'none';
+    }, 2500);
+  }
+ 
+  // ── 1. Auto-remplir Pays + Code IATA ───────────────────────────────────────
+  async function fetchDestinationInfo() {
+    const nom = fieldNom.value.trim();
+    if (nom.length < 2) return;
+ 
+    // Ne pas écraser si déjà rempli manuellement
+    const paysVide = !fieldPays  || !fieldPays.value.trim();
+    const iataVide = !fieldCodeIata || !fieldCodeIata.value.trim();
+    if (!paysVide && !iataVide) return;
+ 
+    clearTimeout(debounceInfo);
+    debounceInfo = setTimeout(async () => {
+      loaderInfo.style.display = 'flex';
+      try {
+        const res  = await fetch('/api/groq/destination-info', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ nom }),
+        });
+        const data = await res.json();
+ 
+        if (data.pays && fieldPays && !fieldPays.value.trim()) {
+          fieldPays.value = data.pays;
+          flashField(fieldPays);
+        }
+ 
+        if (data.codeIata && fieldCodeIata && !fieldCodeIata.value.trim()) {
+          fieldCodeIata.value = data.codeIata;
+          flashField(fieldCodeIata);
+        }
+ 
+        // ── Lancer la description dès qu'on a les infos ──
+        generateDescription();
+ 
+      } catch (e) {
+        console.error('Groq destination-info error:', e);
+      } finally {
+        loaderInfo.style.display = 'none';
+      }
+    }, 800);
+  }
+ 
+  // ── 2. Auto-générer la Description ─────────────────────────────────────────
+  async function generateDescription() {
+    if (!fieldDesc || fieldDesc.value.trim()) return;
+ 
+    const nom  = fieldNom.value.trim();
+    const pays = fieldPays ? fieldPays.value.trim() : '';
+    if (nom.length < 2) return;
+ 
+    clearTimeout(debounceDesc);
+    debounceDesc = setTimeout(async () => {
+      loaderDesc.style.display = 'flex';
+      try {
+        const destination = pays ? `${nom}, ${pays}` : nom;
+        const res  = await fetch('/api/groq/description', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ destination }),
+        });
+        const data = await res.json();
+ 
+        if (data.description && !fieldDesc.value.trim()) {
+          fieldDesc.value = data.description;
+          flashField(fieldDesc);
+        }
+      } catch (e) {
+        console.error('Groq description error:', e);
+      } finally {
+        loaderDesc.style.display = 'none';
+      }
+    }, 400);
+  }
+ 
+  // ── Écoute la saisie du nom ─────────────────────────────────────────────────
+  fieldNom.addEventListener('input', fetchDestinationInfo);
+ 
+  // ── Bouton "Réinitialiser l'IA" (optionnel) ─────────────────────────────────
+  const resetBtn = document.createElement('button');
+  resetBtn.type = 'button';
+  resetBtn.innerHTML = '<i class="fas fa-magic"></i> Regénérer avec IA';
+  resetBtn.style.cssText = 'margin-top:.6rem;font-size:.72rem;padding:.3rem .8rem;background:rgba(201,168,76,0.1);border:1px solid var(--gold);color:var(--gold);border-radius:6px;cursor:pointer;';
+  resetBtn.onclick = () => {
+    if (fieldPays)     fieldPays.value     = '';
+    if (fieldCodeIata) fieldCodeIata.value = '';
+    if (fieldDesc)     fieldDesc.value     = '';
+    fetchDestinationInfo();
+  };
+  if (fieldDesc) fieldDesc.parentNode.appendChild(resetBtn);
+ 
+})();
+</script>
 </div>
 {% endblock %}
 

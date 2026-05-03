@@ -12,9 +12,14 @@ services:
     App\:
         resource: '../src/'
 
-    # ==============================
-    # ContactService CONFIGURATION
-    # ==============================
+    App\Service\AiTransportService:
+        arguments:
+            $apiKey: '%env(ANTHROPIC_API_KEY)%'
+
     App\Service\ContactService:
         arguments:
             $adminEmail: '%env(ADMIN_EMAIL)%'
+    
+    App\Controller\GroqController:   # ← sans \Api\
+        arguments:
+            $groqApiKey: '%env(GROQ_API_KEY)%'
