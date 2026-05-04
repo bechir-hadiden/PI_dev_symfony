@@ -3,15 +3,6 @@
 {% block title %}Gestion Paiements – Admin{% endblock %}
 {% block page_title %}Gestion des Paiements{% endblock %}
 
-{% block header_actions %}
-    <a href="{{ path('app_admin_paiement_new') }}" class="btn btn-primary">
-        <i class="fas fa-plus"></i> Nouveau Paiement
-    </a>
-    <a href="{{ path('app_admin_paiement_export_pdf') }}" class="btn btn-secondary">
-        <i class="fas fa-file-pdf"></i> Export PDF
-    </a>
-{% endblock %}
-
 {% block body %}
 <div class="stat-row">
     <div class="stat-card">
@@ -29,6 +20,7 @@
         </div>
     </div>
 </div>
+
 <div class="card">
     <div class="card-header">
         <h2><i class="fas fa-credit-card" style="color:var(--gold);margin-right:.5rem"></i>Journal des paiements</h2>
@@ -40,116 +32,40 @@
                 Aucun paiement enregistré pour le moment.
             </div>
         {% else %}
-            <form method="post" action="{{ path('app_admin_paiement_bulk_action') }}">
-            <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; gap: 1rem; align-items: center; background: rgba(248, 250, 252, 0.5);">
-                <div style="display: flex; align-items: center; gap: 0.5rem; background: white; padding: 0.25rem 0.25rem 0.25rem 0.5rem; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                    <select name="action" style="border: none; background: transparent; padding: 0.4rem 0.5rem; font-size: 0.9rem; color: #475569; font-weight: 500; outline: none; cursor: pointer; min-width: 180px;">
-                        <option value="">-- Sélectionner une action --</option>
-                        <option value="valider">✔ Valider la sélection</option>
-                        <option value="supprimer">🗑 Supprimer la sélection</option>
-                    </select>
-                    <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 0.25rem;"></div>
-                    <button type="submit" style="background: var(--navy, #0d1b2a); color: var(--gold, #c9a84c); border: none; padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'" onclick="return confirm('Exécuter cette action sur les éléments sélectionnés ?');">
-                        Appliquer <i class="fas fa-arrow-right" style="font-size: 0.75rem;"></i>
-                    </button>
-                </div>
-            </div>
             <table>
                 <thead>
                     <tr>
-                        <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
                         <th>Date</th>
                         <th>Client</th>
                         <th>Réservation #</th>
                         <th>Montant</th>
                         <th>Méthode</th>
                         <th>Statut</th>
-                        <th>Risque AI</th>
-                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for p in pagination %}
                     <tr>
-                        <td><input type="checkbox" name="ids[]" value="{{ p.id }}" class="bulk-cb"></td>
                         <td>{{ p.datePaiement|date('d/m/Y H:i') }}</td>
-                        <td>
-                            <strong>{{ p.nom }} {{ p.prenom }}</strong><br>
-                            <small style="color:var(--muted)">{{ p.email }}</small>
-                        </td>
-                        <td>
-                            {% if p.reservationId %}
-                                <span class="badge" style="background:#0d1b2a;color:var(--gold)">#{{ p.reservationId }}</span>
-                            {% else %}
-                                <span class="badge badge-secondary">N/A</span>
-                            {% endif %}
-                        </td>
-                        <td><strong style="color:var(--gold)">{{ p.amount|number_format(2, ',', ' ') }} DT</strong></td>
+                        <td><strong>{{ p.reservation.nomClient }}</strong></td>
+                        <td><span class="badge" style="background:#0d1b2a;color:var(--gold)">#{{ p.reservation.id }}</span></td>
+                        <td><strong style="color:var(--gold)">{{ p.montant|number_format(2, ',', ' ') }} DT</strong></td>
                         <td><i class="fas fa-wallet" style="margin-right:.4rem"></i> {{ p.methodePaiement }}</td>
                         <td>
-                            {% if p.status == 'Effectué' or p.status == 'Completed' %}
+                            {% if p.statutPaiement == 'Payé' or p.statutPaiement == 'Completed' %}
                                 <span class="badge badge-confirm">Validé</span>
-                            {% elseif p.status == 'Refusé' %}
-                                <span class="badge badge-cancel">Refusé</span>
                             {% else %}
                                 <span class="badge badge-pending">En attente</span>
                             {% endif %}
-                        </td>
-                        <td>
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                {% set score = p.scoreRisque|default(0.15) %}
-                                <div style="width: 45px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
-                                    <div style="width: {{ score * 100 }}%; height: 100%; background: {% if score < 0.3 %}#22c55e{% elseif score < 0.7 %}#f59e0b{% else %}#ef4444{% endif %};"></div>
-                                </div>
-                                <span style="font-size: 0.65rem; font-weight: 800; color: {% if score < 0.3 %}#16a34a{% elseif score < 0.7 %}#d97706{% else %}#dc2626{% endif %};">
-                                    {{ (score * 100)|number_format(0) }}%
-                                </span>
-                            </div>
-                        </td>
-                        <td>
-                            <div style="display:flex;gap:.4rem">
-                                {% if p.status == 'En attente' %}
-                                    <form method="post" action="{{ path('app_admin_paiement_bulk_action') }}" style="margin:0;">
-                                        <input type="hidden" name="action" value="valider">
-                                        <input type="hidden" name="ids[]" value="{{ p.id }}">
-                                        <button class="btn btn-sm btn-success" title="Valider">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                    </form>
-                                {% endif %}
-                                <a href="{{ path('app_admin_paiement_edit', {id: p.id}) }}" class="btn btn-sm btn-secondary" title="Modifier">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                {% if p.status == 'Effectué' or p.status == 'Completed' %}
-                                    <form method="post" action="{{ path('app_admin_paiement_facture_creer', {id: p.id}) }}" style="margin:0;">
-                                        <button class="btn btn-sm" style="background:#eab308;color:white;border:none;" title="Générer Facture">
-                                            <i class="fas fa-file-invoice"></i>
-                                        </button>
-                                    </form>
-                                {% endif %}
-                                <form method="post" action="{{ path('app_admin_paiement_delete', {id: p.id}) }}" onsubmit="return confirm('Confirmer la suppression ?');" style="margin:0;">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ p.id) }}">
-                                    <button class="btn btn-sm btn-danger" title="Supprimer">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
             </table>
-            </form>
         {% endif %}
     </div>
     <div class="card-footer" style="padding:1rem;display:flex;justify-content:center">
         {{ knp_pagination_render(pagination) }}
     </div>
 </div>
-
-<script>
-    document.getElementById('selectAll')?.addEventListener('change', function() {
-        document.querySelectorAll('.bulk-cb').forEach(cb => cb.checked = this.checked);
-    });
-</script>
 {% endblock %}
