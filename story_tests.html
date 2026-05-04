@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Tests - Gestion de Transport</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #f5f7fa;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .page {
+            max-width: 1100px;
+            margin: 0 auto 60px auto;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            page-break-after: always;
+        }
+
+        /* ───── Header ───── */
+        .header {
+            background: #1a3c4d;
+            color: #fff;
+            padding: 28px 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            font-weight: 900;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .header .logo {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #e8a838, #d4762c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #fff;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* ───── Table ───── */
+        .story-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .story-table th {
+            background: #d4892a;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 16px 20px;
+            text-align: center;
+            border: 2px solid #c17a22;
+            text-transform: capitalize;
+        }
+
+        .story-table td {
+            padding: 20px 22px;
+            border: 2px solid #e8e8e8;
+            vertical-align: top;
+            font-size: 0.88rem;
+            line-height: 1.65;
+            color: #333;
+        }
+
+        /* Middle columns (Étudiant + User Story) */
+        .story-table td.center-cell {
+            text-align: center;
+            vertical-align: middle;
+            font-size: 1rem;
+        }
+
+        .student-name {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1a3c4d;
+        }
+
+        .user-story {
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+
+        .user-story .role {
+            font-weight: 800;
+            color: #1a3c4d;
+        }
+
+        /* BDD keywords */
+        .kw {
+            font-weight: 700;
+            font-style: italic;
+        }
+
+        .kw-given {
+            color: #d4762c;
+        }
+
+        /* Etant donné */
+        .kw-when {
+            color: #d4762c;
+        }
+
+        /* Quand */
+        .kw-then {
+            color: #d4762c;
+        }
+
+        /* Alors */
+        .kw-or {
+            color: #d4762c;
+            font-weight: 700;
+        }
+
+        .highlight {
+            font-weight: 700;
+            color: #1a3c4d;
+        }
+
+        .test-content {
+            font-size: 0.86rem;
+        }
+
+        /* ───── Subtitle bar ───── */
+        .subtitle-bar {
+            background: #1a3c4d;
+            color: #d4892a;
+            text-align: center;
+            padding: 10px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* ───── Print styles ───── */
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+            }
+
+            .page {
+                box-shadow: none;
+                border-radius: 0;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- PAGE 1 : Gestion Transport – Ajout -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="page">
+        <div class="header">
+            <h1>STORY TESTS</h1>
+            <div class="logo">🚌</div>
+        </div>
+        <div class="subtitle-bar">Gestion Transport — Ajout d'un véhicule</div>
+
+        <table class="story-table">
+            <thead>
+                <tr>
+                    <th style="width:28%">Test de refus</th>
+                    <th style="width:14%">Étudiant</th>
+                    <th style="width:28%">User Story</th>
+                    <th style="width:30%">Test d'acceptation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <!-- Test de refus -->
+                    <td class="test-content">
+                        <span class="kw kw-given">Etant donné</span> un transport avec un prix <span
+                            class="highlight">négatif (−10)</span>
+                        <span class="kw kw-or">ou</span> un numéro contenant des caractères spéciaux <span
+                            class="highlight">(#@!)</span>
+                        <span class="kw kw-or">ou</span> une capacité de <span class="highlight">0</span> ou supérieure
+                        à <span class="highlight">500</span>
+                        <span class="kw kw-or">ou</span> la compagnie <span class="highlight">vide</span>
+                        <span class="kw kw-or">ou</span> un doublon <span class="highlight">(même compagnie +
+                            numéro)</span><br><br>
+                        <span class="kw kw-when">Quand</span> je soumets le formulaire d'ajout<br><br>
+                        <span class="kw kw-then">Alors</span> le transport n'est pas enregistré, des messages d'erreur
+                        de validation apparaissent
+                        (prix négatif / numéro invalide / capacité hors limites / compagnie vide / doublon).
+                    </td>
+
+                    <!-- Étudiant -->
+                    <td class="center-cell">
+                        <span class="student-name">Med Bechir</span>
+                    </td>
+
+                    <!-- User Story -->
+                    <td class="center-cell">
+                        <div class="user-story">
+                            En tant qu'<span class="role">administrateur</span>, je veux
+                            <strong>ajouter un transport</strong> avec sa compagnie, son numéro, sa capacité, son prix
+                            et son type.
+                        </div>
+                    </td>
+
+                    <!-- Test d'acceptation -->
+                    <td class="test-content">
+                        <span class="kw kw-given">Etant donné</span> un transport<br>
+                        « <span class="highlight">TunisAir Express</span> »<br>
+                        avec numéro = <span class="highlight">TA-2025</span>, capacité = <span
+                            class="highlight">120</span>, prix = <span class="highlight">45.5</span>,
+                        type = <span class="highlight">Avion</span>,
+                        et une URL d'image valide<br><br>
+                        <span class="kw kw-when">Quand</span> je soumets le formulaire d'ajout<br><br>
+                        <span class="kw kw-then">Alors</span> le transport est enregistré en base de données,
+                        et un message « <span class="highlight">Transport ajouté avec succès</span> » s'affiche.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- PAGE 2 : Gestion Transport – Modification -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="page">
+        <div class="header">
+            <h1>STORY TESTS</h1>
+            <div class="logo">🚌</div>
+        </div>
+        <div class="subtitle-bar">Gestion Transport — Modification d'un véhicule</div>
+
+        <table class="story-table">
+            <thead>
+                <tr>
+                    <th style="width:28%">Test de refus</th>
+                    <th style="width:14%">Étudiant</th>
+                    <th style="width:28%">User Story</th>
+                    <th style="width:30%">Test d'acceptation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="test-content">
+                        <span class="kw kw-given">Etant donné</span> un transport existant dont on modifie le prix en
+                        <span class="highlight">−20</span>
+                        <span class="kw kw-or">ou</span> la capacité en <span class="highlight">600</span> (hors limite)
+                        <span class="kw kw-or">ou</span> le numéro avec des caractères spéciaux<br><br>
+                        <span class="kw kw-when">Quand</span> je soumets le formulaire de modification<br><br>
+                        <span class="kw kw-then">Alors</span> le transport n'est pas mis à jour,
+                        des messages d'erreur de validation apparaissent (prix négatif / capacité hors limites / numéro
+                        invalide).
+                    </td>
+
+                    <td class="center-cell">
+                        <span class="student-name">Med Bechir</span>
+                    </td>
+
+                    <td class="center-cell">
+                        <div class="user-story">
+                            En tant qu'<span class="role">administrateur</span>, je veux
+                            <strong>modifier un transport</strong> existant pour mettre à jour ses informations.
+                        </div>
+                    </td>
+
+                    <td class="test-content">
+                        <span class="kw kw-given">Etant donné</span> un transport existant<br>
+                        « <span class="highlight">TunisAir Express – TA-2025</span> »<br>
+                        avec prix actuel = 45.5<br><br>
+                        <span class="kw kw-when">Quand</span> je modifie le prix en <span class="highlight">55.0</span>
+                        et la capacité en <span class="highlight">150</span>,
+                        puis je soumets le formulaire<br><br>
+                        <span class="kw kw-then">Alors</span> le transport est mis à jour en base de données,
+                        et un message « <span class="highlight">Transport modifié avec succès</span> » s'affiche.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- PAGE 3 : Gestion Transport – Suppression -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="page">
+        <div class="header">
+            <h1>STORY TESTS</h1>
+            <div class="logo">🚌</div>
+        </div>
+        <div class="subtitle-bar">Gestion Transport — Suppression d'un véhicule</div>
+
+        <table class="story-table">
+            <thead>
+                <tr>
+                    <th style="width:28%">Test de refus</th>
+                    <th style="width:14%">Étudiant</th>
+                    <th style="width:28%">User Story</th>
+                    <th style="width:30%">Test d'acceptation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="test-content">
+                        <span class="kw kw-given">Etant donné</span> un transport qui possède des <span
+                            class="highlight">réservations actives</span> (en attente ou confirmées)<br><br>
+                        <span class="kw kw-when">Quand</span> je clique sur le bouton « Supprimer »<br><br>
+                        <span class="kw kw-then">Alors</span> une confirmation est demandée à l'administrateur.
+                        Si confirmé, les réservations associées sont supprimées en cascade,
+                        le transport est supprimé.
+                    </td>
+
+                    <td class="center-cell">
+                        <span class="student-name">Med Bechir</span>
+                    </td>
+
+                    <td class="center-cell">
+                        <div class="user-story">
+                            En tant qu'<span class="role">administrateur</span>, je veux
+                            <strong>supprimer un transport</strong> pour retirer un véhicule qui n'est plus en service.
+                        </div>
+                    </td>
+
+                    <td class="test-content">
+                        <span class="kw kw-given">Etant donné</span> un transport<br>
+                        « <span class="highlight">Bus Nord – BN-100</span> »<br>
+                        sans réservations actives<br><br>
+                        <span class="kw kw-when">Quand</span> je clique sur « Supprimer » et je confirme<br><br>
+                        <span class="kw kw-then">Alors</span> le transport est supprimé de la base de données,
+                        et un message « <span class="highlight">Transport supprimé avec succès</span> » s'affiche.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- PAGE 4 : Gestion Réservation – Ajout -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="page">
+        <div class="header">
+            <h1>STORY TESTS</h1>
+            <div class="logo">🎫</div>
+        </div>
+        <div class="subtitle-bar">Gestion Réservation — Réserver un transport</div>
+
+        <table class="story-table">
+            <thead>
+                <tr>
+                    <th style="width:28%">Test de refus</th>
+                    <th style="width:14%">Étudiant</th>
+                    <th style="width:28%">User Story</th>
+                    <th style="width:30%">Test d'acceptation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="test-content">
+                        <span class="kw kw-given">Etant donné</span> une réservation avec un nom de client <span
+                            class="highlight">vide</span>
+                        <span class="kw kw-or">ou</span> un email <span class="highlight">invalide</span> (ex : « abc »)
+                        <span class="kw kw-or">ou</span> un nombre de places = <span class="highlight">0</span>
+                        <span class="kw kw-or">ou</span> un nom contenant des chiffres <span class="highlight">(« Ali123
+                            »)</span>
+                        <span class="kw kw-or">ou</span> un nombre de places supérieur aux <span
+                            class="highlight">places disponibles</span><br><br>
+                        <span class="kw kw-when">Quand</span> je soumets le formulaire de réservation<br><br>
+                        <span class="kw kw-then">Alors</span> la réservation n'est pas créée,
+                        des messages d'erreur de validation apparaissent
+                        (nom vide / email invalide / places insuffisantes).
+                    </td>
+
+                    <td class="center-cell">
+                        <span class="student-name">Med Bechir</span>
+                    </td>
+
+                    <td class="center-cell">
+                        <div class="user-story">
+                            En tant qu'<span class="role">utilisateur</span>, je veux
+                            <strong>réserver un transport</strong> en indiquant mon nom, mon email et le nombre de
+                            places souhaitées.
+                        </div>
+                    </td>
+
+                    <td class="test-content">
+                        <span class="kw kw-given">Etant donné</span> un transport<br>
+                        « <span class="highlight">TunisAir Express – TA-2025</span> »<br>
+                        avec <span class="highlight">120</span> places disponibles<br>
+                        et un client : nom = <span class="highlight">« Ahmed Ben Ali »</span>,
+                        email = <span class="highlight">ahmed@mail.com</span>,
+                        nombre de places = <span class="highlight">2</span><br><br>
+                        <span class="kw kw-when">Quand</span> je soumets le formulaire de réservation<br><br>
+                        <span class="kw kw-then">Alors</span> la réservation est créée avec le statut « <span
+                            class="highlight">en_attente</span> »,
+                        les places disponibles diminuent à <span class="highlight">118</span>,
+                        et un message « <span class="highlight">Réservation effectuée avec succès</span> » s'affiche.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- PAGE 5 : Gestion Réservation – Confirmation / Annulation -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="page">
+        <div class="header">
+            <h1>STORY TESTS</h1>
+            <div class="logo">🎫</div>
+        </div>
+        <div class="subtitle-bar">Gestion Réservation — Confirmer / Annuler une réservation</div>
+
+        <table class="story-table">
+            <thead>
+                <tr>
+                    <th style="width:28%">Test de refus</th>
+                    <th style="width:14%">Étudiant</th>
+                    <th style="width:28%">User Story</th>
+                    <th style="width:30%">Test d'acceptation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="test-content">
+                        <span class="kw kw-given">Etant donné</span> une réservation déjà <span
+                            class="highlight">annulée</span><br><br>
+                        <span class="kw kw-when">Quand</span> je tente de la confirmer ou de l'annuler à nouveau<br><br>
+                        <span class="kw kw-then">Alors</span> l'action est refusée,
+                        un message indique que la réservation est déjà annulée et ne peut plus être modifiée.
+                    </td>
+
+                    <td class="center-cell">
+                        <span class="student-name">Med Bechir</span>
+                    </td>
+
+                    <td class="center-cell">
+                        <div class="user-story">
+                            En tant qu'<span class="role">administrateur</span>, je veux
+                            <strong>confirmer ou annuler</strong> une réservation pour gérer les demandes des clients.
+                        </div>
+                    </td>
+
+                    <td class="test-content">
+                        <span class="kw kw-given">Etant donné</span> une réservation<br>
+                        en statut « <span class="highlight">en_attente</span> »<br>
+                        du client « <span class="highlight">Ahmed Ben Ali</span> »<br>
+                        pour <span class="highlight">2</span> places<br><br>
+                        <span class="kw kw-when">Quand</span> l'administrateur clique sur « <span
+                            class="highlight">Confirmer</span> »<br><br>
+                        <span class="kw kw-then">Alors</span> le statut passe à « <span
+                            class="highlight">confirmee</span> »,
+                        et un message « <span class="highlight">Réservation confirmée avec succès</span> » s'affiche.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <!-- PAGE 6 : Gestion Type Transport – CRUD -->
+    <!-- ═══════════════════════════════════════════════════════ -->
+    <div class="page">
+        <div class="header">
+            <h1>STORY TESTS</h1>
+            <div class="logo">📋</div>
+        </div>
+        <div class="subtitle-bar">Gestion Type Transport — Ajouter un type de transport</div>
+
+        <table class="story-table">
+            <thead>
+                <tr>
+                    <th style="width:28%">Test de refus</th>
+                    <th style="width:14%">Étudiant</th>
+                    <th style="width:28%">User Story</th>
+                    <th style="width:30%">Test d'acceptation</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="test-content">
+                        <span class="kw kw-given">Etant donné</span> un type de transport avec un nom <span
+                            class="highlight">vide</span>
+                        <span class="kw kw-or">ou</span> contenant des chiffres <span class="highlight">(« Bus123
+                            »)</span>
+                        <span class="kw kw-or">ou</span> un prix de départ <span class="highlight">négatif (−5)</span>
+                        <span class="kw kw-or">ou</span> un nom qui <span class="highlight">existe déjà</span>
+                        (doublon)<br><br>
+                        <span class="kw kw-when">Quand</span> je soumets le formulaire d'ajout<br><br>
+                        <span class="kw kw-then">Alors</span> le type n'est pas enregistré,
+                        des messages d'erreur de validation apparaissent
+                        (nom invalide / prix négatif / doublon).
+                    </td>
+
+                    <td class="center-cell">
+                        <span class="student-name">Med Bechir</span>
+                    </td>
+
+                    <td class="center-cell">
+                        <div class="user-story">
+                            En tant qu'<span class="role">administrateur</span>, je veux
+                            <strong>ajouter un type de transport</strong> avec son nom, son prix de départ et une image.
+                        </div>
+                    </td>
+
+                    <td class="test-content">
+                        <span class="kw kw-given">Etant donné</span> un type de transport<br>
+                        « <span class="highlight">Avion</span> »<br>
+                        avec prix de départ = <span class="highlight">80.0</span>,
+                        et une image valide<br><br>
+                        <span class="kw kw-when">Quand</span> je soumets le formulaire d'ajout<br><br>
+                        <span class="kw kw-then">Alors</span> le type est enregistré en base de données,
+                        l'image est uploadée dans le dossier /uploads,
+                        et un message « <span class="highlight">Type de transport ajouté avec succès</span> » s'affiche.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+</body>
+
+</html>
