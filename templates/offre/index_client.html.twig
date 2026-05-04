@@ -71,8 +71,9 @@
                             <span style="text-decoration: line-through; color: var(--muted); font-size: 0.9rem;">{{ o.prixInitial }} DT</span>
                         </div>
 
-                        <button class="btn-primary w-100 py-3 rounded-0" style="letter-spacing: 0.2em; font-size: 0.75rem;"
-                                data-bs-toggle="modal" data-bs-target="#modal{{ o.id }}">
+                        <button class="btn-primary w-100 py-3 rounded-0" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modal{{ o.id }}"> <!-- Ici o.id ne doit plus être null -->
                             DÉCOUVRIR L'OFFRE
                         </button>
                     </div>

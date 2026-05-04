@@ -51,19 +51,20 @@ class Offre
     #[ORM\Column(name: "image_url", length: 255, nullable: true)]
     private ?string $imageUrl = null;
 
+    // --- PROPRIÉTÉS VIRTUELLES (Pour l'intégration Service/SQL) ---
+    private ?string $destination = null;
+    private ?float $prixInitial = null;
+
     // --- RELATIONS D'INTÉGRATION ---
 
-    // 1. Relation avec VOYAGE
     #[ORM\ManyToOne(targetEntity: Voyage::class)]
-    #[ORM\JoinColumn(name: "id_voyage", referencedColumnName: "id_voyage", nullable: true)]
+    #[ORM\JoinColumn(name: "id_voyage", referencedColumnName: "id", nullable: true)]
     private ?Voyage $voyage = null;
 
-    // 2. Relation avec HOTEL 
     #[ORM\ManyToOne(targetEntity: Hotel::class)]
     #[ORM\JoinColumn(name: "id_hotel", referencedColumnName: "id", nullable: true)]
     private ?Hotel $hotel = null;
 
-    // 3. Relation avec VEHICULE (Nouveau)
     #[ORM\ManyToOne(targetEntity: Vehicule::class)]
     #[ORM\JoinColumn(name: "id_vehicule", referencedColumnName: "idVehicule", nullable: true)]
     private ?Vehicule $vehicule = null;
@@ -73,10 +74,10 @@ class Offre
     private ?Vol $vol = null;
 
 
-
     // --- GETTERS ET SETTERS ---
 
     public function getId(): ?int { return $this->id; }
+    public function setId(int $id): self{ $this->id = $id; return $this;}
 
     public function getTitre(): ?string { return $this->titre; }
     public function setTitre(string $titre): self { $this->titre = $titre; return $this; }
@@ -114,48 +115,73 @@ class Offre
     public function getVol(): ?Vol { return $this->vol; }
     public function setVol(?Vol $vol): self { $this->vol = $vol; return $this; }
 
+    // --- NOUVEAUX SETTERS POUR LE SERVICE ---
 
-    // --- MÉTHODES MÉTIER (Business Logic) ---
+    public function setDestination(?string $destination): self
+    {
+        $this->destination = $destination;
+        return $this;
+    }
+
+    public function setPrixInitial(?float $prixInitial): self
+    {
+        $this->prixInitial = $prixInitial;
+        return $this;
+    }
+
+    // --- MÉTHODES MÉTIER (Utilisées par Twig) ---
 
     /**
-     * Retourne le nom de la destination/partenaire selon la catégorie
+     * Retourne le nom de la destination/partenaire
      */
-   public function getLabelDestination(): string
-{
-    if ($this->category === 'VOL' && $this->vol) {
-        return "Vers " . $this->vol->getArrivee(); // Affichera "Vers New York"
+    public function getLabelDestination(): string
+    {
+        // Si le service a déjà injecté le nom via SQL
+        if ($this->destination) {
+            return $this->destination;
+        }
+
+        // Sinon, logique de secours (Fallback)
+        if ($this->category === 'VOL' && $this->vol) {
+            return "Vers " . $this->vol->getArrivee();
+        }
+        if ($this->category === 'HOTEL' && $this->hotel) {
+            return $this->hotel->getName();
+        }
+        if ($this->category === 'TRANSPORT' && $this->vehicule) {
+            return $this->vehicule->getType() . " (" . $this->vehicule->getVille() . ")";
+        }
+        if ($this->voyage) {
+            return $this->voyage->getDestination();
+        }
+        return "Destination non spécifiée";
     }
-    if ($this->category === 'HOTEL' && $this->hotel) {
-        return $this->hotel->getName();
-    }
-    if ($this->category === 'TRANSPORT' && $this->vehicule) {
-        return $this->vehicule->getType() . " (" . $this->vehicule->getVille() . ")";
-    }
-    if ($this->voyage) {
-        return $this->voyage->getDestination();
-    }
-    return "Destination N/A";
-}
 
     /**
-     * Récupère le prix d'origine selon la catégorie
+     * Récupère le prix d'origine
      */
     public function getPrixInitial(): float
-{
-    if ($this->category === 'VOL' && $this->vol) {
-        return (float) $this->vol->getPrix(); // Récupère le prix réel de la table vols
+    {
+        // Si le service a injecté le prix
+        if ($this->prixInitial !== null) {
+            return $this->prixInitial;
+        }
+
+        // Sinon, calcul manuel via relations
+        if ($this->category === 'VOL' && $this->vol) {
+            return (float) $this->vol->getPrix();
+        }
+        if ($this->category === 'HOTEL' && $this->hotel) {
+            return (float) $this->hotel->getPricePerNight();
+        }
+        if ($this->category === 'TRANSPORT' && $this->vehicule) {
+            return (float) $this->vehicule->getPrix();
+        }
+        if ($this->voyage) {
+            return (float) $this->voyage->getPrix();
+        }
+        return 0.0;
     }
-    if ($this->category === 'HOTEL' && $this->hotel) {
-        return $this->hotel->getPricePerNight();
-    }
-    if ($this->category === 'TRANSPORT' && $this->vehicule) {
-        return (float) $this->vehicule->getPrix();
-    }
-    if ($this->voyage) {
-        return (float) $this->voyage->getPrix();
-    }
-    return 0.0;
-}
 
     /**
      * Calcule le prix après remise

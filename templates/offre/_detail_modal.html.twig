@@ -5,13 +5,21 @@
             
             <!-- Image Header -->
             <div class="position-relative">
-                <img src="{% if o.imageUrl starts with 'http' %}{{ o.imageUrl }}{% else %}{{ asset('images/' ~ o.imageUrl) }}{% endif %}" 
-                     class="w-100" 
-                     style="height: 250px; object-fit: cover; border-radius: 20px 20px 0 0;"
-                     alt="{{ o.titre }}">
-                
+                {% if o.imageUrl %}
+                    {% if 'http' in o.imageUrl %}
+                        {# Cas 1 : Image externe (Pexels / Unsplash) #}
+                        <img src="{{ o.imageUrl }}" class="w-100" style="height: 250px; object-fit: cover; border-radius: 20px 20px 0 0;">
+                    {% else %}
+                        {# Cas 2 : Image locale (public/images/...) #}
+                        <img src="{{ asset('images/' ~ o.imageUrl) }}" class="w-100" style="height: 250px; object-fit: cover; border-radius: 20px 20px 0 0;">
+                    {% endif %}
+                {% else %}
+                    {# Cas 3 : Image par défaut #}
+                    <img src="{{ asset('images/default.jpg') }}" class="w-100" style="height: 250px; object-fit: cover; border-radius: 20px 20px 0 0;">
+                {% endif %}
+
                 <span class="badge position-absolute top-0 end-0 m-3 p-2 px-3" 
-                      style="background-color: #FF5A1F; color: white; border-radius: 10px; font-weight: bold; font-size: 1.1rem;">
+                    style="background-color: #FF5A1F; color: white; border-radius: 10px; font-weight: bold; font-size: 1.1rem;">
                     -{{ o.tauxRemise }}%
                 </span>
             </div>

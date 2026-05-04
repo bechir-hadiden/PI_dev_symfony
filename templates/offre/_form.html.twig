@@ -22,7 +22,7 @@
                             ✨ Optimiser la description
                         </button>
                         <div id="aiLoader" class="spinner-border spinner-border-sm text-primary ms-1 d-none"></div>
-                        <div id="enhanceLoader" class="spinner-border spinner-border-sm text-warning ms-1 d-none"></div>
+                        <div id="enhanceLoader" class="spinner-border spinner-border-sm text-warning ms-2 d-none"></div>
                         <span id="aiSuggestion" class="badge rounded-pill bg-success text-white p-2 px-3" style="display:none;"></span>
                         <span id="odd8Badge" class="badge rounded-pill bg-success text-white p-2 px-3" style="display:none;">
                             🤝 ODD 8 détecté
@@ -78,12 +78,21 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+/**
+ * Utilisation de 'turbo:load' au lieu de 'DOMContentLoaded'
+ * pour que le script se relance même lors d'une navigation interne (asynchrone)
+ */
+document.addEventListener('turbo:load', function() {
     const categorySelect = document.getElementById('offre_category');
     const itemSelect     = document.getElementById('offre_id_target');
 
+    // Sécurité : Si on n'est pas sur la page du formulaire, on arrête le script
+    if (!categorySelect || !itemSelect) return;
+
+    console.log("SmartTrip: Form logic initialized via Turbo.");
+
     // --- LOGIQUE ÉLÉMENTS DYNAMIQUES (AJAX) ---
-    const currentSelectedId = "{% if offre.hotel is not null %}{{ offre.hotel.id }}{% elseif offre.vehicule is not null %}{{ offre.vehicule.id }}{% elseif offre.vol is not null %}{{ offre.vol.id }}{% elseif offre.voyage is not null %}{{ offre.voyage.id }}{% endif %}";
+    const currentSelectedId = "{% if offre is defined %}{% if offre.hotel is not null %}{{ offre.hotel.id }}{% elseif offre.vehicule is not null %}{{ offre.vehicule.id }}{% elseif offre.vol is not null %}{{ offre.vol.id }}{% elseif offre.voyage is not null %}{{ offre.voyage.id }}{% endif %}{% endif %}";
 
     function loadItems(category, selectedId = null) {
         if (!category) {
@@ -91,6 +100,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         itemSelect.innerHTML = '<option>Chargement en cours...</option>';
+        
         fetch('/offre/api/items/' + category)
             .then(response => response.json())
             .then(data => {
@@ -102,13 +112,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     if (selectedId && item.id == selectedId) opt.selected = true;
                     itemSelect.add(opt);
                 });
+            })
+            .catch(err => {
+                console.error("Erreur AJAX:", err);
+                itemSelect.innerHTML = '<option value="">Erreur de chargement</option>';
             });
     }
 
+    // Écouteur pour le changement manuel de catégorie
     categorySelect.addEventListener('change', function() {
         loadItems(this.value);
     });
 
+    // --- LOGIQUE INITIALE (EDIT ou REFRESH) ---
+    // Si une catégorie est déjà présente (cas du formulaire de modification)
     if (categorySelect.value) {
         loadItems(categorySelect.value, currentSelectedId);
     }
@@ -131,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.disabled = true;
         loader.classList.remove('d-none');
         suggestionLabel.style.display = 'none';
-        odd8Badge.style.display = 'none';
+        if(odd8Badge) odd8Badge.style.display = 'none';
 
         const params = new URLSearchParams();
         params.append('text', text);
@@ -147,12 +164,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                // Badge catégorie
+                // Affichage du badge suggestion
                 const sourceTag = data.source === 'fallback' ? ' (local)' : ' ✦';
                 suggestionLabel.innerText = "Suggestion IA : " + data.label + sourceTag;
                 suggestionLabel.style.display = 'inline-block';
 
-                // Mapping label IA → valeur exacte du <select> Catégorie
+                // Mapping IA -> Formulaire
                 const labelToCategoryMap = {
                     'Luxe'       : 'HOTEL',
                     'Famille'    : 'HOTEL',
@@ -163,36 +180,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 const detectedCategory = labelToCategoryMap[data.label];
                 if (detectedCategory) {
                     categorySelect.value = detectedCategory;
-                    categorySelect.dispatchEvent(new Event('change'));
+                    // Déclenche l'événement pour charger les items AJAX
+                    loadItems(detectedCategory); 
+                    
                     categorySelect.style.border = '2px solid #27AE60';
                     setTimeout(() => categorySelect.style.border = '', 2000);
                 }
 
                 // --- ODD 8 AUTO-DÉTECTION ---
-                if (data.odd8 === true) {
+                if (data.isLocal === true) {
                     odd8Toggle.checked = true;
-                    odd8Badge.style.display = 'inline-block';
-                    // Feedback visuel sur le toggle
+                    if(odd8Badge) odd8Badge.style.display = 'inline-block';
+                    
                     const toggleContainer = odd8Toggle.closest('.form-check');
                     if (toggleContainer) {
-                        toggleContainer.style.border = '2px solid #27AE60';
-                        toggleContainer.style.borderRadius = '8px';
-                        toggleContainer.style.padding = '4px 8px';
-                        setTimeout(() => {
-                            toggleContainer.style.border = '';
-                            toggleContainer.style.padding = '';
-                        }, 2500);
+                        toggleContainer.style.backgroundColor = '#dcfce7';
+                        setTimeout(() => toggleContainer.style.backgroundColor = '', 2500);
                     }
-                } else {
-                    odd8Toggle.checked = false;
-                    odd8Badge.style.display = 'none';
                 }
-                // ------------------------------------
             })
-            .catch(() => {
+            .catch(err => {
                 btn.disabled = false;
                 loader.classList.add('d-none');
-                alert("Erreur réseau, réessayez.");
+                console.error("Erreur IA:", err);
             });
     };
 
@@ -214,32 +224,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const params = new URLSearchParams();
         params.append('text', text);
 
-        fetch('/offre/api/ai-enhance', { method: 'POST', body: params })
-            .then(response => response.json())
-            .then(data => {
-                btn.disabled = false;
-                loader.classList.add('d-none');
+        fetch('/offre/api/ai-optimize', { method: 'POST', body: params })
+    .then(response => response.json())
+    .then(data => {
+        btn.disabled = false;
+        loader.classList.add('d-none');
 
-                if (data.enhanced) {
-                    // Remplace la description par la version luxe générée
-                    descriptionField.value = data.enhanced;
-                    // Feedback visuel sur le textarea
-                    descriptionField.style.border      = '2px solid #f0a500';
-                    descriptionField.style.background  = '#fffdf0';
-                    setTimeout(() => {
-                        descriptionField.style.border     = '';
-                        descriptionField.style.background = '';
-                    }, 3000);
-                } else if (data.error) {
-                    alert("Erreur optimisation : " + data.error);
-                }
-            })
-            .catch(() => {
-                btn.disabled = false;
-                loader.classList.add('d-none');
-                alert("Erreur réseau, réessayez.");
-            });
+        if (data.enhanced) { // ON UTILISE 'enhanced' ICI
+            const descriptionField = document.getElementById('offre_description');
+            descriptionField.value = data.enhanced; // Le texte change enfin !
+            
+            // --- PETIT EFFET VISUEL POUR ÉPATER LE PROF ---
+            descriptionField.style.border = '2px solid #27AE60'; // Bordure verte
+            descriptionField.style.backgroundColor = '#f0fff4'; // Fond vert très clair
+            setTimeout(() => {
+                descriptionField.style.border = '';
+                descriptionField.style.backgroundColor = '';
+            }, 2000);
+        }
+    });
     };
-
 });
 </script>

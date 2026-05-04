@@ -123,61 +123,82 @@
     </div>
 </div>
 
+<!-- Chargement de Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <script>
-    // 1. RECHERCHE DYNAMIQUE (LOGIQUE MÉTIER CLIENT-SIDE)
-    document.addEventListener('DOMContentLoaded', function() {
+    /**
+     * Utilisation de 'turbo:load' pour que les scripts se relancent 
+     * même lors d'une navigation asynchrone (sans F5).
+     */
+    document.addEventListener('turbo:load', function() {
+        
+        // --- 1. LOGIQUE DE RECHERCHE DYNAMIQUE ---
         const searchInput = document.getElementById('adminSearch');
-        const rows = document.querySelectorAll('.offre-row');
-        const totalCounter = document.getElementById('totalCounter');
-        const noMatch = document.getElementById('noMatch');
+        if (searchInput) {
+            const rows = document.querySelectorAll('.offre-row');
+            const totalCounter = document.getElementById('totalCounter');
+            const noMatch = document.getElementById('noMatch');
 
-        searchInput.addEventListener('input', function() {
-            const query = this.value.toLowerCase().trim();
-            let visibleCount = 0;
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                let visibleCount = 0;
 
-            rows.forEach(row => {
-                const title = row.querySelector('.offre-titre').textContent.toLowerCase();
-                if (title.includes(query)) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
+                rows.forEach(row => {
+                    const title = row.querySelector('.offre-titre').textContent.toLowerCase();
+                    if (title.includes(query)) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                if (totalCounter) totalCounter.textContent = visibleCount;
+                if (noMatch) {
+                    if (visibleCount === 0) noMatch.classList.remove('d-none');
+                    else noMatch.classList.add('d-none');
                 }
             });
-
-            // Mise à jour du compteur en temps réel
-            totalCounter.textContent = visibleCount;
-
-            // Affichage du message si vide
-            if (visibleCount === 0) noMatch.classList.remove('d-none');
-            else noMatch.classList.add('d-none');
-        });
-    });
-
-    // 2. CONFIGURATION DU GRAPHIQUE
-    const ctx = document.getElementById('statChart');
-    new Chart(ctx, {
-        type: 'pie',
-        data: {
-            labels: ['Hôtels', 'Vols', 'Transports', 'Voyages'],
-            datasets: [{
-                data: [
-                    {{ offres|filter(o => o.category == 'HOTEL')|length }},
-                    {{ offres|filter(o => o.category == 'VOL')|length }},
-                    {{ offres|filter(o => o.category == 'TRANSPORT')|length }},
-                    {{ offres|filter(o => o.category == 'VOYAGE' or o.category is null)|length }}
-                ],
-                backgroundColor: ['#1A73E8', '#FF5A1F', '#27AE60', '#64748B'],
-                borderWidth: 0
-            }]
-        },
-        options: {
-            plugins: {
-                legend: { position: 'right', labels: { usePointStyle: true, boxWidth: 10 } }
-            },
-            maintainAspectRatio: false
         }
+
+        // --- 2. LOGIQUE DU GRAPHIQUE (PIE CHART) ---
+        const ctx = document.getElementById('statChart');
+        if (ctx) {
+            // Sécurité : détruire l'instance existante si elle existe déjà (évite l'erreur "Canvas already in use")
+            const existingChart = Chart.getChart("statChart");
+            if (existingChart) {
+                existingChart.destroy();
+            }
+
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Hôtels', 'Vols', 'Transports', 'Voyages'],
+                    datasets: [{
+                        data: [
+                            {{ offres|filter(o => o.category == 'HOTEL')|length }},
+                            {{ offres|filter(o => o.category == 'VOL')|length }},
+                            {{ offres|filter(o => o.category == 'TRANSPORT')|length }},
+                            {{ offres|filter(o => o.category == 'VOYAGE' or o.category is null)|length }}
+                        ],
+                        backgroundColor: ['#1A73E8', '#FF5A1F', '#27AE60', '#64748B'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { 
+                            position: 'right', 
+                            labels: { usePointStyle: true, boxWidth: 10, padding: 15 } 
+                        }
+                    },
+                    maintainAspectRatio: false
+                }
+            });
+        }
+        
+        console.log("SmartTrip Admin: Dashboard and Search re-initialized via Turbo.");
     });
 </script>
 {% endblock %}

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Offre;
 use App\Form\OffreType;
+use App\Service\OffreService;
 use App\Repository\OffreRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -33,22 +34,31 @@ use Endroid\QrCode\ErrorCorrectionLevel;
 #[Route('/offre')]
 class OffreController extends AbstractController
 {
-    // --- VUE CLIENT (Les Cards) ---
+    // --- VUE CLIENT ---
     #[Route('/client', name: 'app_offre_client_index', methods: ['GET'])]
-    public function indexClient(OffreRepository $repo, Request $request): Response
-    {
-        $category = $request->query->get('cat');
-        if ($category && $category !== 'ALL') {
-            $offres = $repo->findBy(['category' => $category]);
-        } else {
-            $offres = $repo->findAll();
-        }
+public function indexClient(OffreService $offreService, Request $request): Response
+{
+    // 1. On récupère la catégorie choisie dans l'URL (ex: ?cat=HOTEL). Par défaut 'ALL'
+    $category = $request->query->get('cat', 'ALL');
 
-        return $this->render('offre/index_client.html.twig', [
-            'offres' => $offres,
-            'active_cat' => $category ?? 'ALL'
-        ]);
+    // 2. On récupère TOUTES les offres intégrées (via ton service Master Join)
+    $allOffres = $offreService->getAllIntegratedOffres();
+
+    // 3. LOGIQUE MÉTIER DE FILTRAGE
+    if ($category !== 'ALL') {
+        // On filtre le tableau PHP pour ne garder que la catégorie demandée
+        $offres = array_filter($allOffres, function($o) use ($category) {
+            return $o->getCategory() === $category;
+        });
+    } else {
+        $offres = $allOffres;
     }
+
+    return $this->render('offre/index_client.html.twig', [
+        'offres' => $offres,
+        'active_cat' => $category // On renvoie la catégorie active pour le design
+    ]);
+}
 
     #[Route('/admin', name: 'app_offre_index', methods: ['GET'])]
 public function indexAdmin(OffreRepository $offreRepository, PaginatorInterface $paginator, Request $request): Response
@@ -81,108 +91,107 @@ public function indexAdmin(OffreRepository $offreRepository, PaginatorInterface 
 }
     // src/Controller/OffreController.php
 
-#[Route('/new', name: 'app_offre_new', methods: ['GET', 'POST'])]
-public function new(Request $request, EntityManagerInterface $entityManager): Response
-{
-    $offre = new Offre();
-    $form = $this->createForm(OffreType::class, $offre);
-    $form->handleRequest($request);
-    // Dans OffreController.php (méthode new ET méthode edit)
-    if ($form->isSubmitted() && $form->isValid()) {
-        $idTarget = $form->get('id_target')->getData();
-        $category = $offre->getCategory();
+// --- AJOUTER UNE OFFRE ---
+    #[Route('/new', name: 'app_offre_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $offre = new Offre();
+        $form = $this->createForm(OffreType::class, $offre);
+        $form->handleRequest($request);
 
-        // 1. Reset toutes les relations pour éviter les mélanges
-        $offre->setVoyage(null);
-        $offre->setHotel(null);
-        $offre->setVehicule(null);
-        $offre->setVol(null);
+        if ($form->isSubmitted() && $form->isValid()) {
+            // RÉCUPÉRATION SÉCURISÉE : on prend l'ID target du formulaire
+            $idTarget = $form->get('id_target')->getData();
+            $category = $offre->getCategory();
 
-        // 2. Affectation de l'objet réel selon la catégorie (CHAÎNE CONTINUE)
-        if ($category === 'HOTEL') {
-            $hotel = $entityManager->getRepository(Hotel::class)->find($idTarget);
-            $offre->setHotel($hotel);
-        } 
-        elseif ($category === 'VOL') {
-            $vol = $entityManager->getRepository(Vol::class)->find($idTarget);
-            $offre->setVol($vol);
-        } 
-        elseif ($category === 'TRANSPORT') {
-            $vehicule = $entityManager->getRepository(Vehicule::class)->find($idTarget);
-            $offre->setVehicule($vehicule);
-        } 
-        elseif ($category === 'VOYAGE') {
-            $voyage = $entityManager->getRepository(Voyage::class)->find($idTarget);
-            $offre->setVoyage($voyage);
+            // Reset des relations
+            $offre->setVoyage(null);
+            $offre->setHotel(null);
+            $offre->setVehicule(null);
+            $offre->setVol(null);
+
+            if ($idTarget) {
+                if ($category === 'VOYAGE') {
+                    // Symfony va maintenant chercher dans la table 'voyages' (grâce à l'étape 1)
+                    $voyage = $entityManager->getRepository(Voyage::class)->find($idTarget);
+                    $offre->setVoyage($voyage);
+                } 
+                elseif ($category === 'HOTEL') {
+                    $hotel = $entityManager->getRepository(Hotel::class)->find($idTarget);
+                    $offre->setHotel($hotel);
+                }
+                elseif ($category === 'TRANSPORT') {
+                    $vehicule = $entityManager->getRepository(Vehicule::class)->find($idTarget);
+                    $offre->setVehicule($vehicule);
+                }
+                elseif ($category === 'VOL') {
+                    $vol = $entityManager->getRepository(Vol::class)->find($idTarget);
+                    $offre->setVol($vol);
+                }
+            }
+
+            $entityManager->persist($offre);
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_offre_index');
         }
 
-        $entityManager->persist($offre);
-        $entityManager->flush();
-
-        return $this->redirectToRoute('app_offre_index');
+        return $this->render('offre/new.html.twig', [
+            'offre' => $offre,
+            'form' => $form,
+        ]);
     }
 
-    return $this->render('offre/new.html.twig', [
-        'offre' => $offre,
-        'form' => $form,
-    ]);
-}
+    // --- MODIFIER UNE OFFRE ---
     #[Route('/{id}/edit', name: 'app_offre_edit', methods: ['GET', 'POST'])]
-public function edit(Request $request, Offre $offre, EntityManagerInterface $entityManager): Response
-{
-    $form = $this->createForm(OffreType::class, $offre);
-    $form->handleRequest($request);
+    public function edit(Request $request, Offre $offre, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(OffreType::class, $offre);
+        $form->handleRequest($request);
 
-    // Dans OffreController.php (méthode new ET méthode edit)
-    if ($form->isSubmitted() && $form->isValid()) {
-        $idTarget = $form->get('id_target')->getData();
-        $category = $offre->getCategory();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $idTarget = $form->get('id_target')->getData();
+            $category = $offre->getCategory();
 
-        // 1. Reset toutes les relations pour éviter les mélanges
-        $offre->setVoyage(null);
-        $offre->setHotel(null);
-        $offre->setVehicule(null);
-        $offre->setVol(null);
+            if ($idTarget) {
+                // On réinitialise les liens pour mettre à jour vers le nouveau choix
+                $offre->setVoyage(null);
+                $offre->setHotel(null);
+                $offre->setVehicule(null);
+                $offre->setVol(null);
 
-        // 2. Affectation de l'objet réel selon la catégorie (CHAÎNE CONTINUE)
-        if ($category === 'HOTEL') {
-            $hotel = $entityManager->getRepository(Hotel::class)->find($idTarget);
-            $offre->setHotel($hotel);
-        } 
-        elseif ($category === 'VOL') {
-            $vol = $entityManager->getRepository(Vol::class)->find($idTarget);
-            $offre->setVol($vol);
-        } 
-        elseif ($category === 'TRANSPORT') {
-            $vehicule = $entityManager->getRepository(Vehicule::class)->find($idTarget);
-            $offre->setVehicule($vehicule);
-        } 
-        elseif ($category === 'VOYAGE') {
-            $voyage = $entityManager->getRepository(Voyage::class)->find($idTarget);
-            $offre->setVoyage($voyage);
+                if ($category === 'HOTEL') {
+                    $offre->setHotel($entityManager->getRepository(Hotel::class)->find($idTarget));
+                } elseif ($category === 'VOL') {
+                    $offre->setVol($entityManager->getRepository(Vol::class)->find($idTarget));
+                } elseif ($category === 'TRANSPORT') {
+                    $offre->setVehicule($entityManager->getRepository(Vehicule::class)->find($idTarget));
+                } elseif ($category === 'VOYAGE') {
+                    $offre->setVoyage($entityManager->getRepository(Voyage::class)->find($idTarget));
+                }
+            }
+
+            $entityManager->flush();
+            return $this->redirectToRoute('app_offre_index');
         }
 
-        $entityManager->persist($offre);
-        $entityManager->flush();
-
-        return $this->redirectToRoute('app_offre_index');
+        return $this->render('offre/edit.html.twig', [
+            'offre' => $offre,
+            'form' => $form,
+        ]);
     }
 
-    return $this->render('offre/edit.html.twig', [
-        'offre' => $offre,
-        'form' => $form,
-    ]);
-}
-    // --- SUPPRIMER ---
+    // --- SUPPRIMER UNE OFFRE ---
     #[Route('/{id}', name: 'app_offre_delete', methods: ['POST'])]
     public function delete(Request $request, Offre $offre, EntityManagerInterface $entityManager): Response
     {
+        // On vérifie le jeton CSRF pour la sécurité (généré par le bouton Delete de Symfony)
         if ($this->isCsrfTokenValid('delete'.$offre->getId(), $request->request->get('_token'))) {
             $entityManager->remove($offre);
             $entityManager->flush();
         }
 
-        return $this->redirectToRoute('app_offre_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_offre_index');
     }
     #[Route('/admin/offre/{id}/coupons', name: 'app_admin_offre_coupons')]
 public function manageCoupons(Offre $offre, EntityManagerInterface $em): Response
@@ -197,6 +206,7 @@ public function manageCoupons(Offre $offre, EntityManagerInterface $em): Respons
 }
 
     // --- API : RÉCUPÉRER LES ÉLÉMENTS PAR CATÉGORIE ---
+    // --- API : RÉCUPÉRER LES ÉLÉMENTS PAR CATÉGORIE ---
     #[Route('/api/items/{category}', name: 'app_offre_api_items', methods: ['GET'])]
     public function getItemsByCategory(string $category, EntityManagerInterface $entityManager): JsonResponse
     {
@@ -206,34 +216,33 @@ public function manageCoupons(Offre $offre, EntityManagerInterface $em): Respons
         try {
             switch ($category) {
                 case 'HOTEL':
-                    // On récupère l'ID et le Nom des hôtels
+                    // Table 'hotels' (s), colonne 'id'
                     $sql = "SELECT id, name as label FROM hotels";
                     $items = $connection->fetchAllAssociative($sql);
                     break;
 
                 case 'VOL':
-                    // On récupère l'ID et la destination d'arrivée
+                    // Table 'vols' (s), colonne 'id'
                     $sql = "SELECT id, CONCAT('Vers ', arrivee) as label FROM vols";
                     $items = $connection->fetchAllAssociative($sql);
                     break;
 
                 case 'TRANSPORT':
-                    // On récupère l'ID du véhicule, son type et sa ville
+                    // Table 'vehicule' (pas de s), colonne 'idVehicule'
                     $sql = "SELECT idVehicule as id, CONCAT(type, ' (', ville, ')') as label FROM vehicule";
                     $items = $connection->fetchAllAssociative($sql);
                     break;
 
                 case 'VOYAGE':
-                    // On récupère l'ID et la destination du voyage
-                    $sql = "SELECT id_voyage as id, destination as label FROM voyage";
+                    // Table 'voyages' (s), colonne 'id' (et non id_voyage)
+                    $sql = "SELECT id, destination as label FROM voyages";
                     $items = $connection->fetchAllAssociative($sql);
                     break;
             }
         } catch (\Exception $e) {
-            return new JsonResponse(['error' => $e.getMessage()], 500);
+            return new JsonResponse(['error' => $e->getMessage()], 500);
         }
 
-        // Retourne la liste en format JSON pour le JavaScript
         return new JsonResponse($items);
     }
 
@@ -463,8 +472,8 @@ private function detectODD8(string $text): bool
     return false;
 }
 
-#[Route('/api/ai-enhance', name: 'app_offre_api_ai_enhance', methods: ['POST'])]
-public function enhanceDescription(Request $request, HttpClientInterface $httpClient): JsonResponse
+#[Route('/api/ai-optimize', name: 'app_offre_api_ai_optimize', methods: ['POST'])]
+public function aiOptimize(Request $request, HttpClientInterface $httpClient): JsonResponse
 {
     $text = $request->request->get('text', '');
     $apiToken = trim($this->getParameter('app.hf_key'));
