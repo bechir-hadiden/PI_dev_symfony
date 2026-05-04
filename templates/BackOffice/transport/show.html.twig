@@ -37,7 +37,6 @@
 
         <div style="margin-top:1.5rem;padding:1rem;background:rgba(255,215,0,0.05);border:1px solid rgba(201,168,76,0.2);border-radius:12px">
           <h4 style="margin:0 0 .8rem 0;font-size:.85rem;color:var(--navy);text-transform:uppercase;letter-spacing:.5px">Métier Avancé</h4>
-          
           <div style="margin-bottom:1rem">
             <div style="display:flex;justify-content:between;align-items:center;margin-bottom:.3rem">
               <span style="font-weight:600;font-size:.8rem;color:var(--navy)">Eco-Score</span>
@@ -47,13 +46,13 @@
               <div style="width:{{ ecoScore }}%;height:100%;background:{{ ecoScore > 60 ? '#22c55e' : (ecoScore > 30 ? '#f59e0b' : '#ef4444') }}"></div>
             </div>
           </div>
-
           <div style="display:flex;justify-content:space-between;align-items:center">
-             <span style="font-weight:600;font-size:.8rem;color:var(--navy)">Prix Dynamique :</span>
-             <span class="badge" style="background:var(--gold);color:#fff;font-size:1rem">{{ dynamicPrice|number_format(2, ',', ' ') }} DT</span>
+            <span style="font-weight:600;font-size:.8rem;color:var(--navy)">Prix Dynamique :</span>
+            <span class="badge" style="background:var(--gold);color:#fff;font-size:1rem">{{ dynamicPrice|number_format(2, ',', ' ') }} DT</span>
           </div>
           <small style="display:block;margin-top:.4rem;color:var(--muted);font-size:.7rem">(Basé sur le type, la capacité et la date)</small>
         </div>
+
         <div style="display:flex;gap:.5rem;margin-top:1.2rem">
           <a href="{{ path('admin_transport_edit', {id: transport.id}) }}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Modifier</a>
           <form method="POST" action="{{ path('admin_transport_delete', {id: transport.id}) }}" onsubmit="return confirm('Supprimer ?')">
@@ -66,7 +65,7 @@
     </div>
   </div>
 
-  <!-- RIGHT: Reservations -->
+  <!-- RIGHT: Reservations liées au transport (via entité Reservation) -->
   <div style="flex:1">
     <div class="card">
       <div class="card-header">
@@ -77,20 +76,32 @@
           <div style="padding:2rem;text-align:center;color:var(--muted)">Aucune réservation pour ce véhicule.</div>
         {% else %}
           <table>
-            <thead><tr><th>#</th><th>Client</th><th>Email</th><th>Places</th><th>Date</th><th>Statut</th></tr></thead>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Client</th>
+                <th>Email</th>
+                <th>Passagers</th>
+                <th>Date</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
             <tbody>
               {% for r in transport.reservations %}
               <tr>
                 <td style="color:var(--muted);font-size:.8rem">{{ r.id }}</td>
                 <td>{{ r.nomClient }}</td>
-                <td style="font-size:.8rem;color:var(--muted)">{{ r.emailClient }}</td>
-                <td>{{ r.nombrePlaces }}</td>
-                <td style="font-size:.8rem">{{ r.dateReservation|date('d/m/Y H:i') }}</td>
+                <td style="font-size:.8rem;color:var(--muted)">{{ r.email }}</td>{# ✅ email #}
+                <td>{{ r.numberOfPassengers }}</td>{# ✅ numberOfPassengers #}
+                <td style="font-size:.8rem">{{ r.reservationDate|date('d/m/Y H:i') }}</td>{# ✅ reservationDate #}
                 <td>
-                  {% if r.statut == 'confirmee' %}
+                  {# ✅ status + valeurs anglaises #}
+                  {% if r.status == 'confirmed' %}
                     <span class="badge badge-confirm">Confirmée</span>
-                  {% elseif r.statut == 'annulee' %}
+                  {% elseif r.status == 'cancelled' %}
                     <span class="badge badge-cancel">Annulée</span>
+                  {% elseif r.status == 'completed' %}
+                    <span class="badge" style="background:rgba(0,180,216,0.1);color:#00b4d8;">Terminée</span>
                   {% else %}
                     <span class="badge badge-pending">En attente</span>
                   {% endif %}

@@ -1,5 +1,4 @@
-{# templates/avis/index.html.twig #}
-{% extends 'base.html.twig' %}
+{% extends 'base_dark.html.twig' %}
 
 {% block title %}VoyageÉlite — Avis voyageurs{% endblock %}
 
@@ -1292,11 +1291,11 @@
                                 <span class="weather-badge"><i class="fas {{ avis.weatherData.icon }}"></i> {{ avis.weatherData.temperature }}°C</span>
                                 {% endif %}
                             </div>
-                            <a href="{{ path('app_destination_show', {'destination': avis.destination}) }}" 
-                               class="btn-view-destination"
-                               target="_blank">
-                                <i class="fas fa-globe"></i> Voir destination
-                            </a>
+                       <a href="{{ path('client_destination_index') }}?q={{ avis.destination|url_encode }}" 
+   class="btn-view-destination"
+   target="_blank">
+    <i class="fas fa-globe"></i> Voir destination
+</a>
                         </div>
                         {% endif %}
                         

@@ -158,10 +158,38 @@
             <span style="color:var(--gold);font-weight:700;">{{ voyage.dureeJours > 0 ? voyage.dureeJours ~ ' jours' : '—' }}</span>
           </div>
         </div>
-        <button onclick="alert('Fonctionnalité de réservation à venir !')"
-                style="width:100%;background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy);border:none;cursor:pointer;padding:1rem;border-radius:10px;font-weight:700;font-size:.95rem;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.5rem;">
-          <i class="fas fa-plane"></i> Réserver maintenant
-        </button>
+<a href="{{ path('app_reservation_new', {
+    'destination_id': voyage.destinationRel.id,
+    'airline': voyage.airline ?? 'SmartTrip',
+    'flightNumber': voyage.flightNumber ?? 'ST-001',
+    'departureAirport': voyage.departureAirport ?? 'TUN',
+    'arrivalAirport': voyage.arrivalAirport ?? voyage.destination,
+    'departureTime': voyage.dateDebut ? voyage.dateDebut|date('Y-m-d H:i:s') : '',
+    'arrivalTime': voyage.dateFin ? voyage.dateFin|date('Y-m-d H:i:s') : '',
+    'price': voyage.prix ?? 0
+}) }}"
+style="width:100%;
+background:linear-gradient(135deg,var(--gold),var(--gold-l));
+color:var(--navy);
+text-decoration:none;
+padding:1rem;
+border-radius:10px;
+font-weight:700;
+font-size:.95rem;
+font-family:inherit;
+display:flex;
+align-items:center;
+justify-content:center;
+gap:.5rem;">
+
+    <i class="fas fa-plane"></i>
+    Réserver maintenant
+</a>
+style="width:100%;background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy);
+text-decoration:none;padding:1rem;border-radius:10px;font-weight:700;font-size:.95rem;
+font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.5rem;">
+  <i class="fas fa-plane"></i> Réserver maintenant
+</a>
       </div>
 
       {% if voyage.destinationRel %}

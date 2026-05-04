@@ -1,237 +1,657 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="{{ app.request.locale }}" {% if app.request.locale == 'ar' %}dir="rtl"{% endif %}>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="Smart Trip - Agence de voyage premium. Découvrez nos voyages sur mesure, destinations exclusives et offres spéciales.">
-    <meta name="keywords" content="voyage, agence de voyage, tourisme, destination, réservation, avis, Smart Trip">
-    <meta name="author" content="Smart Trip">
-    
-    <title>{% block title %}SmartTrip - Voyages et Avis{% endblock %}</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>✈️</text></svg>">
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    {% block stylesheets %}
-        <style>
-            /* ========== STYLES DE BASE ========== */
-            :root {
-                --gold: #ffd700;
-                --gold-l: #ffed4a;
-                --navy: #1a2a3a;
-                --navy-light: #2a3a4a;
-                --muted: #6c757d;
-                --dark: #0a0f1a;
-                --dark-card: rgba(255,255,255,0.05);
-            }
-            
-            * {
-                margin: 0;
-                padding: 0;
-                box-sizing: border-box;
-            }
-            
-            body {
-                font-family: 'Inter', sans-serif;
-                background: #f8f9fa;
-                overflow-x: hidden;
-            }
-            
-            .navbar {
-                background: #0a0f1a !important;
-                border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-                padding: 1rem 0;
-                transition: all 0.3s ease;
-            }
-            
-            .navbar-brand {
-                font-weight: 700;
-                font-size: 1.5rem;
-                color: var(--gold) !important;
-            }
-            
-            .navbar-brand i {
-                margin-right: 8px;
-                color: var(--gold);
-            }
-            
-            .nav-link {
-                font-weight: 500;
-                transition: all 0.2s;
-                color: white !important;
-            }
-            
-            .nav-link:hover {
-                color: var(--gold) !important;
-            }
-            
-            .dropdown-menu {
-                border-radius: 12px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-                border: none;
-                margin-top: 10px;
-                background: #1a2a3a;
-            }
-            
-            .dropdown-item {
-                padding: 8px 20px;
-                transition: all 0.2s;
-                color: white;
-            }
-            
-            .dropdown-item:hover {
-                background: linear-gradient(135deg, var(--gold), #e6a800);
-                color: #0a0f1a;
-            }
-            
-            .admin-badge {
-                background: #dc3545;
-                color: white;
-                padding: 2px 8px;
-                border-radius: 20px;
-                font-size: 0.7rem;
-                margin-left: 10px;
-            }
-            
-            .btn-primary {
-                background: linear-gradient(135deg, var(--gold), #e6a800);
-                border: none;
-                color: #0a0f1a;
-                font-weight: 600;
-            }
-            
-            .footer {
-                background: #0a0f1a;
-                padding: 3rem 5%;
-                border-top: 1px solid rgba(255,215,0,0.2);
-                color: rgba(255,255,255,0.7);
-            }
-            
-            .footer a {
-                color: rgba(255,255,255,0.7);
-                text-decoration: none;
-            }
-            
-            .footer a:hover {
-                color: var(--gold);
-            }
-            
-            .footer h5 {
-                color: var(--gold);
-                margin-bottom: 1rem;
-            }
-            
-            .social-links {
-                display: flex;
-                gap: 1rem;
-                margin-top: 1rem;
-            }
-            
-            .alert {
-                position: fixed;
-                top: 80px;
-                right: 20px;
-                padding: 1rem 1.5rem;
-                border-radius: 10px;
-                z-index: 1001;
-                animation: slideIn 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-            }
-            
-            .alert-close {
-                margin-left: auto;
-                background: none;
-                border: none;
-                font-size: 1.2rem;
-                cursor: pointer;
-            }
-            
-            @keyframes slideIn {
-                from {
-                    opacity: 0;
-                    transform: translateX(100%);
-                }
-                to {
-                    opacity: 1;
-                    transform: translateX(0);
-                }
-            }
-            
-            @media (max-width: 768px) {
-                .hero-content h1 {
-                    font-size: 2rem;
-                }
-            }
-        </style>
-    {% endblock %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SmartTrip{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --navy:   #0d1b2a;
+      --navy-2: #112236;
+      --gold:   #c9a84c;
+      --gold-l: #e8c97a;
+      --cream:  #f5f0e8;
+      --white:  #ffffff;
+      --muted:  #7a8a99;
+      --shadow: 0 8px 32px rgba(13,27,42,0.18);
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Plus Jakarta Sans',sans-serif; background:var(--cream); color:var(--navy); overflow-x:hidden; }
+
+    {% if app.request.locale == 'ar' %}
+    body { font-family: 'Segoe UI', 'Arial', sans-serif; direction: rtl; }
+    {% endif %}
+
+    /* ── NAV ── */
+    nav {
+      position:fixed; top:0; width:100%; z-index:1000;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1.1rem 5%;
+      background:rgba(13,27,42,0.96);
+      backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(201,168,76,0.2);
+      transition:all .3s;
+    }
+    .nav-logo { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700; color:var(--gold); text-decoration:none; letter-spacing:1px; }
+    .nav-logo span { color:var(--white); }
+    .nav-links { display:flex; gap:2rem; list-style:none; align-items:center; }
+    .nav-links a { color:rgba(255,255,255,0.7); text-decoration:none; font-size:.875rem; font-weight:500; transition:color .3s; position:relative; }
+    .nav-links a::after { content:''; position:absolute; bottom:-4px; left:0; width:0; height:1px; background:var(--gold); transition:width .3s; }
+    .nav-links a:hover { color:var(--gold); }
+    .nav-links a:hover::after { width:100%; }
+    .nav-cta { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy) !important; padding:.55rem 1.4rem; border-radius:50px; font-weight:700 !important; }
+    .nav-cta::after { display:none !important; }
+
+    /* ── LANGUAGE SWITCHER ── */
+    .lang-switcher {
+      display:flex; align-items:center; gap:.3rem;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(201,168,76,0.2);
+      border-radius:50px;
+      padding:.3rem .5rem;
+    }
+    .lang-btn {
+      background:none; border:none; cursor:pointer;
+      color:rgba(255,255,255,0.45);
+      font-size:.72rem; font-weight:700;
+      padding:.25rem .5rem;
+      border-radius:50px;
+      transition:all .2s;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      letter-spacing:.5px;
+      text-decoration:none;
+      display:inline-flex; align-items:center; gap:.25rem;
+    }
+    .lang-btn:hover { color:var(--gold); background:rgba(201,168,76,0.1); }
+    .lang-btn.active { background:var(--gold); color:var(--navy); }
+    .lang-divider { color:rgba(255,255,255,0.15); font-size:.7rem; }
+
+    /* ── BOUTON LOGIN NAVBAR ── */
+    .btn-login-nav {
+      display:inline-flex; align-items:center; gap:.4rem;
+      padding:.5rem 1.1rem;
+      border:1px solid rgba(201,168,76,0.4);
+      border-radius:50px;
+      color:rgba(255,255,255,0.75) !important;
+      font-size:.8rem; font-weight:600;
+      cursor:pointer; transition:all .25s;
+      background:transparent;
+      font-family:'Plus Jakarta Sans',sans-serif;
+      text-decoration:none;
+    }
+    .btn-login-nav::after { display:none !important; }
+    .btn-login-nav:hover { border-color:var(--gold); color:var(--gold) !important; background:rgba(201,168,76,0.08); }
+    .btn-login-nav i { font-size:.75rem; color:var(--gold); }
+
+    /* Badge user connecté */
+    .nav-user {
+      display:inline-flex; align-items:center; gap:.5rem;
+      padding:.45rem 1rem;
+      background:rgba(201,168,76,0.12);
+      border:1px solid rgba(201,168,76,0.25);
+      border-radius:50px;
+      font-size:.78rem; color:var(--gold); font-weight:600;
+    }
+    .nav-user i { font-size:.75rem; }
+
+    /* ── MODAL LOGIN ── */
+    .modal-overlay {
+      display:none;
+      position:fixed; inset:0; z-index:9999;
+      background:rgba(7,16,26,0.85);
+      backdrop-filter:blur(8px);
+      align-items:center; justify-content:center;
+    }
+    .modal-overlay.open { display:flex; }
+    .modal-card {
+      background:rgba(17,34,54,0.98);
+      border:1px solid rgba(201,168,76,0.25);
+      border-radius:20px;
+      padding:2.5rem 2.2rem;
+      width:100%; max-width:400px;
+      position:relative;
+      animation:modalIn .25s ease;
+    }
+    @keyframes modalIn {
+      from { opacity:0; transform:translateY(-20px) scale(0.97); }
+      to   { opacity:1; transform:translateY(0)     scale(1);    }
+    }
+    .modal-close {
+      position:absolute; top:1rem; right:1.1rem;
+      background:none; border:none; color:rgba(255,255,255,0.35);
+      font-size:1.2rem; cursor:pointer; transition:color .2s; line-height:1;
+    }
+    .modal-close:hover { color:var(--gold); }
+    .modal-logo { text-align:center; margin-bottom:1.6rem; }
+    .modal-logo h2 { font-family:'Playfair Display',serif; font-size:1.6rem; font-weight:700; color:var(--gold); }
+    .modal-logo h2 span { color:var(--white); }
+    .modal-logo p { font-size:.75rem; color:rgba(255,255,255,0.35); margin-top:.3rem; }
+    .modal-field { margin-bottom:1.1rem; }
+    .modal-field label { display:block; font-size:.68rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:rgba(255,255,255,0.45); margin-bottom:.45rem; }
+    .modal-field input { width:100%; padding:.8rem 1rem; background:rgba(255,255,255,0.06); border:1px solid rgba(201,168,76,0.2); border-radius:10px; color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:.875rem; outline:none; transition:border-color .3s; }
+    .modal-field input:focus { border-color:var(--gold); }
+    .modal-field input::placeholder { color:rgba(255,255,255,0.2); }
+    .modal-remember { display:flex; align-items:center; gap:.5rem; margin-bottom:1.4rem; }
+    .modal-remember input[type="checkbox"] { accent-color:var(--gold); }
+    .modal-remember label { font-size:.75rem; color:rgba(255,255,255,0.4); }
+    .btn-modal-submit { width:100%; padding:.9rem; background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); border:none; border-radius:10px; font-family:'Plus Jakarta Sans',sans-serif; font-size:.9rem; font-weight:700; cursor:pointer; transition:transform .3s,box-shadow .3s; letter-spacing:.03em; }
+    .btn-modal-submit:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(201,168,76,0.4); }
+    .modal-error { background:rgba(248,113,113,.1); border:1px solid rgba(248,113,113,.3); border-radius:8px; padding:.75rem 1rem; color:#fca5a5; font-size:.8rem; margin-bottom:1.1rem; text-align:center; }
+
+    /* ── FLASH ── */
+    .flash { padding:1rem 5%; margin-top:72px; font-size:.875rem; }
+    .flash-success { background:rgba(74,222,128,.1); border-left:3px solid #4ade80; color:#166534; }
+    .flash-error   { background:rgba(248,113,113,.1); border-left:3px solid #f87171; color:#991b1b; }
+
+    /* ── HERO ── */
+    .hero { min-height:100vh; position:relative; display:flex; align-items:center; overflow:hidden; }
+    .hero-bg { position:absolute; inset:0; background:url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80') center/cover no-repeat; }
+    .hero-overlay { position:absolute; inset:0; background:linear-gradient(135deg,rgba(13,27,42,0.95) 0%,rgba(13,27,42,0.65) 50%,rgba(13,27,42,0.4) 100%); }
+    .hero-content { position:relative; z-index:2; padding:0 5%; max-width:720px; }
+    .hero-badge { display:inline-flex; align-items:center; gap:.5rem; background:rgba(201,168,76,0.15); border:1px solid rgba(201,168,76,0.35); color:var(--gold); padding:.4rem 1rem; border-radius:50px; font-size:.75rem; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:1.5rem; }
+    .hero h1 { font-family:'Playfair Display',serif; font-size:clamp(2.5rem,6vw,5rem); line-height:1.1; margin-bottom:1.5rem; color:var(--white); }
+    .hero h1 em { font-style:italic; color:var(--gold); }
+    .hero p { font-size:1.05rem; color:rgba(255,255,255,0.7); line-height:1.75; margin-bottom:2.5rem; max-width:500px; }
+    .hero-btns { display:flex; gap:1rem; flex-wrap:wrap; }
+    .hero-search { position:absolute; bottom:2.5rem; left:5%; right:5%; z-index:2; }
+    .search-box { background:rgba(13,27,42,0.92); border:1px solid rgba(201,168,76,0.25); border-radius:16px; padding:1.4rem 2rem; display:flex; gap:1rem; align-items:center; flex-wrap:wrap; backdrop-filter:blur(20px); }
+    .search-field { flex:1; min-width:140px; display:flex; flex-direction:column; gap:.25rem; }
+    .search-field label { font-size:.65rem; text-transform:uppercase; letter-spacing:1.2px; color:var(--gold); font-weight:700; }
+    .search-field input, .search-field select { background:transparent; border:none; outline:none; color:var(--white); font-size:.9rem; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; }
+    .search-field select option { background:var(--navy); }
+    .search-divider { width:1px; height:36px; background:rgba(201,168,76,0.2); }
+    .search-btn { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); border:none; cursor:pointer; padding:.85rem 1.6rem; border-radius:10px; font-weight:700; font-size:.875rem; display:flex; align-items:center; gap:.5rem; transition:transform .3s,box-shadow .3s; white-space:nowrap; }
+    .search-btn:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(201,168,76,0.4); }
+
+    /* ── BUTTONS ── */
+    .btn-primary { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); padding:.85rem 2rem; border-radius:50px; font-weight:700; font-size:.9rem; text-decoration:none; display:inline-flex; align-items:center; gap:.5rem; transition:transform .3s,box-shadow .3s; }
+    .btn-primary:hover { transform:translateY(-3px); box-shadow:0 12px 35px rgba(201,168,76,0.4); }
+    .btn-outline-light { border:1px solid rgba(255,255,255,0.35); color:var(--white); padding:.85rem 2rem; border-radius:50px; font-weight:500; font-size:.9rem; text-decoration:none; display:inline-flex; align-items:center; gap:.5rem; backdrop-filter:blur(10px); transition:border-color .3s,background .3s; cursor:pointer; }
+    .btn-outline-light:hover { border-color:var(--gold); background:rgba(201,168,76,0.1); color:var(--gold); }
+    .btn-gold { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); border:none; cursor:pointer; padding:.6rem 1.4rem; border-radius:50px; font-weight:700; font-size:.85rem; text-decoration:none; display:inline-flex; align-items:center; gap:.4rem; transition:transform .3s,box-shadow .3s; }
+    .btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(201,168,76,0.4); }
+    .btn-navy { background:var(--navy); color:var(--gold); border:1px solid rgba(201,168,76,0.3); padding:.6rem 1.4rem; border-radius:50px; font-weight:600; font-size:.85rem; text-decoration:none; display:inline-flex; align-items:center; gap:.4rem; transition:all .3s; }
+    .btn-navy:hover { background:var(--gold); color:var(--navy); }
+    .btn-danger-sm { background:rgba(220,38,38,0.1); color:#dc2626; border:1px solid rgba(220,38,38,0.2); padding:.4rem .9rem; border-radius:8px; cursor:pointer; font-size:.78rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:.3rem; transition:all .3s; }
+    .btn-danger-sm:hover { background:rgba(220,38,38,0.2); }
+
+    .btn-ai-nav {
+      background: rgba(201,168,76,0.1);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: .5rem 1.2rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: .85rem;
+      text-decoration: none;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .btn-ai-nav:hover {
+      background: var(--gold);
+      color: var(--navy);
+      box-shadow: 0 4px 15px rgba(201,168,76,0.3);
+    }
+
+    /* ── SECTIONS ── */
+    section { padding:5rem 5%; }
+    .section-label { display:inline-block; color:var(--gold); font-size:.72rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin-bottom:.75rem; }
+    .section-title { font-family:'Playfair Display',serif; font-size:clamp(1.8rem,3.5vw,2.8rem); color:var(--navy); line-height:1.2; margin-bottom:.75rem; }
+    .section-title.light { color:var(--white); }
+    .section-sub { color:var(--muted); font-size:.95rem; line-height:1.75; max-width:480px; }
+    .section-header { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:2.5rem; flex-wrap:wrap; gap:1rem; }
+
+    /* ── DESTINATIONS GRID ── */
+    #destinations { background:var(--cream); }
+    .dest-grid { display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:auto auto; gap:1.2rem; }
+    .dest-card { position:relative; border-radius:14px; overflow:hidden; cursor:pointer; }
+    .dest-card-featured { grid-row:1/3; }
+    .dest-card img { width:100%; height:100%; min-height:220px; object-fit:cover; transition:transform .6s; }
+    .dest-card-featured img { min-height:480px; }
+    .dest-card:hover img { transform:scale(1.07); }
+    .dest-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(13,27,42,0.92) 0%,transparent 55%); display:flex; flex-direction:column; justify-content:flex-end; padding:1.6rem; }
+    .dest-badge { background:rgba(201,168,76,0.92); color:var(--navy); font-size:.65rem; font-weight:700; padding:.2rem .6rem; border-radius:50px; display:inline-block; margin-bottom:.6rem; width:fit-content; letter-spacing:.5px; text-transform:uppercase; }
+    .dest-name { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--white); margin-bottom:.25rem; }
+    .dest-card-featured .dest-name { font-size:1.7rem; }
+    .dest-info { display:flex; justify-content:space-between; align-items:center; }
+    .dest-price { color:var(--gold); font-weight:700; font-size:.95rem; }
+    .dest-action { width:34px; height:34px; background:var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--navy); font-size:.75rem; opacity:0; transform:translateY(8px); transition:opacity .3s,transform .3s; text-decoration:none; }
+    .dest-card:hover .dest-action { opacity:1; transform:translateY(0); }
+
+    /* ── PACKAGES ── */
+    #packages { background:var(--navy); }
+    .packages-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.4rem; margin-top:2.5rem; }
+    .pkg-card { background:var(--navy-2); border:1px solid rgba(201,168,76,0.12); border-radius:14px; overflow:hidden; transition:transform .3s,box-shadow .3s,border-color .3s; position:relative; }
+    .pkg-card:hover { transform:translateY(-8px); box-shadow:0 25px 60px rgba(0,0,0,0.4); border-color:rgba(201,168,76,0.35); }
+    .pkg-card.featured { border-color:var(--gold); }
+    .pkg-ribbon { position:absolute; top:1rem; right:1rem; background:var(--gold); color:var(--navy); font-size:.65rem; font-weight:700; padding:.25rem .75rem; border-radius:50px; z-index:1; letter-spacing:.5px; }
+    .pkg-img { height:190px; overflow:hidden; }
+    .pkg-img img { width:100%; height:100%; object-fit:cover; transition:transform .5s; }
+    .pkg-card:hover .pkg-img img { transform:scale(1.08); }
+    .pkg-body { padding:1.4rem; }
+    .pkg-meta { display:flex; gap:.8rem; font-size:.75rem; color:rgba(255,255,255,0.5); margin-bottom:.9rem; flex-wrap:wrap; }
+    .pkg-meta span { display:flex; align-items:center; gap:.3rem; }
+    .pkg-meta i { color:var(--gold); }
+    .pkg-name { font-family:'Playfair Display',serif; font-size:1.15rem; color:var(--white); margin-bottom:.4rem; }
+    .pkg-desc { color:rgba(255,255,255,0.55); font-size:.82rem; line-height:1.65; margin-bottom:1.1rem; }
+    .pkg-features { list-style:none; margin-bottom:1.3rem; }
+    .pkg-features li { font-size:.8rem; color:rgba(255,255,255,0.6); display:flex; align-items:center; gap:.45rem; padding:.25rem 0; }
+    .pkg-features i { color:var(--gold); font-size:.65rem; }
+    .pkg-footer { display:flex; justify-content:space-between; align-items:center; border-top:1px solid rgba(201,168,76,0.12); padding-top:1.1rem; }
+    .pkg-price-label { font-size:.7rem; color:rgba(255,255,255,0.45); }
+    .pkg-price { font-size:1.4rem; font-weight:700; color:var(--gold); }
+    .pkg-price small { font-size:.7rem; color:rgba(255,255,255,0.45); }
+
+    /* ── ABOUT ── */
+    #about { background:var(--cream); display:grid; grid-template-columns:1fr 1fr; gap:5rem; align-items:center; }
+    .about-img-wrap { position:relative; }
+    .about-img-main { width:100%; height:480px; object-fit:cover; border-radius:16px; }
+    .about-img-badge { position:absolute; bottom:-1.5rem; right:-1.5rem; background:var(--gold); color:var(--navy); border-radius:14px; padding:1.4rem; text-align:center; box-shadow:0 20px 50px rgba(201,168,76,0.3); }
+    .about-img-badge strong { font-size:2.2rem; display:block; line-height:1; font-family:'Playfair Display',serif; }
+    .about-img-badge span { font-size:.75rem; font-weight:600; letter-spacing:.5px; }
+    .about-features { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin:1.8rem 0; }
+    .about-feat { display:flex; gap:.9rem; align-items:flex-start; background:var(--white); border:1px solid rgba(201,168,76,0.12); padding:1.1rem; border-radius:12px; transition:border-color .3s,box-shadow .3s; }
+    .about-feat:hover { border-color:var(--gold); box-shadow:var(--shadow); }
+    .about-feat-icon { width:40px; height:40px; background:rgba(201,168,76,0.1); border-radius:10px; display:flex; align-items:center; justify-content:center; color:var(--gold); flex-shrink:0; }
+    .about-feat h4 { font-size:.875rem; color:var(--navy); margin-bottom:.25rem; font-weight:600; }
+    .about-feat p { font-size:.78rem; color:var(--muted); line-height:1.5; }
+
+    /* ── CONTACT ── */
+    #contact { background:var(--navy); display:grid; grid-template-columns:1fr 1.5fr; gap:5rem; align-items:start; }
+    .contact-items { display:flex; flex-direction:column; gap:1.4rem; margin-top:2rem; }
+    .contact-item { display:flex; gap:1rem; align-items:flex-start; }
+    .contact-icon { width:46px; height:46px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.2); border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--gold); flex-shrink:0; }
+    .contact-item h4 { font-size:.78rem; color:rgba(255,255,255,0.5); margin-bottom:.2rem; text-transform:uppercase; letter-spacing:.5px; }
+    .contact-item p { color:var(--white); font-size:.9rem; }
+    .contact-form { background:rgba(255,255,255,0.04); border:1px solid rgba(201,168,76,0.15); border-radius:18px; padding:2.2rem; }
+    .contact-form h3 { font-family:'Playfair Display',serif; margin-bottom:1.4rem; color:var(--white); font-size:1.3rem; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .form-group { margin-bottom:1.1rem; }
+    .form-group label { display:block; font-size:.72rem; color:rgba(255,255,255,0.55); font-weight:600; letter-spacing:.5px; text-transform:uppercase; margin-bottom:.45rem; }
+    .form-group input, .form-group select, .form-group textarea { width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(201,168,76,0.15); border-radius:10px; padding:.75rem 1rem; color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:.875rem; outline:none; transition:border-color .3s; }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--gold); }
+    .form-group textarea { resize:vertical; min-height:100px; }
+    .form-group select option { background:var(--navy); }
+    .btn-submit { width:100%; background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); border:none; cursor:pointer; padding:.95rem; border-radius:10px; font-weight:700; font-size:.95rem; font-family:'Plus Jakarta Sans',sans-serif; display:flex; align-items:center; justify-content:center; gap:.5rem; transition:transform .3s,box-shadow .3s; }
+    .btn-submit:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(201,168,76,0.4); }
+
+    /* ── FOOTER ── */
+    footer { background:#07101a; border-top:1px solid rgba(201,168,76,0.1); padding:3.5rem 5% 2rem; }
+    .footer-grid { display:grid; grid-template-columns:1.5fr 1fr 1fr 1fr; gap:3rem; margin-bottom:2.5rem; }
+    .footer-brand p { color:rgba(255,255,255,0.45); font-size:.82rem; line-height:1.7; margin:1rem 0 1.3rem; }
+    .social-links { display:flex; gap:.7rem; }
+    .social-link { width:36px; height:36px; background:rgba(201,168,76,0.1); border:1px solid rgba(201,168,76,0.2); border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--gold); font-size:.8rem; text-decoration:none; transition:background .3s,transform .3s; }
+    .social-link:hover { background:var(--gold); color:var(--navy); transform:translateY(-3px); }
+    .footer-col h4 { font-size:.82rem; font-weight:700; color:var(--white); margin-bottom:1rem; letter-spacing:.5px; text-transform:uppercase; }
+    .footer-col ul { list-style:none; }
+    .footer-col ul li { margin-bottom:.55rem; }
+    .footer-col ul a { color:rgba(255,255,255,0.45); text-decoration:none; font-size:.82rem; transition:color .3s; display:flex; align-items:center; gap:.35rem; }
+    .footer-col ul a:hover { color:var(--gold); }
+    .footer-bottom { border-top:1px solid rgba(201,168,76,0.1); padding-top:1.4rem; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; }
+    .footer-bottom p { color:rgba(255,255,255,0.35); font-size:.78rem; }
+    .footer-bottom span { color:var(--gold); }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:1024px) {
+      .dest-grid { grid-template-columns:1fr 1fr; }
+      .dest-card-featured { grid-row:auto; }
+      .packages-grid { grid-template-columns:1fr 1fr; }
+      #about,#contact { grid-template-columns:1fr; gap:3rem; }
+      .footer-grid { grid-template-columns:1fr 1fr; }
+    }
+    @media(max-width:768px) {
+      .nav-links { display:none; }
+      .dest-grid,.packages-grid { grid-template-columns:1fr; }
+      .search-box { flex-direction:column; }
+      .search-divider { display:none; }
+      .about-features,.form-row { grid-template-columns:1fr; }
+      .footer-grid { grid-template-columns:1fr; gap:2rem; }
+      .about-img-badge { right:1rem; bottom:1rem; }
+      #chat-widget { bottom:16px !important; right:16px !important; }
+      #chat-popup  { width:calc(100vw - 32px) !important; }
+    }
+
+    @keyframes fadeInUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
+    .fade-in  { animation:fadeInUp .8s ease forwards; }
+    .delay-1  { animation-delay:.2s; opacity:0; }
+    .delay-2  { animation-delay:.4s; opacity:0; }
+
+    {% block extra_css %}{% endblock %}
+  </style>
+  {% block stylesheets %}{% endblock %}
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="/">
-                <i class="fas fa-plane"></i> SmartTrip
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarMain">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="/#destinations">Destinations</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/#packages">Voyages</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/#avis">Avis</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/#reservation">Réservation</a></li>
-                    <li class="nav-item"><a class="nav-link" href="/avis">Tous les avis</a></li>
-                </ul>
-            </div>
+
+{# ══ MODAL LOGIN ══════════════════════════════════════════════════ #}
+{% if not app.user %}
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal()" title="Fermer">✕</button>
+    <div class="modal-logo">
+      <h2>Smart<span>Trip</span></h2>
+      <p>{{ 'login.title'|trans }}</p>
+    </div>
+    <div style="display:flex; gap:.5rem; margin-bottom:1.5rem;">
+      <button onclick="switchTab('password')" id="tab-password"
+        style="flex:1; padding:.6rem; border-radius:8px; cursor:pointer;
+               font-family:'Plus Jakarta Sans',sans-serif; font-size:.82rem; font-weight:700;
+               background:linear-gradient(135deg,var(--gold),var(--gold-l));
+               color:var(--navy); border:1px solid var(--gold); transition:all .3s;">
+        🔑 {{ 'login.password_tab'|trans }}
+      </button>
+      <button onclick="switchTab('faceid')" id="tab-faceid"
+        style="flex:1; padding:.6rem; border-radius:8px; cursor:pointer;
+               font-family:'Plus Jakarta Sans',sans-serif; font-size:.82rem; font-weight:600;
+               background:transparent; color:rgba(255,255,255,0.6);
+               border:1px solid rgba(201,168,76,0.3); transition:all .3s;">
+        📷 {{ 'login.faceid_tab'|trans }}
+      </button>
+    </div>
+    {% if app.request.attributes.get('_route') == 'app_login' and error is defined and error %}
+      <div class="modal-error">❌ {{ error.messageKey|trans(error.messageData, 'security') }}</div>
+    {% endif %}
+    <div id="panel-password">
+      <form method="POST" action="{{ path('app_login') }}">
+        <div class="modal-field">
+          <label for="modal_email">{{ 'login.email'|trans }}</label>
+          <input type="email" id="modal_email" name="email" value="{{ last_username ?? '' }}" placeholder="votre@email.com" autocomplete="email" required>
         </div>
-    </nav>
-
-    <main>
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="alert alert-{{ label }}">
-                    {{ message|raw }}
-                    <button class="alert-close" onclick="this.parentElement.remove()">&times;</button>
-                </div>
-            {% endfor %}
-        {% endfor %}
-        
-        {% block body %}{% endblock %}
-    </main>
-
-    <footer class="footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <h5>SmartTrip</h5>
-                    <p class="small">Votre partenaire de confiance pour des voyages inoubliables.</p>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <h5>Liens utiles</h5>
-                    <ul class="list-unstyled small">
-                        <li><a href="/avis">Avis clients</a></li>
-                        <li><a href="#">Conditions générales</a></li>
-                        <li><a href="#">Contact</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-4 mb-3">
-                    <h5>Contact</h5>
-                    <p class="small">+216 71 234 567<br>contact@SmartTrip.tn</p>
-                    <p class="small mb-0">&copy; {{ "now"|date("Y") }} SmartTrip.</p>
-                </div>
-            </div>
+        <div class="modal-field">
+          <label for="modal_password">{{ 'login.password'|trans }}</label>
+          <input type="password" id="modal_password" name="password" placeholder="••••••••" autocomplete="current-password" required>
         </div>
-    </footer>
+        <div class="modal-remember">
+          <input type="checkbox" id="modal_remember" name="_remember_me">
+          <label for="modal_remember">{{ 'login.remember'|trans }}</label>
+        </div>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+        <button type="submit" class="btn-modal-submit">
+          <i class="fas fa-sign-in-alt"></i> {{ 'login.submit'|trans }}
+        </button>
+      </form>
+    </div>
+    <div id="panel-faceid" style="display:none;">
+      <div class="modal-field">
+        <label>{{ 'login.email'|trans }}</label>
+        <input type="email" id="faceEmail" placeholder="votre@email.com" style="width:100%;padding:.8rem 1rem;background:rgba(255,255,255,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:10px;color:var(--white);font-family:'Plus Jakarta Sans',sans-serif;font-size:.875rem;outline:none;">
+      </div>
+      <div style="position:relative;border-radius:12px;overflow:hidden;border:1px solid rgba(201,168,76,0.3);margin-bottom:1rem;background:#000;">
+        <video id="webcam" autoplay playsinline style="width:100%;height:200px;display:block;object-fit:cover;"></video>
+        <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+          <div style="width:110px;height:135px;border:2px solid var(--gold);border-radius:55px;opacity:.7;box-shadow:0 0 20px rgba(201,168,76,0.3);"></div>
+        </div>
+        <div style="position:absolute;bottom:.5rem;left:0;right:0;text-align:center;font-size:.7rem;color:rgba(255,255,255,0.5);">
+          {{ 'login.face_center'|trans }}
+        </div>
+      </div>
+      <button id="faceLoginBtn" class="btn-modal-submit" type="button">
+        <i class="fas fa-camera"></i> {{ 'login.face_scan'|trans }}
+      </button>
+      <p id="faceResult" style="text-align:center;margin-top:.75rem;font-size:.82rem;min-height:1.2rem;color:rgba(255,255,255,0.6);"></p>
+    </div>
+  </div>
+</div>
+{% endif %}
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    {% block javascripts %}{% endblock %}
+{# ══ NAVBAR ══════════════════════════════════════════════════════ #}
+<nav id="navbar">
+  <a href="{{ path('app_home') }}" class="nav-logo">Smart<span>Trip</span></a>
+  <ul class="nav-links">
+    {% if is_granted('ROLE_ADMIN') %}
+      <li><a href="{{ path('admin_destination_index') }}">{{ 'nav.destinations'|trans }}</a></li>
+      <li><a href="{{ path('admin_voyage_index') }}">{{ 'nav.voyages'|trans }}</a></li>
+      <li><a href="{{ path('admin_transport_index') }}">Transports</a></li>
+      <li><a href="{{ path('admin_paiement_index') }}">Paiements</a></li>
+      {# ── BOUTON AVIS ADMIN ── #}
+      <li><a href="/avis"><i class="fas fa-star"></i> Avis</a></li>
+      <li><a href="{{ path('admin_destination_new') }}" style="color:var(--gold) !important;"><i class="fas fa-plus"></i> {{ 'nav.add'|trans }}</a></li>
+    {% else %}
+      <li><a href="{{ path('client_destination_index') }}">Destinations</a></li>
+      <li><a href="{{ path('client_voyage_index') }}">Voyages</a></li>
+      <li><a href="{{ path('transport_index') }}">Transports</a></li>
+      <li><a href="{{ path('user_paiement_index') }}">Mes Paiements</a></li>
+      {# ── BOUTON AVIS CLIENT ── #}
+      <li><a href="/avis"><i class="fas fa-star"></i> Avis</a></li>
+    {% endif %}
+    <li><a href="{{ path('app_home') }}#about">{{ 'nav.about'|trans }}</a></li>
+    <li>
+      <a href="#" class="nav-cta" onclick="event.preventDefault();toggleSarahChat()">
+        <i class="fas fa-paper-plane"></i> {{ 'nav.plan'|trans }}
+      </a>
+    </li>
+
+    {# ── LANGUAGE SWITCHER ── #}
+    <li>
+      <div class="lang-switcher">
+        <a href="{{ path('change_locale', {locale: 'fr'}) }}"
+           class="lang-btn {% if app.request.locale == 'fr' %}active{% endif %}">
+          🇫🇷 FR
+        </a>
+        <span class="lang-divider">|</span>
+        <a href="{{ path('change_locale', {locale: 'en'}) }}"
+           class="lang-btn {% if app.request.locale == 'en' %}active{% endif %}">
+          🇬🇧 EN
+        </a>
+        <span class="lang-divider">|</span>
+        <a href="{{ path('change_locale', {locale: 'ar'}) }}"
+           class="lang-btn {% if app.request.locale == 'ar' %}active{% endif %}">
+          🇹🇳 AR
+        </a>
+      </div>
+    </li>
+
+    {# ── LOGIN / USER ── #}
+    <li>
+      {% if app.user %}
+        <div style="display:flex;align-items:center;gap:.6rem;">
+          <span class="nav-user">
+            <i class="fas fa-user-circle"></i>
+            {{ app.user.email }}
+          </span>
+          <a href="{{ path('app_logout') }}" class="btn-login-nav" title="{{ 'nav.logout'|trans }}">
+            <i class="fas fa-sign-out-alt"></i> {{ 'nav.logout'|trans }}
+          </a>
+        </div>
+      {% else %}
+        <button class="btn-login-nav" onclick="openModal()" type="button">
+          <i class="fas fa-user"></i> {{ 'nav.login'|trans }}
+        </button>
+      {% endif %}
+    </li>
+  </ul>
+</nav>
+
+{# ── FLASH MESSAGES ── #}
+{% for msg in app.flashes('success') %}
+  <div class="flash flash-success">✅ {{ msg }}</div>
+{% endfor %}
+{% for msg in app.flashes('error') %}
+  <div class="flash flash-error">❌ {{ msg }}</div>
+{% endfor %}
+
+{% block body %}{% endblock %}
+
+{# ══ FOOTER ══════════════════════════════════════════════════════ #}
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="{{ path('app_home') }}" class="nav-logo" style="font-size:1.3rem">Smart<span style="color:#fff">Trip</span></a>
+      <p>{{ 'footer.desc'|trans }}</p>
+      <div class="social-links">
+        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
+        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
+        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+        <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>{{ 'footer.destinations'|trans }}</h4>
+      <ul>
+        <li><a href="{{ path('client_destination_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.all_dest'|trans }}</a></li>
+        <li><a href="{{ path('admin_destination_new') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.add_dest'|trans }}</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>{{ 'footer.voyages'|trans }}</h4>
+      <ul>
+        <li><a href="{{ path('client_voyage_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.all_voyages'|trans }}</a></li>
+        <li><a href="{{ path('admin_voyage_new') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.create_voyage'|trans }}</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Transports</h4>
+      <ul>
+        <li><a href="{{ path('transport_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Réserver un transport</a></li>
+        <li><a href="{{ path('user_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Mes Paiements</a></li>
+        <li><a href="/avis"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Avis</a></li>
+        <li><a href="{{ path('admin_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Gestion Paiements (Admin)</a></li>
+        <li><a href="{{ path('admin_transport_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Gestion Transport (Admin)</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>{{ 'footer.voyages'|trans }}</h4>
+      <ul>
+        <li><a href="{{ path('transport_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Réserver un transport</a></li>
+        <li><a href="{{ path('user_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Mes Paiements</a></li>
+        <li><a href="{{ path('admin_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Gestion Paiements (Admin)</a></li>
+        <li><a href="{{ path('admin_transport_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Gestion Transport (Admin)</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>{{ 'footer.info'|trans }}</h4>
+      <ul>
+        <li><a href="{{ path('app_home') }}#about"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.about'|trans }}</a></li>
+        <li><a href="{{ path('app_home') }}#contact"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.contact'|trans }}</a></li>
+        <li>
+          <a href="#" onclick="event.preventDefault();toggleSarahChat()">
+            <i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.sarah'|trans }}
+          </a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 <span>SmartTrip</span>. {{ 'footer.rights'|trans }}</p>
+    <p>{{ 'footer.made_with'|trans }} <span>♥</span> {{ 'footer.for'|trans }}</p>
+  </div>
+</footer>
+
+{# ══ CHAT SARAH ══════════════════════════════════════════════════ #}
+{% include 'chat/_popup.html.twig' %}
+
+{# ══ JAVASCRIPT ══════════════════════════════════════════════════ #}
+{% block javascripts %}
+<script>
+  window.addEventListener('scroll', () => {
+    const nav = document.getElementById('navbar');
+    if (!nav) return;
+    nav.style.background = window.scrollY > 50 ? 'rgba(13,27,42,0.99)' : 'rgba(13,27,42,0.96)';
+  });
+
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const href = a.getAttribute('href');
+      if (href === '#') return;
+      const t = document.querySelector(href);
+      if (t) { e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
+    });
+  });
+
+  function openModal() {
+    document.getElementById('loginModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('modal_email')?.focus(), 100);
+  }
+
+  function closeModal() {
+    document.getElementById('loginModal')?.classList.remove('open');
+    document.body.style.overflow = '';
+    const video = document.getElementById('webcam');
+    if (video && video.srcObject) {
+      video.srcObject.getTracks().forEach(t => t.stop());
+      video.srcObject = null;
+      cameraStarted = false;
+    }
+  }
+
+  document.getElementById('loginModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  {% if app.request.attributes.get('_route') == 'app_login' and error is defined and error %}
+    document.addEventListener('DOMContentLoaded', () => openModal());
+  {% endif %}
+
+  function switchTab(tab) {
+    const isPassword = tab === 'password';
+    document.getElementById('panel-password').style.display = isPassword ? 'block' : 'none';
+    document.getElementById('panel-faceid').style.display   = isPassword ? 'none'  : 'block';
+    const tabPwd  = document.getElementById('tab-password');
+    const tabFace = document.getElementById('tab-faceid');
+    if (isPassword) {
+      tabPwd.style.cssText  += 'background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy);border:1px solid var(--gold);font-weight:700;';
+      tabFace.style.cssText += 'background:transparent;color:rgba(255,255,255,0.6);border:1px solid rgba(201,168,76,0.3);font-weight:600;';
+    } else {
+      tabFace.style.cssText += 'background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy);border:1px solid var(--gold);font-weight:700;';
+      tabPwd.style.cssText  += 'background:transparent;color:rgba(255,255,255,0.6);border:1px solid rgba(201,168,76,0.3);font-weight:600;';
+      startCamera();
+    }
+  }
+
+  let cameraStarted = false;
+  function startCamera() {
+    if (cameraStarted) return;
+    const video  = document.getElementById('webcam');
+    const result = document.getElementById('faceResult');
+    if (!video) return;
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => { video.srcObject = stream; cameraStarted = true; })
+      .catch(() => {
+        if (result) { result.textContent = '❌ Caméra non accessible'; result.style.color = '#f87171'; }
+      });
+  }
+
+  document.getElementById('faceLoginBtn')?.addEventListener('click', async () => {
+    const result = document.getElementById('faceResult');
+    const btn    = document.getElementById('faceLoginBtn');
+    const video  = document.getElementById('webcam');
+    const canvas = document.getElementById('canvas');
+    const ctx    = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, 320, 240);
+    result.textContent = '⏳ Identification en cours...';
+    result.style.color = 'rgba(255,255,255,0.6)';
+    btn.disabled = true;
+    const formData = new FormData();
+    formData.append('face_image', canvas.toDataURL('image/jpeg'));
+    try {
+      const res  = await fetch('/face-login', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (data.success) {
+        result.textContent = `✅ Bienvenue ! (${data.confidence}%)`;
+        result.style.color = '#4ade80';
+        setTimeout(() => window.location.href = data.redirect, 1200);
+      } else {
+        result.textContent = `❌ ${data.error ?? 'Visage non reconnu'} (${data.confidence ?? 0}%)`;
+        result.style.color = '#f87171';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-camera"></i> Réessayer';
+      }
+    } catch (e) {
+      result.textContent = '❌ Erreur réseau';
+      result.style.color = '#f87171';
+      btn.disabled = false;
+    }
+  });
+</script>
+{% endblock %}
+
 </body>
 </html>

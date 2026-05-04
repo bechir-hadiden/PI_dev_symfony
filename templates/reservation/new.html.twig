@@ -1,5 +1,5 @@
 {# templates/reservation/new.html.twig #}
-{% extends 'base.html.twig' %}
+{% extends 'base_dark.html.twig' %}
 
 {% block title %}VoyageÉlite - Réserver un vol{% endblock %}
 
@@ -8,64 +8,69 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --ink: #0d0d0d;
+            --ink: #0d1b2a;
             --sand: #f0e8d8;
             --cream: #faf6ef;
-            --gold: #b8963e;
+            --gold: #c9a84c;
             --gold-lt: #d4b06a;
             --muted: #6b6560;
             --white: #ffffff;
+            --navy: #0d1b2a;
         }
         
         body {
-            background: var(--cream);
+            background: var(--navy); /* Harmonisation avec votre thème sombre */
             font-family: 'DM Sans', sans-serif;
+            color: var(--white);
         }
         
         .booking-container {
             max-width: 900px;
             margin: 0 auto;
-            padding: 6rem 2rem 4rem;
+            padding: 8rem 2rem 4rem;
         }
         
         .booking-card {
-            background: var(--white);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(201, 168, 76, 0.2);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            border-radius: 16px;
             overflow: hidden;
         }
         
         .booking-header {
-            background: var(--ink);
-            color: var(--white);
-            padding: 2rem;
+            background: linear-gradient(to bottom, rgba(201, 168, 76, 0.1), transparent);
+            padding: 2.5rem;
             text-align: center;
+            border-bottom: 1px solid rgba(201, 168, 76, 0.1);
         }
         
         .booking-header h1 {
             font-family: 'Cormorant Garamond', serif;
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 300;
-            letter-spacing: 0.02em;
+            color: var(--gold);
             margin-bottom: 0.5rem;
         }
         
         .booking-header p {
             color: var(--gold-lt);
             font-size: 0.8rem;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.2em;
             text-transform: uppercase;
         }
         
         .flight-details {
-            background: rgba(184,150,62,0.08);
-            padding: 1.5rem;
-            border-bottom: 0.5px solid rgba(184,150,62,0.2);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-bottom: 1px solid rgba(201, 168, 76, 0.1);
         }
         
         .flight-details-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1.5rem;
         }
         
         .flight-detail-item {
@@ -76,112 +81,118 @@
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            color: var(--muted);
-            margin-bottom: 0.3rem;
+            color: var(--gold-lt);
+            opacity: 0.7;
+            margin-bottom: 0.4rem;
         }
         
         .flight-detail-value {
-            font-weight: 600;
-            color: var(--ink);
+            font-weight: 500;
+            color: var(--white);
+            font-size: 0.95rem;
         }
         
         .flight-price {
-            font-size: 1.2rem;
+            font-size: 1.4rem;
             color: var(--gold);
-            font-weight: 600;
+            font-weight: 700;
         }
         
         .booking-form {
-            padding: 2rem;
+            padding: 3rem;
         }
         
+        /* Stylisation des champs Symfony */
         .form-group {
-            margin-bottom: 1.5rem;
+            margin-bottom: 1.8rem;
         }
         
         .form-group label {
             display: block;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.1em;
-            color: var(--muted);
-            margin-bottom: 0.5rem;
+            color: var(--gold-lt);
+            margin-bottom: 0.6rem;
         }
         
         .form-group input, .form-group select {
             width: 100%;
-            padding: 0.8rem 1rem;
-            border: 0.5px solid rgba(184,150,62,0.3);
-            background: var(--white);
+            padding: 1rem;
+            border: 1px solid rgba(201, 168, 76, 0.3);
+            background: rgba(13, 27, 42, 0.5);
+            color: white;
+            border-radius: 8px;
             font-family: 'DM Sans', sans-serif;
-            font-size: 0.9rem;
-            outline: none;
-            transition: border 0.2s;
+            transition: all 0.3s;
         }
         
-        .form-group input:focus, .form-group select:focus {
+        .form-group input:focus {
             border-color: var(--gold);
+            box-shadow: 0 0 10px rgba(201, 168, 76, 0.2);
+            outline: none;
+        }
+
+        /* Désactivation visuelle du champ destination auto-rempli */
+        .form-group input:disabled, .form-group select:disabled {
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.5);
+            cursor: not-allowed;
         }
         
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1rem;
+            gap: 1.5rem;
         }
         
         .btn-submit {
-            background: var(--gold);
-            color: var(--ink);
+            background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+            color: var(--navy);
             border: none;
-            padding: 1rem 2rem;
-            font-size: 0.8rem;
-            font-weight: 600;
+            padding: 1.2rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.15em;
             cursor: pointer;
             width: 100%;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
+            transition: all 0.3s;
+            margin-top: 1rem;
         }
         
         .btn-submit:hover {
-            background: var(--ink);
-            color: var(--white);
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(201, 168, 76, 0.4);
         }
         
         .btn-back {
-            background: none;
-            border: 0.5px solid rgba(184,150,62,0.3);
-            color: var(--ink);
-            padding: 0.8rem 1.5rem;
-            font-size: 0.8rem;
+            display: inline-block;
+            margin-top: 2rem;
+            color: var(--gold-lt);
             text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: all 0.2s;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: color 0.3s;
         }
         
         .btn-back:hover {
-            background: var(--ink);
             color: var(--white);
-            border-color: var(--ink);
         }
         
-        .error-message {
-            color: #dc3545;
-            font-size: 0.75rem;
-            margin-top: 0.3rem;
+        .error-message ul {
+            list-style: none;
+            padding: 0;
+            color: #ff6b6b;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
         }
         
         @media (max-width: 768px) {
-            .booking-container { padding: 5rem 1rem 2rem; }
             .form-row { grid-template-columns: 1fr; }
-            .flight-details-grid { grid-template-columns: 1fr; gap: 0.8rem; }
+            .booking-form { padding: 1.5rem; }
         }
     </style>
 {% endblock %}
@@ -190,79 +201,82 @@
 <div class="booking-container">
     <div class="booking-card">
         <div class="booking-header">
-            <h1>Réserver votre vol</h1>
-            <p><i class="fas fa-plane"></i> VoyageÉlite</p>
+            <h1>Finaliser votre réservation</h1>
+            <p><i class="fas fa-crown"></i> Expérience VoyageÉlite</p>
         </div>
         
         {% if flight %}
         <div class="flight-details">
             <div class="flight-details-grid">
                 <div class="flight-detail-item">
-                    <div class="flight-detail-label">Compagnie</div>
-                    <div class="flight-detail-value">{{ flight.airline }}</div>
-                </div>
-                <div class="flight-detail-item">
-                    <div class="flight-detail-label">Vol</div>
-                    <div class="flight-detail-value">{{ flight.flightNumber }}</div>
-                </div>
-                <div class="flight-detail-item">
                     <div class="flight-detail-label">Destination</div>
                     <div class="flight-detail-value">{{ flight.destination }}</div>
                 </div>
                 <div class="flight-detail-item">
+                    <div class="flight-detail-label">Compagnie</div>
+                    <div class="flight-detail-value">{{ flight.airline }}</div>
+                </div>
+                <div class="flight-detail-item">
+                    <div class="flight-detail-label">Vol N°</div>
+                    <div class="flight-detail-value">{{ flight.flightNumber }}</div>
+                </div>
+                <div class="flight-detail-item">
                     <div class="flight-detail-label">Départ</div>
-                    <div class="flight-detail-value">{{ flight.departureAirport }}<br><small>{{ flight.departureTime|date('H:i') }}</small></div>
+                    <div class="flight-detail-value">{{ flight.departureTime|date('d/m H:i') }}</div>
                 </div>
                 <div class="flight-detail-item">
-                    <div class="flight-detail-label">Arrivée</div>
-                    <div class="flight-detail-value">{{ flight.arrivalAirport }}<br><small>{{ flight.arrivalTime|date('H:i') }}</small></div>
-                </div>
-                <div class="flight-detail-item">
-                    <div class="flight-detail-label">Prix</div>
-                    <div class="flight-detail-value flight-price">{{ flight.price }} €</div>
+                    <div class="flight-detail-label">Prix Total</div>
+                    <div class="flight-detail-value flight-price">{{ flight.price }} TND</div>
                 </div>
             </div>
         </div>
         {% endif %}
         
         <div class="booking-form">
-            {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+            {{ form_start(form) }}
             
+            {# Champ Destination (pré-rempli et désactivé) #}
+            <div class="form-group">
+                {{ form_label(form.destination) }}
+                {{ form_widget(form.destination) }}
+                <div class="error-message">{{ form_errors(form.destination) }}</div>
+            </div>
+
             <div class="form-row">
                 <div class="form-group">
                     {{ form_label(form.nomClient) }}
-                    {{ form_widget(form.nomClient, {'attr': {'placeholder': 'Jean Dupont'}}) }}
-                    {{ form_errors(form.nomClient) }}
+                    {{ form_widget(form.nomClient) }}
+                    <div class="error-message">{{ form_errors(form.nomClient) }}</div>
                 </div>
                 <div class="form-group">
                     {{ form_label(form.email) }}
-                    {{ form_widget(form.email, {'attr': {'placeholder': 'jean@example.com'}}) }}
-                    {{ form_errors(form.email) }}
+                    {{ form_widget(form.email) }}
+                    <div class="error-message">{{ form_errors(form.email) }}</div>
                 </div>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
                     {{ form_label(form.telephone) }}
-                    {{ form_widget(form.telephone, {'attr': {'placeholder': '+33 6 12 34 56 78'}}) }}
-                    {{ form_errors(form.telephone) }}
+                    {{ form_widget(form.telephone) }}
+                    <div class="error-message">{{ form_errors(form.telephone) }}</div>
                 </div>
                 <div class="form-group">
                     {{ form_label(form.numberOfPassengers) }}
-                    {{ form_widget(form.numberOfPassengers, {'attr': {'min': 1, 'max': 9}}) }}
-                    {{ form_errors(form.numberOfPassengers) }}
+                    {{ form_widget(form.numberOfPassengers) }}
+                    <div class="error-message">{{ form_errors(form.numberOfPassengers) }}</div>
                 </div>
             </div>
             
             <button type="submit" class="btn-submit">
-                <i class="fas fa-check-circle"></i> Confirmer la réservation
+                <i class="fas fa-paper-plane"></i> Confirmer la réservation
             </button>
             
             {{ form_end(form) }}
             
-            <div class="text-center mt-4">
-                <a href="{{ path('app_destination_show', {'destination': flight.destination}) }}" class="btn-back">
-                    <i class="fas fa-arrow-left"></i> Retour à la destination
+            <div style="text-align: center;">
+                <a href="javascript:history.back()" class="btn-back">
+                    <i class="fas fa-chevron-left"></i> Modifier mon choix
                 </a>
             </div>
         </div>
