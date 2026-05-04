@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SmartTrip — Agence de Voyage Exclusive{% endblock %}</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --ink:      #0d0d0d;
+            --sand:     #f0e8d8;
+            --cream:    #faf6ef;
+            --gold:     #b8963e;
+            --gold-lt:  #d4b06a;
+            --muted:    #6b6560;
+            --white:    #ffffff;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            overflow-x: hidden;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.4rem 3.5rem;
+            background: rgba(250, 246, 239, 0.88);
+            backdrop-filter: blur(12px);
+            border-bottom: 0.5px solid rgba(184,150,62,0.25);
+        }
+        .logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem; font-weight: 300; letter-spacing: 0.12em;
+            color: var(--ink); text-decoration: none;
+        }
+        .logo span { color: var(--gold); font-style: italic; }
+        
+        .nav-links { display: flex; gap: 2.4rem; list-style: none; margin-bottom: 0; }
+        .nav-links a {
+            font-size: 0.78rem; font-weight: 400; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--muted);
+            text-decoration: none; transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--gold); }
+        
+        .nav-cta {
+            font-size: 0.78rem; font-weight: 500; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--ink);
+            border: 0.5px solid var(--gold); padding: 0.55rem 1.4rem;
+            text-decoration: none; transition: all 0.25s;
+        }
+        .nav-cta:hover { background: var(--gold); color: var(--white); }
+
+        /* ── FOOTER ── */
+        footer {
+            background: var(--ink); padding: 3.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 5rem;
+        }
+        .footer-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem; font-weight: 300; letter-spacing: 0.1em; color: var(--white);
+        }
+        .footer-logo span { color: var(--gold); font-style: italic; }
+        .footer-links { display: flex; gap: 2rem; list-style: none; margin-bottom: 0; }
+        .footer-links a {
+            font-size: 0.72rem; text-transform: uppercase;
+            color: rgba(240,232,216,0.45); text-decoration: none;
+        }
+        .footer-copy { font-size: 0.7rem; color: rgba(240,232,216,0.3); }
+
+        /* Style des Filtres */
+        .filter-pill {
+            background: transparent; border: 0.5px solid var(--gold);
+            color: var(--muted); padding: 8px 25px; border-radius: 0;
+            text-transform: uppercase; font-size: 0.75rem; font-weight: bold;
+            text-decoration: none; transition: 0.3s;
+        }
+        .filter-pill.active { background: var(--gold); color: white; }
+    </style>
+    {% block stylesheets %}{% endblock %}
+</head>
+<body>
+
+    <nav>
+        <a href="/" class="logo">Smart<span>Trip</span></a>
+        <ul class="nav-links">
+            <li><a href="#">Destinations</a></li>
+            <li><a href="#">Expériences</a></li>
+            <li><a href="{{ path('app_offre_client_index') }}" style="color: var(--gold); font-weight: 600;">Offres Exclusive</a></li>
+            <li><a href="#">Sur Mesure</a></li>
+            <li><a href="#">À Propos</a></li>
+        </ul>
+        <a href="#" class="nav-cta">Consulter l'Agent</a>
+    </nav>
+
+    <div style="margin-top: 120px;">
+        {% block body %}{% endblock %}
+    </div>
+
+    <footer>
+        <div class="footer-logo">Smart<span>Trip</span></div>
+        <div class="footer-links">
+            <a href="#">Mentions Légales</a>
+            <a href="#">Confidentialité</a>
+            <a href="#">Contact</a>
+        </div>
+        <div class="footer-copy">© 2026 SmartTrip. Excellence in Travel.</div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block javascripts %}{% endblock %}
+</body>
+</html>

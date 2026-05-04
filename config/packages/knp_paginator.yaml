@@ -5,9 +5,9 @@ knp_paginator:
         sort_field_name: sort
         sort_direction_name: direction
         distinct: true
-        filter_field_name: filterField
-        filter_value_name: filterValue
     template:
-        pagination: 'pagination/smart_pagination.html.twig'
-        sortable: '@KnpPaginator/Pagination/font_awesome_sortable_link.html.twig'
-        filtration: '@KnpPaginator/Pagination/filtration.html.twig'
+        # On utilise ton template personnalisé (celui qui est dans templates/bundles/...)
+        pagination: 'bundles/KnpPaginatorBundle/Pagination/twitter_bootstrap_v4_pagination.html.twig'
+        
+        # FIX DE L'ERREUR : On repasse sur le lien de tri standard
+        sortable: '@KnpPaginator/Pagination/sortable_link.html.twig'

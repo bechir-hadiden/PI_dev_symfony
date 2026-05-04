@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}SmartTrip{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2290%22>✈️</text></svg>">
+        
+        <!-- 1. Bootstrap 5 CSS -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        
+        <!-- 2. Ton CSS personnalisé -->
+        <link rel="stylesheet" href="{{ asset('css/style2.css') }}">
+
+        {% block stylesheets %}{% endblock %}
+        
+        {# Logique de Hot Reload de l'équipe #}
+        {% set frankenphpHotReload = app.request.server.get('FRANKENPHP_HOT_RELOAD') %}
+        {% if frankenphpHotReload %}
+        <meta name="frankenphp-hot-reload:url" content="{{ frankenphpHotReload }}">
+        <script src="https://cdn.jsdelivr.net/npm/idiomorph"></script>
+        <script src="https://cdn.jsdelivr.net/npm/frankenphp-hot-reload/+esm" type="module"></script>
+        {% endif %}
+
+        <style>
+            .main-navbar {
+                background-color: white !important;
+                border-bottom: 1px solid #E5E7EB;
+            }
+            .nav-link-custom {
+                color: #4B5563 !important;
+                font-weight: 600;
+                transition: 0.3s;
+            }
+            .nav-link-custom:hover {
+                color: #1A73E8 !important;
+            }
+        </style>
+    </head>
+    <body style="background-color: #F4F7FB;">
+
+        <!-- CONTENU DE LA PAGE -->
+        {% block body %}{% endblock %}
+
+        <!-- 3. JS : Bootstrap + Importmap de l'équipe -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
+        {% endblock %}
+    </body>
+</html>

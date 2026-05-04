@@ -1,0 +1,169 @@
+{% extends 'BackOffice/base_admin.html.twig' %}
+
+{% block title %}SmartTrip - Admin Dashboard{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    <!-- 1. EN-TÊTE : Titre + Recherche + Bouton (Alignés) -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="label-title" style="font-size: 24px; color: var(--navy);">Gestion des promotions</h1>
+        
+        <div class="d-flex gap-3 align-items-center">
+            <input type="text" id="adminSearch" class="form-control rounded-pill border-muted" 
+                   placeholder="Rechercher par titre..." style="width: 250px; padding: 8px 15px;">
+            
+            <a href="{{ path('app_offre_new') }}" class="btn btn-primary rounded-pill px-4">
+                <i class="fas fa-plus"></i> Créer une Offre
+            </a>
+        </div>
+    </div>
+
+    <!-- 2. DASHBOARD & GRAPHIQUE (Dans une carte blanche) -->
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 15px;">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-md-4 border-end">
+                    <h6 class="text-muted fw-bold small mb-3">ANALYSE DES OFFRES</h6>
+                    <div class="mb-2">
+                        <span class="text-muted">Total Offres : </span>
+                        <span id="totalCounter" class="h4 fw-bold" style="color: var(--accent);">{{ offres.getTotalItemCount }}</span>
+                    </div>
+                    <div>
+                        <span class="text-muted">Impact ODD 8 : </span>
+                        <span class="h4 fw-bold text-success">1</span>
+                    </div>
+                </div>
+                <div class="col-md-8 text-center">
+                    <h6 class="fw-bold mb-2">Répartition par Catégorie</h6>
+                    <canvas id="statChart" style="max-height: 100px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. LE TABLEAU (Dans sa propre carte) -->
+    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">{{ knp_pagination_sortable(offres, 'ID', 'o.id') }}</th>
+                        <th>{{ knp_pagination_sortable(offres, 'Titre', 'o.titre') }}</th>
+                        <th>Remise</th>
+                        <th>Statut</th>
+                        <th>Impact ODD 8</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="offreTableBody">
+                    {% for o in offres %}
+                    <tr class="offre-row">
+                        <td class="ps-4 text-muted">#{{ o.id }}</td>
+                        <td class="fw-bold offre-titre">{{ o.titre }}</td>
+                        <td class="text-primary fw-bold">{{ o.tauxRemise }}%</td>
+                        <td><span class="badge badge-confirm" style="background:#DBEAFE; color:#1E40AF;">ACTIVE</span></td>
+                        <td>
+                             {% if o.isLocalSupport %}
+                                <span class="badge badge-confirm">Soutien Local</span>
+                             {% else %}
+                                <span class="text-muted small">Standard</span>
+                             {% endif %}
+                        </td>
+                        <td class="text-end pe-4">
+                            <div class="d-flex gap-2 justify-content-end">
+                                <a href="{{ path('app_admin_offre_coupons', {'id': o.id}) }}" class="btn btn-sm btn-primary rounded-pill">Coupons 🎟️</a>
+                                <a href="{{ path('app_offre_edit', {'id': o.id}) }}" class="btn btn-sm btn-secondary"><i class="fas fa-edit"></i></a>
+                                {{ include('offre/_delete_form.html.twig', {'offre': o}) }}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 4. NAVIGATION (Pagination corrigée) -->
+    <div class="navigation d-flex justify-content-center mt-4">
+        {{ knp_pagination_render(offres) }}
+    </div>
+</div>
+<!-- Chargement de Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    /**
+     * Utilisation de 'turbo:load' pour que les scripts se relancent 
+     * même lors d'une navigation asynchrone (sans F5).
+     */
+    document.addEventListener('turbo:load', function() {
+        
+        // --- 1. LOGIQUE DE RECHERCHE DYNAMIQUE ---
+        const searchInput = document.getElementById('adminSearch');
+        if (searchInput) {
+            const rows = document.querySelectorAll('.offre-row');
+            const totalCounter = document.getElementById('totalCounter');
+            const noMatch = document.getElementById('noMatch');
+
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                rows.forEach(row => {
+                    const title = row.querySelector('.offre-titre').textContent.toLowerCase();
+                    if (title.includes(query)) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                if (totalCounter) totalCounter.textContent = visibleCount;
+                if (noMatch) {
+                    if (visibleCount === 0) noMatch.classList.remove('d-none');
+                    else noMatch.classList.add('d-none');
+                }
+            });
+        }
+
+        // --- 2. LOGIQUE DU GRAPHIQUE (PIE CHART) ---
+        const ctx = document.getElementById('statChart');
+        if (ctx) {
+            // Sécurité : détruire l'instance existante si elle existe déjà (évite l'erreur "Canvas already in use")
+            const existingChart = Chart.getChart("statChart");
+            if (existingChart) {
+                existingChart.destroy();
+            }
+
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Hôtels', 'Vols', 'Transports', 'Voyages'],
+                    datasets: [{
+                        data: [
+                            {{ offres|filter(o => o.category == 'HOTEL')|length }},
+                            {{ offres|filter(o => o.category == 'VOL')|length }},
+                            {{ offres|filter(o => o.category == 'TRANSPORT')|length }},
+                            {{ offres|filter(o => o.category == 'VOYAGE' or o.category is null)|length }}
+                        ],
+                        backgroundColor: ['#1A73E8', '#FF5A1F', '#27AE60', '#64748B'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { 
+                            position: 'right', 
+                            labels: { usePointStyle: true, boxWidth: 10, padding: 15 } 
+                        }
+                    },
+                    maintainAspectRatio: false
+                }
+            });
+        }
+        
+        console.log("SmartTrip Admin: Dashboard and Search re-initialized via Turbo.");
+    });
+</script>
+{% endblock %}

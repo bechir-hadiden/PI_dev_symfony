@@ -1,17 +1,27 @@
-# yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
+# config/services.yaml
 
 parameters:
+    # Paramètres de tes camarades
     images_directory: '%kernel.project_dir%/public/uploads/destinations'
     n8n_webhook_url: 'https://bechir19.app.n8n.cloud/webhook/smart-trip-itineraire'
+    
+    # TON paramètre pour l'IA
+    app.hf_key: '%env(HUGGINGFACE_KEY)%'
 
 services:
     _defaults:
-        autowire: true
-        autoconfigure: true
+        autowire: true      
+        autoconfigure: true 
 
+    # Chargement automatique de toutes les classes dans src/
     App\:
         resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
 
+    # Services spécifiques avec arguments (Travail de tes camarades)
     App\Service\AiTransportService:
         arguments:
             $apiKey: '%env(ANTHROPIC_API_KEY)%'
