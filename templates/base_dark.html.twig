@@ -204,24 +204,32 @@
     <li><a href="{{ path('destination_index') }}">Destinations</a></li>
     <li><a href="{{ path('voyage_index') }}">Voyages</a></li>
     
-    <li class="dropdown">
-      <a href="#">Espace Client <i class="fas fa-chevron-down" style="font-size: 0.6rem; margin-left: 3px;"></i></a>
-      <ul class="dropdown-content">
-        <li><a href="{{ path('app_user_paiement_index') }}"><i class="fas fa-wallet"></i> Mes Paiements</a></li>
-        <li><a href="{{ path('app_user_subscription_index') }}"><i class="fas fa-crown"></i> Mon Abonnement</a></li>
-      </ul>
-    </li>
+    {% if app.user %}
+      <li class="dropdown">
+        <a href="#">Espace Client <i class="fas fa-chevron-down" style="font-size: 0.6rem; margin-left: 3px;"></i></a>
+        <ul class="dropdown-content">
+          <li><a href="{{ path('app_user_paiement_index') }}"><i class="fas fa-wallet"></i> Mes Paiements</a></li>
+          <li><a href="{{ path('app_user_subscription_index') }}"><i class="fas fa-crown"></i> Mon Abonnement</a></li>
+          <li><a href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+        </ul>
+      </li>
 
-    <li class="dropdown">
-      <a href="#" style="color: var(--gold-l);">Administration <i class="fas fa-chevron-down" style="font-size: 0.6rem; margin-left: 3px;"></i></a>
-      <ul class="dropdown-content">
-        <li><a href="{{ path('app_admin_paiement_index') }}"><i class="fas fa-chart-line"></i> Gestion Paiements</a></li>
-        <li><a href="{{ path('app_admin_subscription_index') }}"><i class="fas fa-users-gear"></i> Gestion Abonnements</a></li>
-      </ul>
-    </li>
+      {% if is_granted('ROLE_ADMIN') %}
+        <li class="dropdown">
+          <a href="#" style="color: var(--gold-l);">Administration <i class="fas fa-chevron-down" style="font-size: 0.6rem; margin-left: 3px;"></i></a>
+          <ul class="dropdown-content">
+            <li><a href="{{ path('app_admin_paiement_index') }}"><i class="fas fa-chart-line"></i> Gestion Paiements</a></li>
+            <li><a href="{{ path('app_admin_subscription_index') }}"><i class="fas fa-users-gear"></i> Gestion Abonnements</a></li>
+          </ul>
+        </li>
+      {% endif %}
+    {% else %}
+      <li><a href="{{ path('app_login') }}"><i class="fas fa-user"></i> Connexion</a></li>
+    {% endif %}
 
     <li><a href="{{ path('app_home') }}#about">À propos</a></li>
     <li><a href="{{ path('app_home') }}#contact" class="nav-cta">Réserver</a></li>
+
   </ul>
 </nav>
 

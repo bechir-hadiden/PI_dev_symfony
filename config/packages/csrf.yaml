@@ -1,6 +1,9 @@
-# Enable simple CSRF protection for forms
+# Enable CSRF protection for forms and logins/logouts
 framework:
     form:
-        csrf_protection: true
+        csrf_protection:
+            enabled: true
+            field_name: _token
     csrf_protection:
         enabled: true
+

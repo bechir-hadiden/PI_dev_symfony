@@ -46,7 +46,7 @@ class Voyage
     private ?string $description = null;
 
     // 9. pays_depart — varchar(100) NULL
-    #[ORM\Column(name: 'pavs_depart', type: 'string', length: 100, nullable: true)]
+    #[ORM\Column(name: 'pays_depart', type: 'string', length: 100, nullable: true)]
     private ?string $paysDepart = null;
 
     // 8. destination_id — int(11) NULL (FK vers destination)

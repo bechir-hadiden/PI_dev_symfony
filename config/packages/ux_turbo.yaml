@@ -2,3 +2,4 @@
 framework:
     csrf_protection:
         enabled: true
+

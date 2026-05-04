@@ -1,4 +1,4 @@
-<?php
+git pull origin main<?php
 
 namespace App\Repository;
 

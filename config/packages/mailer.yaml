@@ -1,3 +1,3 @@
 framework:
     mailer:
-        dsn: 'smtp://api:5db847317e9ece38f4988416f09f8026@live.smtp.mailtrap.io:587'
+        dsn: '%env(MAILER_DSN)%'
