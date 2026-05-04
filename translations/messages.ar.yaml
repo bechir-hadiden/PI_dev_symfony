@@ -1,0 +1,106 @@
+# translations/messages.ar.yaml
+
+# ── NAVBAR ──
+nav.destinations: "الوجهات"
+nav.voyages: "الرحلات"
+nav.about: "من نحن"
+nav.plan: "خطط"
+nav.login: "تسجيل الدخول"
+nav.logout: "تسجيل الخروج"
+nav.add: "إضافة"
+
+# ── HERO ──
+hero.badge: "رحلات استثنائية"
+hero.title: "اكتشف العالم <em>بأناقة</em>"
+hero.subtitle: "تجارب سفر مصممة خصيصاً لك، للعقول الفضولية والأرواح المسافرة."
+hero.btn_plan: "خطط لرحلتي"
+hero.btn_discover: "اكتشف عروضنا"
+
+# ── SEARCH ──
+search.destination: "الوجهة"
+search.destination_placeholder: "أين تريد الذهاب؟"
+search.depart: "المغادرة"
+search.duration: "المدة"
+search.duration_placeholder: "اختر"
+search.btn: "بحث"
+
+# ── DESTINATIONS ──
+dest.title: "الوجهات <em>الأكثر شعبية</em>"
+dest.label: "وجهاتنا"
+dest.subtitle: "استكشف وجهاتنا المختارة بعناية لتقديم تجارب فريدة لك."
+dest.all: "عرض جميع الوجهات"
+dest.from: "ابتداءً من"
+
+# ── PACKAGES ──
+pkg.title: "باقاتنا <em>السياحية</em>"
+pkg.label: "رحلات منظمة"
+pkg.subtitle: "باقات شاملة تتناسب مع رغباتك وميزانيتك."
+pkg.popular: "الأكثر طلباً"
+pkg.per_person: "/شخص"
+pkg.book: "احجز الآن"
+
+# ── ABOUT ──
+about.label: "من نحن"
+about.title: "شريكك الموثوق للسفر"
+about.subtitle: "منذ أكثر من 10 سنوات، تخلق Smart Trip تجارب لا تُنسى للمسافرين حول العالم."
+about.years: "سنوات من الخبرة"
+about.feat1_title: "خبرة محلية"
+about.feat1_desc: "مرشدون محليون متحمسون في كل وجهة."
+about.feat2_title: "تجربة مخصصة"
+about.feat2_desc: "كل رحلة فريدة ومخصصة لك."
+about.feat3_title: "دعم 24/7"
+about.feat3_desc: "فريقنا متاح في أي وقت."
+about.feat4_title: "أفضل سعر"
+about.feat4_desc: "أفضل العروض دون المساومة على الجودة."
+about.btn: "اعرف أكثر"
+
+# ── CONTACT ──
+contact.label: "اتصل بنا"
+contact.title: "لنتحدث عن <em>رحلتك</em>"
+contact.subtitle: "فريقنا في خدمتك لخلق مغامرة أحلامك."
+contact.phone: "الهاتف"
+contact.email: "البريد الإلكتروني"
+contact.address: "العنوان"
+contact.form_title: "أرسل لنا رسالة"
+contact.firstname: "الاسم الأول"
+contact.lastname: "اسم العائلة"
+contact.email_field: "البريد الإلكتروني"
+contact.subject: "الموضوع"
+contact.message: "الرسالة"
+contact.send: "إرسال الرسالة"
+
+# ── FOOTER ──
+footer.desc: "شريكك الموثوق لتجارب سفر استثنائية."
+footer.destinations: "الوجهات"
+footer.all_dest: "جميع الوجهات"
+footer.add_dest: "إضافة وجهة"
+footer.voyages: "الرحلات"
+footer.all_voyages: "جميع الرحلات"
+footer.create_voyage: "إنشاء رحلة"
+footer.info: "معلومات"
+footer.about: "من نحن"
+footer.contact: "اتصل بنا"
+footer.sarah: "تحدث مع سارة ✈️"
+footer.rights: "جميع الحقوق محفوظة."
+footer.made_with: "صُنع بـ"
+footer.for: "لعشاق السفر"
+
+# ── LOGIN MODAL ──
+login.title: "تسجيل الدخول إلى حسابك"
+login.password_tab: "كلمة المرور"
+login.faceid_tab: "التعرف على الوجه"
+login.email: "البريد الإلكتروني"
+login.password: "كلمة المرور"
+login.remember: "تذكرني"
+login.submit: "تسجيل الدخول"
+login.face_center: "ضع وجهك في المنتصف"
+login.face_scan: "مسح وجهي"
+
+# ── SARAH CHAT ──
+sarah.welcome: "مرحباً! أنا <strong>سارة</strong>، مستشارتك في Smart Trip 🌍✈️"
+sarah.welcome_sub: "أخبرني عن رحلة أحلامك وسأصمم لك إقامة مميزة!"
+sarah.placeholder: "اكتب رسالتك..."
+sarah.typing: "سارة تكتب..."
+sarah.unavailable: "سارة غير متاحة مؤقتاً. يرجى المحاولة مرة أخرى."
+sarah.voyage_created: "🎉 تم إنشاء رحلتك! تم إرسال بريد تأكيد إليك."
+sarah.powered_by: "مدعوم بواسطة"

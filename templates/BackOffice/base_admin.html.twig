@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Admin – SmartTrip Transport{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --sidebar-w: 260px;
+      --navy: #0d1b2a;
+      --navy-2: #112236;
+      --gold: #c9a84c;
+      --gold-l: #e8c97a;
+      --accent: #3b82f6;
+      --red: #ef4444;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --bg: #f1f5f9;
+      --card: #ffffff;
+      --text: #1e293b;
+      --muted: #64748b;
+      --border: #e2e8f0;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:var(--bg); color:var(--text); display:flex; min-height:100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width:var(--sidebar-w); background:var(--navy); position:fixed; top:0; left:0; bottom:0;
+      display:flex; flex-direction:column; overflow-y:auto; z-index:100;
+      box-shadow:4px 0 20px rgba(0,0,0,0.3);
+    }
+    .sidebar-logo {
+      padding:1.5rem 1.4rem; border-bottom:1px solid rgba(201,168,76,0.15);
+      font-size:1.1rem; font-weight:700; color:var(--gold); text-decoration:none; letter-spacing:.5px;
+      display:flex; align-items:center; gap:.6rem;
+    }
+    .sidebar-logo span { color:#fff; font-weight:400; }
+    .sidebar-section { padding:.8rem 1.4rem .3rem; font-size:.65rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:2px; color:rgba(255,255,255,0.3); }
+    .sidebar-nav { list-style:none; padding:.3rem 0; flex:1; }
+    .sidebar-nav li a {
+      display:flex; align-items:center; gap:.75rem; padding:.7rem 1.4rem;
+      color:rgba(255,255,255,0.6); text-decoration:none; font-size:.875rem; font-weight:500; transition:all .2s;
+      border-left:3px solid transparent;
+    }
+    .sidebar-nav li a:hover, .sidebar-nav li a.active {
+      color:#fff; background:rgba(201,168,76,0.08); border-left-color:var(--gold);
+    }
+    .sidebar-nav li a i { width:18px; text-align:center; font-size:.85rem; color:var(--gold); }
+    .sidebar-footer { padding:1rem 1.4rem; border-top:1px solid rgba(201,168,76,0.15); }
+    .sidebar-footer a { color:rgba(255,255,255,0.4); font-size:.8rem; text-decoration:none; display:flex; align-items:center; gap:.5rem; }
+    .sidebar-footer a:hover { color:var(--gold); }
+
+    /* ── MAIN ── */
+    .main { margin-left:var(--sidebar-w); flex:1; display:flex; flex-direction:column; min-height:100vh; }
+    .topbar {
+      background:var(--card); border-bottom:1px solid var(--border); padding:.9rem 2rem;
+      display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:50;
+      box-shadow:0 1px 3px rgba(0,0,0,0.07);
+    }
+    .topbar h1 { font-size:1rem; font-weight:600; color:var(--text); }
+    .topbar-badge { background:rgba(201,168,76,0.1); color:var(--gold); font-size:.72rem; font-weight:700;
+      padding:.25rem .75rem; border-radius:50px; letter-spacing:.5px; border:1px solid rgba(201,168,76,0.25); }
+    .content { padding:2rem; flex:1; }
+
+    /* ── FLASH ── */
+    .flash { padding:.85rem 1.2rem; border-radius:10px; margin-bottom:1.2rem; font-size:.875rem; display:flex; align-items:center; gap:.5rem; }
+    .flash-success { background:#f0fdf4; border:1px solid #86efac; color:#15803d; }
+    .flash-error   { background:#fef2f2; border:1px solid #fca5a5; color:#dc2626; }
+
+    /* ── CARDS ── */
+    .card { background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden; }
+    .card-header { padding:1.2rem 1.5rem; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .card-header h2 { font-size:.95rem; font-weight:600; }
+    .card-body { padding:1.5rem; }
+
+    /* ── TABLE ── */
+    table { width:100%; border-collapse:collapse; font-size:.875rem; }
+    thead th { background:#f8fafc; padding:.75rem 1rem; text-align:left; font-weight:600; font-size:.75rem;
+      text-transform:uppercase; letter-spacing:.5px; color:var(--muted); border-bottom:2px solid var(--border); }
+    tbody td { padding:.85rem 1rem; border-bottom:1px solid var(--border); vertical-align:middle; }
+    tbody tr:hover { background:#f8fafc; }
+    tbody tr:last-child td { border-bottom:none; }
+
+    /* ── BUTTONS ── */
+    .btn { display:inline-flex; align-items:center; gap:.4rem; padding:.5rem 1.1rem; border-radius:8px;
+      font-size:.82rem; font-weight:600; text-decoration:none; border:none; cursor:pointer; transition:all .2s; }
+    .btn-primary { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); }
+    .btn-primary:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(201,168,76,0.4); }
+    .btn-secondary { background:#f1f5f9; color:var(--text); border:1px solid var(--border); }
+    .btn-secondary:hover { background:#e2e8f0; }
+    .btn-danger { background:#fee2e2; color:var(--red); border:1px solid #fca5a5; }
+    .btn-danger:hover { background:#fecaca; }
+    .btn-success { background:#dcfce7; color:#15803d; border:1px solid #86efac; }
+    .btn-success:hover { background:#bbf7d0; }
+    .btn-sm { padding:.3rem .7rem; font-size:.75rem; border-radius:6px; }
+
+    /* ── BADGES ── */
+    .badge { display:inline-block; padding:.2rem .6rem; border-radius:50px; font-size:.7rem; font-weight:700; }
+    .badge-pending  { background:#fef9c3; color:#92400e; }
+    .badge-confirm  { background:#dcfce7; color:#15803d; }
+    .badge-cancel   { background:#fee2e2; color:#dc2626; }
+
+    /* ── FORMS ── */
+    .form-group { margin-bottom:1.2rem; }
+    .form-group label { display:block; font-size:.78rem; font-weight:600; color:var(--muted); margin-bottom:.4rem; text-transform:uppercase; letter-spacing:.4px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width:100%; padding:.65rem .9rem; border:1px solid var(--border); border-radius:8px;
+      font-size:.875rem; font-family:'Inter',sans-serif; color:var(--text); background:#fff; outline:none; transition:border-color .2s;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,168,76,0.1); }
+    .form-group textarea { resize:vertical; min-height:90px; }
+    .form-error { color:var(--red); font-size:.75rem; margin-top:.3rem; }
+    .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+    .form-actions { display:flex; gap:.75rem; margin-top:1.5rem; padding-top:1.2rem; border-top:1px solid var(--border); }
+
+    /* ── STATS MINI ── */
+    .stat-row { display:grid; grid-template-columns:repeat(3,1fr); gap:1rem; margin-bottom:1.5rem; }
+    .stat-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.2rem 1.4rem; display:flex; align-items:center; gap:1rem; }
+    .stat-icon { width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+    .stat-icon.gold { background:rgba(201,168,76,0.12); color:var(--gold); }
+    .stat-icon.blue { background:rgba(59,130,246,0.12); color:var(--accent); }
+    .stat-icon.green { background:rgba(34,197,94,0.12); color:var(--green); }
+    .stat-value { font-size:1.4rem; font-weight:700; line-height:1; }
+    .stat-label { font-size:.72rem; color:var(--muted); margin-top:.2rem; }
+  </style>
+  {% block stylesheets %}{% endblock %}
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <a href="{{ path('admin_transport_index') }}" class="sidebar-logo">
+    <i class="fas fa-bus-alt"></i> Transport<span>Admin</span>
+  </a>
+
+  <p class="sidebar-section">Menu principal</p>
+  <ul class="sidebar-nav">
+    <li>
+      <a href="{{ path('admin_transport_type_index') }}" class="{{ app.request.attributes.get('_route') starts with 'admin_transport_type' ? 'active' : '' }}">
+        <i class="fas fa-tags"></i> Types de transport
+      </a>
+    </li>
+    <li>
+      <a href="{{ path('admin_transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'admin_transport_' and not app.request.attributes.get('_route') starts with 'admin_transport_type' ? 'active' : '' }}">
+        <i class="fas fa-truck"></i> Véhicules
+      </a>
+    </li>
+    <li>
+      <a href="{{ path('admin_paiement_index') }}" class="{{ app.request.attributes.get('_route') starts with 'admin_paiement' ? 'active' : '' }}">
+        <i class="fas fa-credit-card"></i> Paiements
+      </a>
+    </li>
+    <li>
+      <a href="{{ path('admin_reservation_index') }}" class="{{ app.request.attributes.get('_route') starts with 'admin_reservation' ? 'active' : '' }}">
+        <i class="fas fa-calendar-check"></i> Historique transport
+      </a>
+    </li>
+  </ul>
+
+  <p class="sidebar-section">Navigation</p>
+  <ul class="sidebar-nav">
+    <li><a href="{{ path('transport_index') }}"><i class="fas fa-users"></i> Vue utilisateur</a></li>
+    <li><a href="{{ path('app_home') }}"><i class="fas fa-globe"></i> Site principal</a></li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <a href="{{ path('app_home') }}"><i class="fas fa-arrow-left"></i> Retour au site</a>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <h1>{% block page_title %}Administration{% endblock %}</h1>
+    <span class="topbar-badge"><i class="fas fa-shield-alt" style="margin-right:.3rem"></i>BackOffice Admin</span>
+  </div>
+
+  <div class="content">
+    {% for msg in app.flashes('success') %}
+      <div class="flash flash-success"><i class="fas fa-check-circle"></i> {{ msg }}</div>
+    {% endfor %}
+    {% for msg in app.flashes('error') %}
+      <div class="flash flash-error"><i class="fas fa-exclamation-circle"></i> {{ msg }}</div>
+    {% endfor %}
+
+    {% block body %}{% endblock %}
+  </div>
+</div>
+
+{% block javascripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,246 @@
+{% extends 'base_dark.html.twig' %}
+{% block title %}{{ voyage.destination ?? 'Voyage' }} — SmartTrip{% endblock %}
+
+{% block body %}
+
+{# ── HERO ── #}
+<div style="background:var(--navy);padding:7rem 5% 3rem;border-bottom:1px solid rgba(201,168,76,0.15);">
+  <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <span class="section-label">Voyage</span>
+      <h1 class="section-title light" style="margin-bottom:.3rem;">{{ voyage.destination ?? 'Voyage' }}</h1>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;align-items:center;">
+
+        {% if voyage.dureeJours > 0 %}
+          <span style="background:rgba(201,168,76,0.2);color:var(--gold);padding:.2rem .75rem;border-radius:50px;font-size:.75rem;font-weight:700;">
+            {{ voyage.dureeJours }} jours / {{ voyage.dureeJours - 1 }} nuits
+          </span>
+        {% endif %}
+
+        {% if voyage.paysDepart %}
+          <span style="color:rgba(255,255,255,0.5);font-size:.85rem;">
+            <i class="fas fa-plane-departure" style="color:var(--gold);margin-right:.3rem;"></i>{{ voyage.paysDepart }}
+          </span>
+        {% endif %}
+
+        {% if voyage.dateDebut and voyage.dateFin %}
+          <span style="color:rgba(255,255,255,0.5);font-size:.85rem;">
+            <i class="fas fa-calendar" style="color:var(--gold);margin-right:.3rem;"></i>
+            {{ voyage.dateDebut|date('d/m/Y') }} → {{ voyage.dateFin|date('d/m/Y') }}
+          </span>
+        {% endif %}
+
+      </div>
+    </div>
+    <a href="{{ path('client_voyage_index') }}" class="btn-outline-light" style="padding:.6rem 1.4rem;font-size:.85rem;">
+      <i class="fas fa-arrow-left"></i> Tous les voyages
+    </a>
+  </div>
+</div>
+
+{# ── CONTENU ── #}
+<div style="padding:3rem 5%;background:var(--cream);">
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start;">
+
+    {# ── COLONNE GAUCHE ── #}
+    <div style="display:flex;flex-direction:column;gap:1.4rem;">
+
+      {# ── IMAGES ── #}
+      {% if voyage.imagePath %}
+        {% set rawPath = (voyage.imagePath|split(','))|first|trim %}
+        {% set imgSrc = rawPath starts with 'http' ? rawPath : asset(rawPath) %}
+        <div style="border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(13,27,42,0.18);">
+          <img src="{{ imgSrc }}" alt="{{ voyage.destination }}"
+               style="width:100%;height:380px;object-fit:cover;"
+               onerror="this.parentElement.innerHTML='<div style=\'width:100%;height:380px;background:rgba(13,27,42,0.06);display:flex;align-items:center;justify-content:center;font-size:4rem;color:rgba(13,27,42,0.2);\'>✈️</div>'">
+        </div>
+
+      {% elseif voyage.destinationRel and voyage.destinationRel.allImages|length > 0 %}
+        {% set images = voyage.destinationRel.allImages %}
+        <div style="position:relative;border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(13,27,42,0.18);background:var(--navy);" id="sliderVoyage">
+          {% for img in images %}
+            <div class="vslide" style="display:{{ loop.first ? 'block' : 'none' }};">
+              <img src="{{ img }}" alt="{{ voyage.destination }}"
+                   style="width:100%;height:380px;object-fit:cover;"
+                   onerror="this.style.display='none'">
+            </div>
+          {% endfor %}
+
+          {% if images|length > 1 %}
+            <button onclick="vprevSlide()"
+                    style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);background:rgba(13,27,42,0.7);color:#fff;border:1px solid rgba(201,168,76,0.3);border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;"
+                    onmouseover="this.style.background='var(--gold)';this.style.color='var(--navy)'"
+                    onmouseout="this.style.background='rgba(13,27,42,0.7)';this.style.color='#fff'">‹</button>
+            <button onclick="vnextSlide()"
+                    style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:rgba(13,27,42,0.7);color:#fff;border:1px solid rgba(201,168,76,0.3);border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;"
+                    onmouseover="this.style.background='var(--gold)';this.style.color='var(--navy)'"
+                    onmouseout="this.style.background='rgba(13,27,42,0.7)';this.style.color='#fff'">›</button>
+            <div style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);display:flex;gap:.4rem;" id="vdots">
+              {% for img in images %}
+                <div class="vdot" onclick="vgoToSlide({{ loop.index0 }})"
+                     style="width:8px;height:8px;border-radius:50%;cursor:pointer;transition:background .3s;
+                            background:{{ loop.first ? 'var(--gold)' : 'rgba(255,255,255,0.45)' }};"></div>
+              {% endfor %}
+            </div>
+            <div style="position:absolute;top:1rem;right:1rem;background:rgba(13,27,42,0.75);color:#fff;padding:.3rem .8rem;border-radius:50px;font-size:.75rem;font-weight:600;" id="vcounter">
+              1 / {{ images|length }}
+            </div>
+            <div style="position:absolute;bottom:1rem;left:1rem;background:rgba(13,27,42,0.8);color:var(--gold);font-size:.7rem;font-weight:700;padding:.3rem .75rem;border-radius:50px;">
+              <i class="fas fa-map-marker-alt"></i> {{ voyage.destinationRel.nom }}
+            </div>
+          {% endif %}
+        </div>
+
+        {% if images|length > 1 %}
+          <div style="display:flex;gap:.6rem;overflow-x:auto;padding-bottom:.4rem;">
+            {% for img in images %}
+              <img src="{{ img }}" onclick="vgoToSlide({{ loop.index0 }})"
+                   class="vthumb" data-index="{{ loop.index0 }}"
+                   style="width:72px;height:52px;object-fit:cover;border-radius:8px;cursor:pointer;flex-shrink:0;border:2px solid {{ loop.first ? 'var(--gold)' : 'transparent' }};opacity:{{ loop.first ? '1' : '0.7' }};transition:all .2s;"
+                   onerror="this.style.display='none'">
+            {% endfor %}
+          </div>
+        {% endif %}
+
+      {% else %}
+        <div style="width:100%;height:380px;background:rgba(13,27,42,0.06);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.75rem;color:rgba(13,27,42,0.25);">
+          <span style="font-size:4rem;">✈️</span>
+          <span style="font-size:.85rem;font-weight:500;">Aucune image disponible</span>
+        </div>
+      {% endif %}
+
+      {# Infos détaillées #}
+      <div style="background:var(--white);border-radius:14px;padding:1.6rem;box-shadow:0 2px 12px rgba(13,27,42,0.06);">
+        <h3 style="font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--navy);margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem;">
+          <i class="fas fa-info-circle" style="color:var(--gold);font-size:.875rem;"></i> Détails du voyage
+        </h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+          {% set dureeLabel = voyage.dureeJours > 0 ? voyage.dureeJours ~ ' jours / ' ~ (voyage.dureeJours - 1) ~ ' nuits' : '—' %}
+          {% set prixText   = voyage.prix ? voyage.prix|number_format(0,',',' ') ~ ' TND / pers.' : '—' %}
+          {% set infos = {
+            'Destination':    voyage.destination ?? '—',
+            'Pays de départ': voyage.paysDepart ?? '—',
+            'Date de départ': voyage.dateDebut ? voyage.dateDebut|date('d/m/Y') : '—',
+            'Date de retour': voyage.dateFin ? voyage.dateFin|date('d/m/Y') : '—',
+            'Durée':          dureeLabel,
+            'Prix':           prixText
+          } %}
+          {% for label, value in infos %}
+            <div style="padding:.9rem;background:rgba(201,168,76,0.05);border:1px solid rgba(201,168,76,0.12);border-radius:10px;">
+              <div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem;font-weight:600;">{{ label }}</div>
+              <div style="font-weight:600;color:var(--navy);font-size:.875rem;">{{ value }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      {# Description #}
+      {% if voyage.description %}
+        <div style="background:var(--white);border-radius:14px;padding:1.6rem;box-shadow:0 2px 12px rgba(13,27,42,0.06);">
+          <h3 style="font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--navy);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem;">
+            <i class="fas fa-align-left" style="color:var(--gold);font-size:.875rem;"></i> Description
+          </h3>
+          <p style="font-size:.875rem;color:var(--muted);line-height:1.8;">{{ voyage.description }}</p>
+        </div>
+      {% endif %}
+
+    </div>
+
+    {# ── COLONNE DROITE ── #}
+    <div style="display:flex;flex-direction:column;gap:1.2rem;">
+
+      {# Prix & Réservation #}
+      <div style="background:var(--navy);border-radius:14px;padding:1.6rem;box-shadow:0 8px 32px rgba(13,27,42,0.2);border:1px solid rgba(201,168,76,0.2);">
+        <p style="font-size:.72rem;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:1px;margin-bottom:.4rem;">Prix par personne</p>
+        <div style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:700;color:var(--gold);line-height:1;margin-bottom:1.2rem;">
+          {% if voyage.prix %}
+            {{ voyage.prix|number_format(0,',',' ') }}
+            <span style="font-size:.9rem;color:rgba(255,255,255,0.5);font-family:'Plus Jakarta Sans',sans-serif;font-weight:400;"> TND</span>
+          {% else %}
+            <span style="font-size:1.1rem;color:rgba(255,255,255,0.4);">Sur demande</span>
+          {% endif %}
+        </div>
+        <div style="border-top:1px solid rgba(201,168,76,0.15);padding-top:1.1rem;margin-bottom:1.1rem;">
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.5rem;">
+            <span style="color:rgba(255,255,255,0.55);">Départ</span>
+            <span style="color:var(--white);font-weight:600;">{{ voyage.dateDebut ? voyage.dateDebut|date('d/m/Y') : '—' }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:.5rem;">
+            <span style="color:rgba(255,255,255,0.55);">Retour</span>
+            <span style="color:var(--white);font-weight:600;">{{ voyage.dateFin ? voyage.dateFin|date('d/m/Y') : '—' }}</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:.8rem;">
+            <span style="color:rgba(255,255,255,0.55);">Durée</span>
+            <span style="color:var(--gold);font-weight:700;">{{ voyage.dureeJours > 0 ? voyage.dureeJours ~ ' jours' : '—' }}</span>
+          </div>
+        </div>
+        <button onclick="alert('Fonctionnalité de réservation à venir !')"
+                style="width:100%;background:linear-gradient(135deg,var(--gold),var(--gold-l));color:var(--navy);border:none;cursor:pointer;padding:1rem;border-radius:10px;font-weight:700;font-size:.95rem;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:transform .3s,box-shadow .3s;"
+                onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 25px rgba(201,168,76,0.4)'"
+                onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+          <i class="fas fa-plane"></i> Réserver maintenant
+        </button>
+      </div>
+
+      {# Destination liée #}
+      {% if voyage.destinationRel %}
+        <div style="background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 2px 12px rgba(13,27,42,0.06);">
+          {% set destImg = voyage.destinationRel.firstImage %}
+          {% if destImg %}
+            <img src="{{ destImg }}" alt="{{ voyage.destinationRel.nom }}"
+                 style="width:100%;height:130px;object-fit:cover;"
+                 onerror="this.style.display='none'">
+          {% endif %}
+          <div style="padding:1.2rem;">
+            <p style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.3rem;font-weight:600;">Destination</p>
+            <p style="font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--navy);font-weight:600;margin-bottom:.25rem;">
+              {{ voyage.destinationRel.nom }}
+            </p>
+            <p style="font-size:.8rem;color:var(--muted);margin-bottom:1rem;">
+              <i class="fas fa-map-marker-alt" style="color:var(--gold);margin-right:.3rem;"></i>{{ voyage.destinationRel.pays }}
+              {% if voyage.destinationRel.codeIata %}
+                &nbsp;·&nbsp;
+                <span style="background:rgba(201,168,76,0.12);color:var(--gold);padding:.1rem .5rem;border-radius:50px;font-size:.7rem;font-weight:700;">{{ voyage.destinationRel.codeIata }}</span>
+              {% endif %}
+            </p>
+            <a href="{{ path('client_destination_show', {id: voyage.destinationRel.id}) }}" class="btn-navy"
+               style="width:100%;justify-content:center;padding:.55rem 1rem;font-size:.82rem;">
+              <i class="fas fa-eye"></i> Voir la destination
+            </a>
+          </div>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+let vcurrent = 0;
+const vslides = document.querySelectorAll('.vslide');
+const vdots   = document.querySelectorAll('.vdot');
+const vthumbs = document.querySelectorAll('.vthumb');
+const vtotal  = vslides.length;
+
+function vgoToSlide(index) {
+  if (vtotal <= 1) return;
+  vslides[vcurrent].style.display = 'none';
+  if (vdots[vcurrent])   vdots[vcurrent].style.background   = 'rgba(255,255,255,0.45)';
+  if (vthumbs[vcurrent]) { vthumbs[vcurrent].style.borderColor = 'transparent'; vthumbs[vcurrent].style.opacity = '0.7'; }
+  vcurrent = (index + vtotal) % vtotal;
+  vslides[vcurrent].style.display = 'block';
+  if (vdots[vcurrent])   vdots[vcurrent].style.background   = 'var(--gold)';
+  if (vthumbs[vcurrent]) { vthumbs[vcurrent].style.borderColor = 'var(--gold)'; vthumbs[vcurrent].style.opacity = '1'; }
+  const counter = document.getElementById('vcounter');
+  if (counter) counter.textContent = (vcurrent + 1) + ' / ' + vtotal;
+}
+
+function vnextSlide() { vgoToSlide(vcurrent + 1); }
+function vprevSlide()  { vgoToSlide(vcurrent - 1); }
+
+if (vtotal > 1) { setInterval(vnextSlide, 3000); }
+</script>
+{% endblock %}

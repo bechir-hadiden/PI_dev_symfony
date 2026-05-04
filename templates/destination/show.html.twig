@@ -1,16 +1,16 @@
 {% extends 'base_dark.html.twig' %}
-{% block title %}{{ destination.nom }} – SmartTrip{% endblock %}
+{% block title %}{{ destination.nom ?? 'Destination' }} – SmartTrip{% endblock %}
 
 {% block body %}
 
-{# ── PAGE HERO ── #}
 <div style="background:var(--navy);padding:7rem 5% 3rem;border-bottom:1px solid rgba(201,168,76,0.15);">
   <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
     <div>
       <span class="section-label">Destination</span>
-      <h1 class="section-title light" style="margin-bottom:.3rem;">{{ destination.nom }}</h1>
+      <h1 class="section-title light" style="margin-bottom:.3rem;">{{ destination.nom ?? 'Destination sans nom' }}</h1>
       <p style="color:rgba(255,255,255,0.55);font-size:.9rem;">
-        <i class="fas fa-map-marker-alt" style="color:var(--gold);margin-right:.4rem;"></i>{{ destination.pays }}
+        <i class="fas fa-map-marker-alt" style="color:var(--gold);margin-right:.4rem;"></i>
+        {{ destination.pays ?? '—' }}
         {% if destination.codeIata %}
           &nbsp;·&nbsp;
           <span style="background:rgba(201,168,76,0.2);color:var(--gold);padding:.15rem .6rem;border-radius:50px;font-size:.75rem;font-weight:700;">{{ destination.codeIata }}</span>
@@ -18,35 +18,32 @@
       </p>
     </div>
     <div style="display:flex;gap:.75rem;">
-      <a href="{{ path('destination_edit', {id: destination.id}) }}" class="btn-gold">
+      <a href="{{ path('admin_destination_edit', {id: destination.id}) }}" class="btn-gold">
         <i class="fas fa-pen"></i> Modifier
       </a>
-      <a href="{{ path('destination_index') }}" class="btn-outline-light" style="padding:.6rem 1.4rem;font-size:.85rem;">
+      <a href="{{ path('admin_destination_index') }}" class="btn-outline-light" style="padding:.6rem 1.4rem;font-size:.85rem;">
         <i class="fas fa-arrow-left"></i> Retour
       </a>
     </div>
   </div>
 </div>
 
-{# ── CONTENU ── #}
 <div style="padding:3rem 5%;background:var(--cream);">
   <div style="display:grid;grid-template-columns:1fr 360px;gap:2rem;align-items:start;">
 
     {# ── COLONNE GAUCHE ── #}
     <div>
-
-      {# SLIDER D'IMAGES #}
-      {% set images = destination.allImages %}
-      {% if images|length > 0 %}
+      {% if destination.allImages|length > 0 %}
         <div style="position:relative;border-radius:16px;overflow:hidden;margin-bottom:1.5rem;background:var(--navy);box-shadow:0 8px 32px rgba(13,27,42,0.18);" id="slider">
-          {% for img in images %}
+          {% for img in destination.allImages %}
             <div class="slide" style="display:{{ loop.first ? 'block' : 'none' }};">
               <img src="{{ img }}" alt="{{ destination.nom }}"
-                   style="width:100%;height:420px;object-fit:cover;">
+                   style="width:100%;height:420px;object-fit:cover;"
+                   onerror="this.parentElement.style.display='none'">
             </div>
           {% endfor %}
 
-          {% if images|length > 1 %}
+          {% if destination.allImages|length > 1 %}
             <button onclick="prevSlide()"
                     style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);background:rgba(13,27,42,0.7);color:#fff;border:1px solid rgba(201,168,76,0.3);border-radius:50%;width:44px;height:44px;font-size:1.3rem;cursor:pointer;transition:background .2s;"
                     onmouseover="this.style.background='var(--gold)';this.style.color='var(--navy)'"
@@ -56,34 +53,37 @@
                     onmouseover="this.style.background='var(--gold)';this.style.color='var(--navy)'"
                     onmouseout="this.style.background='rgba(13,27,42,0.7)';this.style.color='#fff'">›</button>
             <div style="position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);display:flex;gap:.4rem;" id="dots">
-              {% for img in images %}
+              {% for img in destination.allImages %}
                 <div class="dot" onclick="goToSlide({{ loop.index0 }})"
                      style="width:8px;height:8px;border-radius:50%;background:{{ loop.first ? 'var(--gold)' : 'rgba(255,255,255,0.45)' }};cursor:pointer;transition:background .2s;"></div>
               {% endfor %}
             </div>
             <div style="position:absolute;top:1rem;right:1rem;background:rgba(13,27,42,0.75);color:#fff;padding:.3rem .8rem;border-radius:50px;font-size:.75rem;font-weight:600;" id="counter">
-              1 / {{ images|length }}
+              1 / {{ destination.allImages|length }}
             </div>
           {% endif %}
         </div>
 
-        {# Thumbnails #}
-        {% if images|length > 1 %}
+        {% if destination.allImages|length > 1 %}
           <div style="display:flex;gap:.6rem;margin-bottom:1.5rem;overflow-x:auto;padding-bottom:.4rem;">
-            {% for img in images %}
+            {% for img in destination.allImages %}
               <img src="{{ img }}" onclick="goToSlide({{ loop.index0 }})"
                    class="thumb" data-index="{{ loop.index0 }}"
                    style="width:72px;height:52px;object-fit:cover;border-radius:8px;cursor:pointer;border:2px solid {{ loop.first ? 'var(--gold)' : 'transparent' }};flex-shrink:0;transition:border-color .2s;opacity:{{ loop.first ? '1' : '0.7' }};"
-                   onmouseover="this.style.opacity='1'"
-                   onmouseout="this.style.opacity=this.style.borderColor==='transparent' ? '0.7' : '1'">
+                   onerror="this.style.display='none'">
             {% endfor %}
           </div>
         {% endif %}
+
       {% else %}
-        <div style="width:100%;height:220px;background:rgba(13,27,42,0.06);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:4rem;margin-bottom:1.5rem;color:rgba(13,27,42,0.2);">🗺️</div>
+        <div style="width:100%;height:280px;background:rgba(13,27,42,0.06);border-radius:16px;
+                    display:flex;flex-direction:column;align-items:center;justify-content:center;
+                    gap:.75rem;margin-bottom:1.5rem;color:rgba(13,27,42,0.25);">
+          <span style="font-size:4rem;">🗺️</span>
+          <span style="font-size:.85rem;font-weight:500;">Aucune image disponible</span>
+        </div>
       {% endif %}
 
-      {# Description #}
       {% if destination.description %}
         <div style="background:var(--white);border-radius:14px;padding:1.5rem;box-shadow:0 2px 12px rgba(13,27,42,0.06);border:1px solid rgba(13,27,42,0.06);">
           <h3 style="font-family:'Playfair Display',serif;font-size:1.05rem;color:var(--navy);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem;">
@@ -97,7 +97,6 @@
     {# ── COLONNE DROITE ── #}
     <div style="display:flex;flex-direction:column;gap:1.2rem;">
 
-      {# Infos #}
       <div style="background:var(--white);border-radius:14px;padding:1.4rem;box-shadow:0 2px 12px rgba(13,27,42,0.06);border-top:3px solid var(--gold);">
         <h4 style="font-size:.82rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:1px;margin-bottom:1rem;">
           <i class="fas fa-info-circle" style="color:var(--gold);margin-right:.4rem;"></i>Informations
@@ -105,7 +104,7 @@
         <table style="width:100%;border-collapse:collapse;font-size:.85rem;">
           <tr style="border-bottom:1px solid rgba(13,27,42,0.06);">
             <td style="padding:.7rem 0;font-weight:600;color:var(--navy);width:40%;">Pays</td>
-            <td style="padding:.7rem 0;color:var(--muted);">{{ destination.pays }}</td>
+            <td style="padding:.7rem 0;color:var(--muted);">{{ destination.pays ?? '—' }}</td>
           </tr>
           {% if destination.codeIata %}
           <tr style="border-bottom:1px solid rgba(13,27,42,0.06);">
@@ -117,43 +116,45 @@
           {% endif %}
           <tr style="border-bottom:1px solid rgba(13,27,42,0.06);">
             <td style="padding:.7rem 0;font-weight:600;color:var(--navy);">Photos</td>
-            <td style="padding:.7rem 0;color:var(--muted);">{{ images|length }} photo(s)</td>
+            <td style="padding:.7rem 0;color:var(--muted);">
+              {% set nbPhotos = destination.allImages|length %}
+              {{ nbPhotos }} photo{{ nbPhotos > 1 ? 's' : '' }}
+            </td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(13,27,42,0.06);">
+            <td style="padding:.7rem 0;font-weight:600;color:var(--navy);">Voyages</td>
+            <td style="padding:.7rem 0;color:var(--muted);">{{ destination.voyages|length }}</td>
           </tr>
           <tr>
             <td style="padding:.7rem 0;font-weight:600;color:var(--navy);">Ajouté le</td>
-            <td style="padding:.7rem 0;color:var(--muted);">{{ destination.dateCreation|date('d/m/Y') }}</td>
+            <td style="padding:.7rem 0;color:var(--muted);">
+              {{ destination.dateCreation ? destination.dateCreation|date('d/m/Y') : '—' }}
+            </td>
           </tr>
         </table>
       </div>
 
-      {# QR CODE ── #}
+      {# QR CODE #}
       <div style="background:var(--white);border-radius:14px;padding:1.4rem;text-align:center;box-shadow:0 2px 12px rgba(13,27,42,0.06);">
-        <h4 style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);margin-bottom:.3rem;">
-          📱 QR Code Vidéo
-        </h4>
-
+        <h4 style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);margin-bottom:.3rem;">📱 QR Code Vidéo</h4>
         {% if destination.videoUrl %}
           {% set youtubeLink = 'https://www.youtube.com/watch?v=' ~ destination.videoUrl %}
           <p style="font-size:.75rem;color:var(--muted);margin-bottom:1rem;">Scannez pour voir la vidéo 🎬</p>
         {% else %}
           {% set youtubeLink = 'https://www.youtube.com/results?search_query=' ~ (destination.nom ~ ' ' ~ destination.pays ~ ' travel')|url_encode %}
-          <p style="font-size:.75rem;color:var(--muted);margin-bottom:1rem;">Vidéos de {{ destination.nom }} sur YouTube</p>
+          <p style="font-size:.75rem;color:var(--muted);margin-bottom:1rem;">Vidéos de {{ destination.nom ?? 'cette destination' }} sur YouTube</p>
         {% endif %}
-
         {% set qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' ~ youtubeLink|url_encode ~ '&color=0d1b2a&bgcolor=f5f0e8&format=png&ecc=H' %}
-
-        <a href="{{ youtubeLink }}" target="_blank">
+        <a href="{{ youtubeLink }}" target="_blank" rel="noopener noreferrer">
           <img src="{{ qrUrl }}" alt="QR Code {{ destination.nom }}"
                style="width:160px;height:160px;border-radius:12px;border:3px solid var(--gold);padding:8px;background:var(--cream);transition:transform .2s;"
                onmouseover="this.style.transform='scale(1.05)'"
                onmouseout="this.style.transform='scale(1)'">
         </a>
-
         <p style="font-size:.7rem;color:var(--muted);margin-top:.75rem;font-weight:600;letter-spacing:.5px;text-transform:uppercase;">
-          {{ destination.nom }} — {{ destination.pays }}
+          {{ destination.nom ?? '' }}{% if destination.pays %} — {{ destination.pays }}{% endif %}
         </p>
-
-        <a href="{{ qrUrl }}" download="qrcode-{{ destination.nom|lower }}.png"
+        <a href="{{ qrUrl }}" download="qrcode-{{ (destination.nom ?? 'destination')|lower }}.png"
            class="btn-navy" style="margin-top:.75rem;padding:.45rem 1rem;font-size:.78rem;">
           <i class="fas fa-download"></i> Télécharger
         </a>
@@ -166,7 +167,7 @@
             <i class="fas fa-plane" style="color:var(--gold);margin-right:.4rem;"></i>
             Voyages ({{ destination.voyages|length }})
           </h4>
-          <a href="{{ path('voyage_new') }}" class="btn-gold" style="padding:.35rem .8rem;font-size:.72rem;">
+          <a href="{{ path('admin_voyage_new') }}" class="btn-gold" style="padding:.35rem .8rem;font-size:.72rem;">
             <i class="fas fa-plus"></i>
           </a>
         </div>
@@ -174,18 +175,20 @@
           <p style="font-size:.82rem;color:var(--muted);text-align:center;padding:1rem 0;">Aucun voyage associé.</p>
         {% else %}
           {% for voyage in destination.voyages %}
-            <a href="{{ path('voyage_show', {id: voyage.id}) }}"
-               style="display:flex;justify-content:space-between;align-items:center;padding:.7rem 0;border-bottom:1px solid rgba(13,27,42,0.06);text-decoration:none;transition:background .2s;"
+            <a href="{{ path('admin_voyage_show', {id: voyage.id}) }}"
+               style="display:flex;justify-content:space-between;align-items:center;padding:.7rem 0;border-bottom:1px solid rgba(13,27,42,0.06);text-decoration:none;transition:padding .15s;"
                onmouseover="this.style.paddingLeft='.4rem'"
                onmouseout="this.style.paddingLeft='0'">
               <div>
-                <div style="font-size:.82rem;font-weight:600;color:var(--navy);">{{ voyage.destinationNom }}</div>
+                <div style="font-size:.82rem;font-weight:600;color:var(--navy);">{{ voyage.destination ?? '—' }}</div>
                 <div style="font-size:.72rem;color:var(--muted);">
-                  {{ voyage.dateDebut|date('d/m/Y') }} → {{ voyage.dateFin|date('d/m/Y') }}
+                  {% if voyage.dateDebut and voyage.dateFin %}
+                    {{ voyage.dateDebut|date('d/m/Y') }} → {{ voyage.dateFin|date('d/m/Y') }}
+                  {% else %}Dates non définies{% endif %}
                 </div>
               </div>
               <div style="font-weight:700;color:var(--gold);font-size:.85rem;">
-                {{ voyage.prix|number_format(0,',',' ') }} TND
+                {{ voyage.prix ? voyage.prix|number_format(0,',',' ') ~ ' TND' : '—' }}
               </div>
             </a>
           {% endfor %}
@@ -211,22 +214,15 @@ function goToSlide(index) {
   slides[currentSlide].style.display = 'none';
   if (dots[currentSlide])   dots[currentSlide].style.background   = 'rgba(255,255,255,0.45)';
   if (thumbs[currentSlide]) { thumbs[currentSlide].style.borderColor = 'transparent'; thumbs[currentSlide].style.opacity = '0.7'; }
-
   currentSlide = (index + total) % total;
-
   slides[currentSlide].style.display = 'block';
   if (dots[currentSlide])   dots[currentSlide].style.background   = 'var(--gold)';
   if (thumbs[currentSlide]) { thumbs[currentSlide].style.borderColor = 'var(--gold)'; thumbs[currentSlide].style.opacity = '1'; }
-
   const counter = document.getElementById('counter');
   if (counter) counter.textContent = (currentSlide + 1) + ' / ' + total;
 }
-
 function nextSlide() { goToSlide(currentSlide + 1); }
 function prevSlide()  { goToSlide(currentSlide - 1); }
-
-{% if destination.allImages|length > 1 %}
-setInterval(nextSlide, 4000);
-{% endif %}
+if (total > 1) { setInterval(nextSlide, 4000); }
 </script>
 {% endblock %}

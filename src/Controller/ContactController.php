@@ -18,21 +18,16 @@ class ContactController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $data = $form->getData();
+            $data = $form->getData(); // ← tableau complet avec prenom, nom, email, etc.
 
             try {
-                $contactService->envoyerContact(
-                    $data['nom'],
-                    $data['email'],
-                    $data['sujet'],
-                    $data['message']
-                );
+                $contactService->envoyerContact($data); // ← on passe le tableau directement
 
-                $this->addFlash('success', '✅ Votre message a été envoyé ! Vous recevrez une confirmation par email.');
+                $this->addFlash('contact_success', 'Votre message a été envoyé avec succès ! Nous vous répondrons sous 24h.');
                 return $this->redirectToRoute('contact');
 
             } catch (\Exception $e) {
-                $this->addFlash('error', '❌ Erreur lors de l\'envoi. Veuillez réessayer.');
+                $this->addFlash('contact_error', 'Erreur lors de l\'envoi : ' . $e->getMessage());
             }
         }
 

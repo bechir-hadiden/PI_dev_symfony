@@ -1,0 +1,797 @@
+{# templates/register/index.html.twig #}
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}SmartTrip — Créer un compte{% endblock %}
+
+{% block extra_css %}
+/* ── REGISTER PAGE ── */
+.register-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding-top: 72px; /* navbar height */
+}
+
+/* ── LEFT PANEL ── */
+.register-visual {
+  position: relative;
+  overflow: hidden;
+  background: var(--navy);
+}
+.register-visual-bg {
+  position: absolute;
+  inset: 0;
+  background: url('https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1200&q=80') center/cover no-repeat;
+  filter: brightness(.35) saturate(1.1);
+}
+.register-visual-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    160deg,
+    rgba(13,27,42,0.85) 0%,
+    rgba(13,27,42,0.4) 60%,
+    rgba(201,168,76,0.08) 100%
+  );
+}
+.register-visual-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 3.5rem 3rem;
+}
+.visual-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  background: rgba(201,168,76,0.15);
+  border: 1px solid rgba(201,168,76,0.35);
+  color: var(--gold);
+  padding: .4rem 1rem;
+  border-radius: 50px;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 1.4rem;
+  width: fit-content;
+}
+.visual-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  color: var(--white);
+  line-height: 1.15;
+  margin-bottom: 1.1rem;
+}
+.visual-title em { font-style: italic; color: var(--gold); }
+.visual-desc {
+  color: rgba(255,255,255,0.6);
+  font-size: .9rem;
+  line-height: 1.75;
+  max-width: 380px;
+  margin-bottom: 2.2rem;
+}
+.visual-stats {
+  display: flex;
+  gap: 2.2rem;
+}
+.vstat { }
+.vstat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.7rem;
+  color: var(--gold);
+  font-weight: 700;
+  display: block;
+  line-height: 1;
+}
+.vstat-label {
+  font-size: .72rem;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.visual-divider {
+  width: 1px;
+  height: 36px;
+  background: rgba(201,168,76,0.25);
+  align-self: center;
+}
+
+/* ── RIGHT PANEL (FORM) ── */
+.register-form-panel {
+  background: var(--navy-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 2rem;
+  overflow-y: auto;
+}
+.register-card {
+  width: 100%;
+  max-width: 460px;
+}
+.register-header {
+  margin-bottom: 2.2rem;
+  text-align: center;
+}
+.register-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--gold);
+  text-decoration: none;
+  letter-spacing: 1px;
+  display: inline-block;
+  margin-bottom: .8rem;
+}
+.register-logo span { color: var(--white); }
+.register-header h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.6rem;
+  color: var(--white);
+  margin-bottom: .35rem;
+}
+.register-header p {
+  font-size: .82rem;
+  color: rgba(255,255,255,0.4);
+}
+.register-header p a {
+  color: var(--gold);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity .2s;
+}
+.register-header p a:hover { opacity: .75; }
+
+/* Progress steps */
+.reg-steps {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+.reg-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .3rem;
+}
+.step-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid rgba(201,168,76,0.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .72rem; font-weight: 700;
+  color: rgba(255,255,255,0.3);
+  background: transparent;
+  transition: all .35s;
+}
+.step-dot.active {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.12);
+  color: var(--gold);
+}
+.step-dot.done {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: var(--navy);
+}
+.step-label {
+  font-size: .62rem;
+  color: rgba(255,255,255,0.3);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  font-weight: 600;
+}
+.step-label.active { color: var(--gold); }
+.step-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(201,168,76,0.2);
+  margin: 0 .4rem;
+  margin-bottom: 1.2rem;
+  max-width: 56px;
+}
+
+/* Form fields */
+.reg-field {
+  margin-bottom: 1.1rem;
+}
+.reg-field label {
+  display: block;
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  margin-bottom: .45rem;
+}
+.reg-input-wrap {
+  position: relative;
+}
+.reg-input-wrap i {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(201,168,76,0.45);
+  font-size: .82rem;
+  pointer-events: none;
+  transition: color .3s;
+}
+.reg-field input {
+  width: 100%;
+  padding: .85rem 1rem .85rem 2.7rem;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(201,168,76,0.18);
+  border-radius: 10px;
+  color: var(--white);
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: .875rem;
+  outline: none;
+  transition: border-color .3s, background .3s;
+}
+.reg-field input:focus {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.04);
+}
+.reg-field input:focus + i,
+.reg-input-wrap:focus-within i { color: var(--gold); }
+.reg-field input::placeholder { color: rgba(255,255,255,0.18); }
+
+/* Password strength */
+.pwd-strength { margin-top: .5rem; }
+.pwd-bars {
+  display: flex;
+  gap: 4px;
+  margin-bottom: .3rem;
+}
+.pwd-bar {
+  height: 3px;
+  flex: 1;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.1);
+  transition: background .4s;
+}
+.pwd-bar.weak   { background: #f87171; }
+.pwd-bar.medium { background: #fbbf24; }
+.pwd-bar.strong { background: #4ade80; }
+.pwd-label { font-size: .68rem; color: rgba(255,255,255,0.35); }
+
+/* Face ID section */
+.face-section {
+  margin-bottom: 1.4rem;
+  border: 1px solid rgba(201,168,76,0.2);
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.25);
+}
+.face-header {
+  display: flex;
+  align-items: center;
+  gap: .7rem;
+  padding: 1rem 1.2rem;
+  border-bottom: 1px solid rgba(201,168,76,0.12);
+}
+.face-header-icon {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: rgba(201,168,76,0.12);
+  border: 1px solid rgba(201,168,76,0.25);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--gold);
+  font-size: .82rem;
+}
+.face-header-text h4 {
+  font-size: .82rem;
+  color: var(--white);
+  font-weight: 600;
+}
+.face-header-text p {
+  font-size: .72rem;
+  color: rgba(255,255,255,0.4);
+  margin-top: .05rem;
+}
+.face-header-badge {
+  margin-left: auto;
+  background: rgba(201,168,76,0.1);
+  border: 1px solid rgba(201,168,76,0.25);
+  color: var(--gold);
+  font-size: .65rem;
+  font-weight: 700;
+  letter-spacing: .5px;
+  padding: .2rem .6rem;
+  border-radius: 50px;
+  text-transform: uppercase;
+}
+.face-cam-wrap {
+  position: relative;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.face-cam-wrap video {
+  width: 100%;
+  max-height: 200px;
+  display: block;
+  object-fit: cover;
+}
+.face-cam-wrap canvas { display: none; }
+/* oval guide overlay */
+.face-guide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.face-guide-oval {
+  width: 100px;
+  height: 130px;
+  border: 2px solid var(--gold);
+  border-radius: 55px;
+  opacity: .65;
+  box-shadow: 0 0 24px rgba(201,168,76,0.25), inset 0 0 24px rgba(201,168,76,0.05);
+  animation: faceGlow 2.5s ease-in-out infinite;
+}
+@keyframes faceGlow {
+  0%,100% { box-shadow: 0 0 18px rgba(201,168,76,0.2); opacity:.55; }
+  50%      { box-shadow: 0 0 36px rgba(201,168,76,0.45); opacity:.85; }
+}
+.face-cam-hint {
+  position: absolute;
+  bottom: .5rem;
+  left: 0; right: 0;
+  text-align: center;
+  font-size: .68rem;
+  color: rgba(255,255,255,0.4);
+}
+/* scan line animation */
+.face-scan-line {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%);
+  top: 30%;
+  animation: scanMove 2s ease-in-out infinite;
+  opacity: 0;
+}
+.face-scan-line.scanning { opacity: 1; }
+@keyframes scanMove {
+  0%   { top: 20%; opacity: 0; }
+  10%  { opacity: .8; }
+  90%  { opacity: .8; }
+  100% { top: 80%; opacity: 0; }
+}
+.face-actions {
+  padding: .9rem 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+}
+.btn-capture {
+  flex: 1;
+  background: linear-gradient(135deg, var(--gold), var(--gold-l));
+  color: var(--navy);
+  border: none;
+  cursor: pointer;
+  padding: .65rem 1.2rem;
+  border-radius: 8px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: .82rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  transition: transform .3s, box-shadow .3s;
+}
+.btn-capture:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(201,168,76,0.35); }
+.btn-capture:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+.face-status {
+  font-size: .78rem;
+  color: rgba(255,255,255,0.45);
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  white-space: nowrap;
+}
+.face-status.captured { color: #4ade80; }
+.face-status.error    { color: #f87171; }
+
+/* Divider */
+.reg-divider {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  margin: 1.5rem 0 1.4rem;
+  color: rgba(255,255,255,0.2);
+  font-size: .72rem;
+  letter-spacing: .5px;
+  text-transform: uppercase;
+}
+.reg-divider::before, .reg-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(201,168,76,0.15);
+}
+
+/* Terms */
+.reg-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: .6rem;
+  margin-bottom: 1.5rem;
+}
+.reg-terms input[type="checkbox"] { accent-color: var(--gold); margin-top: 2px; flex-shrink: 0; }
+.reg-terms label {
+  font-size: .75rem;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.55;
+}
+.reg-terms a { color: var(--gold); text-decoration: none; }
+.reg-terms a:hover { text-decoration: underline; }
+
+/* Submit */
+.btn-register {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, var(--gold), var(--gold-l));
+  color: var(--navy);
+  border: none;
+  border-radius: 10px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: .95rem;
+  font-weight: 800;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  letter-spacing: .04em;
+  transition: transform .3s, box-shadow .3s;
+}
+.btn-register:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 35px rgba(201,168,76,0.4);
+}
+
+/* Error / Success alerts */
+.reg-alert {
+  border-radius: 10px;
+  padding: .8rem 1.1rem;
+  font-size: .82rem;
+  margin-bottom: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+.reg-alert-error {
+  background: rgba(248,113,113,.1);
+  border: 1px solid rgba(248,113,113,.3);
+  color: #fca5a5;
+}
+.reg-alert-success {
+  background: rgba(74,222,128,.1);
+  border: 1px solid rgba(74,222,128,.3);
+  color: #86efac;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .register-page { grid-template-columns: 1fr; }
+  .register-visual { min-height: 260px; }
+  .register-visual-content { padding: 2rem; }
+  .register-form-panel { padding: 2rem 1.2rem; }
+}
+{% endblock %}
+
+{% block body %}
+<main class="register-page">
+
+  {# ── LEFT VISUAL PANEL ── #}
+  <div class="register-visual">
+    <div class="register-visual-bg"></div>
+    <div class="register-visual-overlay"></div>
+    <div class="register-visual-content">
+      <div class="visual-badge">
+        <i class="fas fa-star"></i> Rejoignez l'aventure
+      </div>
+      <h2 class="visual-title">
+        Explorez le monde<br>
+        avec <em>SmartTrip</em>
+      </h2>
+      <p class="visual-desc">
+        Créez votre compte et accédez à des milliers de destinations exclusives,
+        des offres personnalisées et votre assistant de voyage IA.
+      </p>
+      <div class="visual-stats">
+        <div class="vstat">
+          <span class="vstat-num">12K+</span>
+          <span class="vstat-label">Voyageurs</span>
+        </div>
+        <div class="visual-divider"></div>
+        <div class="vstat">
+          <span class="vstat-num">180+</span>
+          <span class="vstat-label">Destinations</span>
+        </div>
+        <div class="visual-divider"></div>
+        <div class="vstat">
+          <span class="vstat-num">98%</span>
+          <span class="vstat-label">Satisfaction</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {# ── RIGHT FORM PANEL ── #}
+  <div class="register-form-panel">
+    <div class="register-card">
+
+      <div class="register-header">
+        <a href="{{ path('app_home') }}" class="register-logo">Smart<span>Trip</span></a>
+        <h2>Créer un compte</h2>
+        <p>Déjà inscrit ? <a href="#" onclick="openModal()">Se connecter</a></p>
+      </div>
+
+      {# Progress steps #}
+      <div class="reg-steps">
+        <div class="reg-step">
+          <div class="step-dot active" id="step1dot">1</div>
+          <span class="step-label active">Infos</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="reg-step">
+          <div class="step-dot" id="step2dot">2</div>
+          <span class="step-label" id="step2label">Visage</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="reg-step">
+          <div class="step-dot" id="step3dot">3</div>
+          <span class="step-label" id="step3label">Terminé</span>
+        </div>
+      </div>
+
+      {# Flash / Errors — keys must match controller addFlash() calls #}
+      {% for msg in app.flashes('error') %}
+        <div class="reg-alert reg-alert-error"><i class="fas fa-circle-exclamation"></i> {{ msg }}</div>
+      {% endfor %}
+      {% for msg in app.flashes('warning') %}
+        <div class="reg-alert" style="background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:#fde68a;">
+          <i class="fas fa-triangle-exclamation"></i> {{ msg }}
+        </div>
+      {% endfor %}
+      {% for msg in app.flashes('success') %}
+        <div class="reg-alert reg-alert-success"><i class="fas fa-circle-check"></i> {{ msg }}</div>
+      {% endfor %}
+
+      <form id="registerForm" method="post" action="{{ path('register') }}" novalidate>
+        <input type="hidden" name="_token" value="{{ csrf_token('register') }}">
+        <input type="hidden" name="face_image" id="faceInput">
+
+        {# Name #}
+        <div class="reg-field">
+          <label for="reg_name">Nom complet</label>
+          <div class="reg-input-wrap">
+            <input
+              type="text"
+              id="reg_name"
+              name="name"
+              placeholder="Jean Dupont"
+              autocomplete="name"
+              required
+              value="{{ last_name ?? '' }}"
+            >
+            <i class="fas fa-user"></i>
+          </div>
+        </div>
+
+        {# Email #}
+        <div class="reg-field">
+          <label for="reg_email">Adresse email</label>
+          <div class="reg-input-wrap">
+            <input
+              type="email"
+              id="reg_email"
+              name="email"
+              placeholder="votre@email.com"
+              autocomplete="email"
+              required
+              value="{{ last_email ?? '' }}"
+            >
+            <i class="fas fa-envelope"></i>
+          </div>
+        </div>
+
+        {# Password #}
+        <div class="reg-field">
+          <label for="reg_password">Mot de passe</label>
+          <div class="reg-input-wrap">
+            <input
+              type="password"
+              id="reg_password"
+              name="password"
+              placeholder="Min. 8 caractères"
+              autocomplete="new-password"
+              required
+              oninput="checkStrength(this.value)"
+            >
+            <i class="fas fa-lock"></i>
+          </div>
+          <div class="pwd-strength">
+            <div class="pwd-bars">
+              <div class="pwd-bar" id="bar1"></div>
+              <div class="pwd-bar" id="bar2"></div>
+              <div class="pwd-bar" id="bar3"></div>
+              <div class="pwd-bar" id="bar4"></div>
+            </div>
+            <span class="pwd-label" id="pwdLabel">Entrez un mot de passe</span>
+          </div>
+        </div>
+
+        <div class="reg-divider">Authentification biométrique</div>
+
+        {# Face ID Section #}
+        <div class="face-section">
+          <div class="face-header">
+            <div class="face-header-icon"><i class="fas fa-camera"></i></div>
+            <div class="face-header-text">
+              <h4>Face ID</h4>
+              <p>Connexion rapide par reconnaissance faciale</p>
+            </div>
+            <span class="face-header-badge">Optionnel</span>
+          </div>
+
+          <div class="face-cam-wrap" id="faceCamWrap">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="canvas" width="320" height="240"></canvas>
+            <div class="face-guide">
+              <div class="face-guide-oval"></div>
+            </div>
+            <div class="face-scan-line" id="scanLine"></div>
+            <div class="face-cam-hint">Centrez votre visage dans l'ovale</div>
+          </div>
+
+          <div class="face-actions">
+            <button type="button" class="btn-capture" id="captureBtn">
+              <i class="fas fa-camera"></i> Capturer mon visage
+            </button>
+            <span class="face-status" id="faceStatus">
+              <i class="fas fa-circle-xmark"></i> Non capturé
+            </span>
+          </div>
+        </div>
+
+        {# Terms #}
+        <div class="reg-terms">
+          <input type="checkbox" id="reg_terms" name="terms" required>
+          <label for="reg_terms">
+            J'accepte les <a href="#">conditions d'utilisation</a> et la
+            <a href="#">politique de confidentialité</a> de SmartTrip.
+          </label>
+        </div>
+
+        {# Submit #}
+        <button type="submit" class="btn-register" id="submitBtn">
+          <i class="fas fa-rocket"></i> Créer mon compte
+        </button>
+
+      </form>
+    </div>
+  </div>
+
+</main>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+/* ────────────────────────────────────────────
+   PASSWORD STRENGTH
+──────────────────────────────────────────── */
+function checkStrength(val) {
+  const bars   = [bar1, bar2, bar3, bar4];
+  const label  = document.getElementById('pwdLabel');
+  let score    = 0;
+  if (val.length >= 8)                       score++;
+  if (/[A-Z]/.test(val))                     score++;
+  if (/[0-9]/.test(val))                     score++;
+  if (/[^A-Za-z0-9]/.test(val))             score++;
+
+  const cls   = score <= 1 ? 'weak' : score <= 2 ? 'medium' : score <= 3 ? 'medium' : 'strong';
+  const labels = ['','Trop faible','Faible','Moyen','Fort'];
+  const colors = ['','#f87171','#fbbf24','#fbbf24','#4ade80'];
+
+  bars.forEach((b, i) => {
+    b.className = 'pwd-bar';
+    if (i < score) b.classList.add(cls);
+  });
+
+  label.textContent  = val.length ? labels[score] || '' : 'Entrez un mot de passe';
+  label.style.color  = val.length ? colors[score] : 'rgba(255,255,255,0.35)';
+}
+
+/* ────────────────────────────────────────────
+   STEP PROGRESS
+──────────────────────────────────────────── */
+function setStep(n) {
+  for (let i = 1; i <= 3; i++) {
+    const dot   = document.getElementById(`step${i}dot`);
+    const label = document.getElementById(`step${i}label`);
+    if (!dot) continue;
+    dot.classList.remove('active', 'done');
+    if (label) label.classList.remove('active');
+    if (i < n)  { dot.classList.add('done');   dot.innerHTML = '✓'; }
+    if (i === n) { dot.classList.add('active'); if (label) label.classList.add('active'); }
+    if (i > n)  { dot.innerHTML = i; }
+  }
+}
+
+/* ────────────────────────────────────────────
+   CAMERA & FACE CAPTURE
+──────────────────────────────────────────── */
+const video    = document.getElementById('webcam');
+const canvas   = document.getElementById('canvas');
+const scanLine = document.getElementById('scanLine');
+
+// Auto-start camera on load
+navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+  .then(stream => {
+    video.srcObject = stream;
+    setStep(2);
+  })
+  .catch(() => {
+    const wrap = document.getElementById('faceCamWrap');
+    if (wrap) wrap.innerHTML = `
+      <div style="padding:2rem;text-align:center;color:rgba(255,255,255,0.4);font-size:.82rem;">
+        <i class="fas fa-camera-slash" style="font-size:2rem;color:rgba(201,168,76,0.4);display:block;margin-bottom:.7rem;"></i>
+        Caméra non accessible.<br>
+        <span style="font-size:.72rem;">Vous pouvez ignorer cette étape.</span>
+      </div>`;
+    document.getElementById('captureBtn').disabled = true;
+  });
+
+document.getElementById('captureBtn').addEventListener('click', () => {
+  const btn    = document.getElementById('captureBtn');
+  const status = document.getElementById('faceStatus');
+
+  // Animate scan
+  scanLine.classList.add('scanning');
+  btn.disabled    = true;
+  btn.innerHTML   = '<i class="fas fa-spinner fa-spin"></i> Analyse…';
+  status.className = 'face-status';
+  status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Capture…';
+
+  setTimeout(() => {
+    // Draw frame
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, 320, 240);
+    const imageData = canvas.toDataURL('image/jpeg');
+    document.getElementById('faceInput').value = imageData;
+
+    scanLine.classList.remove('scanning');
+    status.className = 'face-status captured';
+    status.innerHTML = '<i class="fas fa-circle-check"></i> Capturé !';
+    btn.innerHTML    = '<i class="fas fa-check"></i> Recapturer';
+    btn.disabled     = false;
+    setStep(3);
+  }, 1200);
+});
+
+/* ────────────────────────────────────────────
+   FORM SUBMIT — basic client validation
+──────────────────────────────────────────── */
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+  const btn = document.getElementById('submitBtn');
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Création en cours…';
+  btn.disabled  = true;
+});
+</script>
+{% endblock %}

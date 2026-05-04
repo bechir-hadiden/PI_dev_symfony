@@ -12,6 +12,7 @@ services:
     App\:
         resource: '../src/'
 
+<<<<<<< HEAD
     # App\Service\AiTransportService:
     #     arguments:
     #         $webhookUrl: '%env(N8N_WEBHOOK_URL)%'
@@ -26,3 +27,12 @@ services:
         # Arguments removed as they are not present in the constructor
         autowire: true
 
+=======
+    App\Service\AiTransportService:
+        arguments:
+            $apiKey: '%env(ANTHROPIC_API_KEY)%'
+
+    App\Service\ContactService:
+        arguments:
+            $adminEmail: '%env(ADMIN_EMAIL)%'
+>>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c

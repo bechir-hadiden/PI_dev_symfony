@@ -15,4 +15,49 @@ class TransportRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Transport::class);
     }
+<<<<<<< HEAD
+=======
+
+    /**
+     * Find transports filtered by type name (case-insensitive).
+     * @return Transport[]
+     */
+    public function findByTypeName(string $typeName, string $sort = 'id', string $order = 'ASC'): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->join('t.transportType', 'tt')
+            ->where('LOWER(tt.nom) = LOWER(:nom)')
+            ->setParameter('nom', $typeName);
+
+        $validSorts = ['id', 'compagnie', 'numero', 'capacite', 'prix'];
+        $sortField = in_array($sort, $validSorts) ? $sort : 'id';
+        $orderDir = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
+
+        return $qb->orderBy('t.' . $sortField, $orderDir)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Get sorted and optionally searched transports.
+     * @return Transport[]
+     */
+    public function findSortedSearch(string $q = '', string $sort = 'id', string $order = 'ASC'): array
+    {
+        $qb = $this->createQueryBuilder('t');
+        
+        $validSorts = ['id', 'compagnie', 'numero', 'capacite', 'prix'];
+        $sortField = in_array($sort, $validSorts) ? $sort : 'id';
+        $orderDir = strtoupper($order) === 'DESC' ? 'DESC' : 'ASC';
+
+        if (!empty($q)) {
+            $qb->where('t.compagnie LIKE :q OR t.numero LIKE :q')
+               ->setParameter('q', '%' . $q . '%');
+        }
+
+        return $qb->orderBy('t.' . $sortField, $orderDir)
+            ->getQuery()
+            ->getResult();
+    }
+>>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
 }

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Véhicules</title>
+    <style>
+        body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 12px; color: #333; }
+        h1 { color: #0d1b2a; text-align: center; border-bottom: 2px solid #c9a84c; padding-bottom: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #0d1b2a; color: #fff; font-weight: bold; }
+        tr:nth-child(even) { background-color: #f9f9f9; }
+        .type-badge { background: #e8c97a; color: #000; padding: 3px 6px; border-radius: 4px; font-size: 10px; }
+        .footer { text-align: center; margin-top: 40px; font-size: 10px; color: #777; }
+    </style>
+</head>
+<body>
+
+    <h1><img src="https://img.icons8.com/color/48/000000/bus.png" width="24" style="vertical-align:bottom"> Catalogue des Transports</h1>
+    
+    <p>Extraction générée le : {{ "now"|date('d/m/Y à H:i') }}</p>
+    {% if q %}<p><strong>Filtre appliqué :</strong> {{ q }}</p>{% endif %}
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Compagnie</th>
+                <th>Numéro</th>
+                <th>Type</th>
+                <th>Capacité</th>
+                <th>Prix (DT)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in transports %}
+            <tr>
+                <td>{{ t.id }}</td>
+                <td><strong>{{ t.compagnie }}</strong></td>
+                <td>{{ t.numero }}</td>
+                <td><span class="type-badge">{{ t.transportType.nom }}</span></td>
+                <td>{{ t.capacite }} places</td>
+                <td>{{ t.prix|number_format(2, ',', ' ') }}</td>
+            </tr>
+            {% endfor %}
+            {% if transports is empty %}
+            <tr>
+                <td colspan="6" style="text-align:center">Aucun véhicule trouvé.</td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        Document généré automatiquement par SmartTrip - Gestion Transport
+    </div>
+
+</body>
+</html>

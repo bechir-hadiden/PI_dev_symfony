@@ -3,22 +3,18 @@
 
 {% block body %}
 
-{# ── PAGE HERO ── #}
 <div style="background:var(--navy);padding:7rem 5% 3rem;border-bottom:1px solid rgba(201,168,76,0.15);">
   <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
     <div>
       <span class="section-label">{{ mode == 'new' ? 'Créer' : 'Modifier' }}</span>
-      <h1 class="section-title light">
-        {{ mode == 'new' ? 'Nouveau Voyage' : 'Modifier le voyage' }}
-      </h1>
+      <h1 class="section-title light">{{ mode == 'new' ? 'Nouveau Voyage' : 'Modifier le voyage' }}</h1>
     </div>
-    <a href="{{ path('voyage_index') }}" class="btn-outline-light" style="padding:.6rem 1.4rem;font-size:.85rem;">
+    <a href="{{ path('admin_voyage_index') }}" class="btn-outline-light" style="padding:.6rem 1.4rem;font-size:.85rem;">
       <i class="fas fa-arrow-left"></i> Retour
     </a>
   </div>
 </div>
 
-{# ── FORMULAIRE ── #}
 <div style="padding:3rem 5%;background:var(--cream);">
 
   {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
@@ -30,26 +26,14 @@
       <h3 style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);margin-bottom:1.4rem;display:flex;align-items:center;gap:.5rem;">
         <i class="fas fa-map-marker-alt" style="color:var(--gold);"></i> Destination
       </h3>
-
-      {# ✅ Le champ s'appelle "destination" dans VoyageType (pas "destinationNom") #}
       <div style="margin-bottom:1rem;">
         {{ form_label(form.destination, null, {label_attr: {style: 'display:block;font-size:.75rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem;'}}) }}
-        {{ form_widget(form.destination, {attr: {
-          style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;',
-          placeholder: 'Ex: Paris, Bali, Tokyo...',
-          onfocus: "this.style.borderColor='var(--gold)'",
-          onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"
-        }}) }}
+        {{ form_widget(form.destination, {attr: {style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;', placeholder: 'Ex: Paris, Bali, Tokyo...', onfocus: "this.style.borderColor='var(--gold)'", onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"}}) }}
         {{ form_errors(form.destination) }}
       </div>
-
       <div>
         {{ form_label(form.destinationRel, null, {label_attr: {style: 'display:block;font-size:.75rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem;'}}) }}
-        {{ form_widget(form.destinationRel, {attr: {
-          style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;cursor:pointer;',
-          onfocus: "this.style.borderColor='var(--gold)'",
-          onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"
-        }}) }}
+        {{ form_widget(form.destinationRel, {attr: {style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;cursor:pointer;', onfocus: "this.style.borderColor='var(--gold)'", onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"}}) }}
         <small style="color:var(--muted);font-size:.72rem;">Lier ce voyage à une fiche destination existante (optionnel)</small>
         {{ form_errors(form.destinationRel) }}
       </div>
@@ -60,36 +44,21 @@
       <h3 style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);margin-bottom:1.4rem;display:flex;align-items:center;gap:.5rem;">
         <i class="fas fa-calendar-alt" style="color:var(--gold);"></i> Dates & Départ
       </h3>
-
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
         <div>
           {{ form_label(form.dateDebut, null, {label_attr: {style: 'display:block;font-size:.75rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem;'}}) }}
-          {{ form_widget(form.dateDebut, {attr: {
-            style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;',
-            onfocus: "this.style.borderColor='var(--gold)'",
-            onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"
-          }}) }}
+          {{ form_widget(form.dateDebut, {attr: {style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;', onfocus: "this.style.borderColor='var(--gold)'", onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"}}) }}
           {{ form_errors(form.dateDebut) }}
         </div>
         <div>
           {{ form_label(form.dateFin, null, {label_attr: {style: 'display:block;font-size:.75rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem;'}}) }}
-          {{ form_widget(form.dateFin, {attr: {
-            style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;',
-            onfocus: "this.style.borderColor='var(--gold)'",
-            onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"
-          }}) }}
+          {{ form_widget(form.dateFin, {attr: {style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;', onfocus: "this.style.borderColor='var(--gold)'", onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"}}) }}
           {{ form_errors(form.dateFin) }}
         </div>
       </div>
-
       <div>
         {{ form_label(form.paysDepart, null, {label_attr: {style: 'display:block;font-size:.75rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem;'}}) }}
-        {{ form_widget(form.paysDepart, {attr: {
-          style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;',
-          placeholder: 'Ex: Tunisie, France...',
-          onfocus: "this.style.borderColor='var(--gold)'",
-          onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"
-        }}) }}
+        {{ form_widget(form.paysDepart, {attr: {style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;', placeholder: 'Ex: Tunisie, France...', onfocus: "this.style.borderColor='var(--gold)'", onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"}}) }}
         {{ form_errors(form.paysDepart) }}
       </div>
     </div>
@@ -99,33 +68,21 @@
       <h3 style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);margin-bottom:1.4rem;display:flex;align-items:center;gap:.5rem;">
         <i class="fas fa-tag" style="color:var(--gold);"></i> Prix & Image
       </h3>
-
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
         <div>
           {{ form_label(form.prix, null, {label_attr: {style: 'display:block;font-size:.75rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem;'}}) }}
           <div style="position:relative;">
             <span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--gold);font-weight:700;font-size:.875rem;">TND</span>
-            {{ form_widget(form.prix, {attr: {
-              style: 'width:100%;padding:.75rem 1rem .75rem 3.5rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;',
-              placeholder: '0',
-              onfocus: "this.style.borderColor='var(--gold)'",
-              onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"
-            }}) }}
+            {{ form_widget(form.prix, {attr: {style: 'width:100%;padding:.75rem 1rem .75rem 3.5rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;', placeholder: '0', onfocus: "this.style.borderColor='var(--gold)'", onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"}}) }}
           </div>
           {{ form_errors(form.prix) }}
         </div>
         <div>
           {{ form_label(form.imagePath, null, {label_attr: {style: 'display:block;font-size:.75rem;font-weight:700;color:var(--navy);text-transform:uppercase;letter-spacing:.5px;margin-bottom:.4rem;'}}) }}
-          {{ form_widget(form.imagePath, {attr: {
-            style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;',
-            placeholder: 'https://... ou /uploads/...',
-            onfocus: "this.style.borderColor='var(--gold)'",
-            onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"
-          }}) }}
+          {{ form_widget(form.imagePath, {attr: {style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;', placeholder: 'https://...', onfocus: "this.style.borderColor='var(--gold)'", onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"}}) }}
           {{ form_errors(form.imagePath) }}
         </div>
       </div>
-
       {% if voyage.imagePath %}
         <div style="margin-top:1rem;">
           <p style="font-size:.72rem;color:var(--muted);margin-bottom:.4rem;">Aperçu actuel :</p>
@@ -140,18 +97,13 @@
       <h3 style="font-family:'Playfair Display',serif;font-size:1rem;color:var(--navy);margin-bottom:1.2rem;display:flex;align-items:center;gap:.5rem;">
         <i class="fas fa-align-left" style="color:var(--gold);"></i> Description
       </h3>
-      {{ form_widget(form.description, {attr: {
-        style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;min-height:120px;resize:vertical;',
-        placeholder: 'Décrivez ce voyage : activités, hébergements, points forts...',
-        onfocus: "this.style.borderColor='var(--gold)'",
-        onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"
-      }}) }}
+      {{ form_widget(form.description, {attr: {style: 'width:100%;padding:.75rem 1rem;border:1px solid rgba(13,27,42,0.15);border-radius:10px;font-family:inherit;font-size:.875rem;outline:none;transition:border-color .3s;min-height:120px;resize:vertical;', placeholder: 'Décrivez ce voyage...', onfocus: "this.style.borderColor='var(--gold)'", onblur: "this.style.borderColor='rgba(13,27,42,0.15)'"}}) }}
       {{ form_errors(form.description) }}
     </div>
 
     {# ── Actions ── #}
     <div style="display:flex;gap:1rem;justify-content:flex-end;padding-bottom:2rem;">
-      <a href="{{ path('voyage_index') }}" class="btn-navy">Annuler</a>
+      <a href="{{ path('admin_voyage_index') }}" class="btn-navy">Annuler</a>
       <button type="submit" class="btn-primary">
         <i class="fas fa-{{ mode == 'new' ? 'plus' : 'save' }}"></i>
         {{ mode == 'new' ? 'Créer le voyage' : 'Sauvegarder' }}

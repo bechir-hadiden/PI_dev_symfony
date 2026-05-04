@@ -16,7 +16,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/destinations', name: 'destination_')]
+#[Route('/admin/destinations', name: 'admin_destination_')]
 class DestinationController extends AbstractController
 {
     public function __construct(
@@ -60,7 +60,7 @@ class DestinationController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Destination « ' . $destination->getNom() . ' » créée avec succès !');
-            return $this->redirectToRoute('destination_show', ['id' => $destination->getId()]);
+            return $this->redirectToRoute('admin_destination_show', ['id' => $destination->getId()]);
         }
 
         return $this->render('destination/form.html.twig', [

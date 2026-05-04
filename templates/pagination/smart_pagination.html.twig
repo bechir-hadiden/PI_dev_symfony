@@ -1,0 +1,95 @@
+{% if pageCount > 1 %}
+    <nav class="smart-pagination">
+        <ul class="pagination-list">
+            {% if previous is defined %}
+                <li class="pagination-item">
+                    <a href="{{ path(route, query|merge({(pageParameterName): previous})) }}" class="pagination-link prev">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li class="pagination-item disabled">
+                    <span class="pagination-link prev"><i class="fas fa-chevron-left"></i></span>
+                </li>
+            {% endif %}
+
+            {% for page in pagesInRange %}
+                <li class="pagination-item">
+                    {% if page != current %}
+                        <a href="{{ path(route, query|merge({(pageParameterName): page})) }}" class="pagination-link">{{ page }}</a>
+                    {% else %}
+                        <span class="pagination-link active">{{ page }}</span>
+                    {% endif %}
+                </li>
+            {% endfor %}
+
+            {% if next is defined %}
+                <li class="pagination-item">
+                    <a href="{{ path(route, query|merge({(pageParameterName): next})) }}" class="pagination-link next">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            {% else %}
+                <li class="pagination-item disabled">
+                    <span class="pagination-link next"><i class="fas fa-chevron-right"></i></span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+
+<style>
+.smart-pagination {
+    display: flex;
+    justify-content: center;
+    margin: 1.5rem 0;
+}
+.pagination-list {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    gap: 0.5rem;
+    align-items: center;
+}
+.pagination-item {
+    display: flex;
+}
+.pagination-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 0.5rem;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    color: #475569;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.pagination-link:hover:not(.active) {
+    border-color: #c9a84c;
+    color: #c9a84c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(201, 168, 76, 0.15);
+}
+.pagination-link.active {
+    background: linear-gradient(135deg, #0d1b2a, #112236);
+    color: #c9a84c;
+    border-color: #0d1b2a;
+    box-shadow: 0 4px 12px rgba(13, 27, 42, 0.2);
+}
+.pagination-item.disabled .pagination-link {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #f8fafc;
+}
+.pagination-link.prev, .pagination-link.next {
+    color: #c9a84c;
+    font-size: 0.75rem;
+}
+</style>

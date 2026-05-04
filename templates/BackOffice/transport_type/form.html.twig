@@ -1,0 +1,49 @@
+{% extends 'BackOffice/base_admin.html.twig' %}
+{% block title %}{{ mode == 'new' ? 'Nouveau type' : 'Modifier ' ~ type.nom }} – Admin{% endblock %}
+{% block page_title %}{{ mode == 'new' ? 'Nouveau type de transport' : 'Modifier : ' ~ type.nom }}{% endblock %}
+
+{% block body %}
+<div style="max-width:560px">
+  <div class="card">
+    <div class="card-header">
+      <h2><i class="fas fa-{{ mode == 'new' ? 'plus' : 'edit' }}" style="color:var(--gold);margin-right:.5rem"></i>
+        {{ mode == 'new' ? 'Créer un nouveau type' : 'Modifier le type' }}
+      </h2>
+    </div>
+    <div class="card-body">
+      {{ form_start(form) }}
+
+      <div class="form-group">
+        {{ form_label(form.nom) }}
+        {{ form_widget(form.nom) }}
+        {{ form_errors(form.nom) }}
+      </div>
+
+      <div class="form-group">
+        {{ form_label(form.prixDepart) }}
+        {{ form_widget(form.prixDepart) }}
+        {{ form_errors(form.prixDepart) }}
+      </div>
+
+      <div class="form-group">
+        {{ form_label(form.imageFile) }}
+        {% if type.image %}
+          <div style="margin-bottom:.6rem">
+            <img src="{{ type.image }}" alt="Image actuelle" style="height:60px;border-radius:6px;border:1px solid var(--border)">
+            <small style="color:var(--muted);display:block;margin-top:.3rem">Image actuelle – télécharger une nouvelle pour la remplacer</small>
+          </div>
+        {% endif %}
+        {{ form_widget(form.imageFile) }}
+        {{ form_errors(form.imageFile) }}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> {{ mode == 'new' ? 'Créer' : 'Enregistrer' }}</button>
+        <a href="{{ path('admin_transport_type_index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuler</a>
+      </div>
+
+      {{ form_end(form) }}
+    </div>
+  </div>
+</div>
+{% endblock %}

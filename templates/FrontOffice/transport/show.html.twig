@@ -1,0 +1,141 @@
+{% extends 'FrontOffice/base_user.html.twig' %}
+{% block title %}{{ transport.compagnie }} – SmartTrip Transport{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <div style="margin-bottom:1.2rem">
+    <a href="{{ path('transport_index') }}" class="btn btn-outline" style="border-radius:50px"><i class="fas fa-arrow-left"></i> Retour aux transports</a>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:start">
+
+    <!-- LEFT: Transport detail -->
+    <div>
+      <div style="background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.12);">
+        {% set typeIcon = {'Avion':'plane','Bus':'bus','Train':'train','Taxi':'taxi','Covoiturage':'car'}[transport.transportType.nom] ?? 'bus-alt' %}
+        <div style="position:relative;overflow:hidden;height:320px;cursor:zoom-in;"
+             onmouseover="this.querySelector('img').style.transform='scale(1.06)'"
+             onmouseout="this.querySelector('img').style.transform='scale(1)'">
+          {% if transport.imageUrl and transport.imageUrl starts with 'http' %}
+            <img src="{{ transport.imageUrl }}" alt="{{ transport.compagnie }}"
+                 style="width:100%;height:100%;object-fit:cover;transition:transform .5s ease;"
+                 onerror="this.src='https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&q=80'">
+          {% else %}
+            <div style="width:100%;height:100%;background:linear-gradient(135deg,#01204E 0%,#0a3272 60%,#1a4a9e 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--gold);gap:1rem;">
+              <i class="fas fa-{{ typeIcon }}" style="font-size:4rem;"></i>
+              <span style="font-size:1rem;font-weight:600;opacity:.7;">{{ transport.compagnie }}</span>
+            </div>
+          {% endif %}
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:1.5rem;background:linear-gradient(transparent,rgba(1,32,78,.85));">
+            <div style="display:flex;gap:.5rem;">
+              <span style="background:var(--gold);color:#fff;padding:.3rem .8rem;border-radius:50px;font-size:.75rem;font-weight:700;">
+                <i class="fas fa-{{ typeIcon }}"></i> {{ transport.transportType.nom }}
+              </span>
+              {% if transport.localisation %}
+              <span style="background:rgba(255,255,255,.2);color:#fff;padding:.3rem .8rem;border-radius:50px;font-size:.75rem;backdrop-filter:blur(4px);">
+                <i class="fas fa-map-pin"></i> {{ transport.localisation }}
+              </span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        <div style="padding:1.6rem">
+          <div style="display:flex;gap:.5rem;margin-bottom:.8rem;flex-wrap:wrap">
+            <span class="badge" style="background:rgba(201,168,76,0.15);color:var(--gold);font-size:.75rem">{{ transport.transportType.nom }}</span>
+          </div>
+          <h1 style="font-family:'Playfair Display',serif;font-size:1.6rem;margin-bottom:.3rem">{{ transport.compagnie }}</h1>
+          <p style="color:var(--muted);font-size:.85rem;margin-bottom:1.2rem">
+            <i class="fas fa-hashtag" style="color:var(--gold)"></i> {{ transport.numero }}
+          </p>
+
+          {% set placesRestantes = transport.placesDisponibles %}
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.2rem">
+            <div style="background:#f8fafc;border-radius:10px;padding:.9rem;text-align:center">
+              <div style="font-size:1.5rem;font-weight:700;color:{% if placesRestantes > 0 %}#16a34a{% else %}#ef4444{% endif %}">{{ placesRestantes }}</div>
+              <div style="font-size:.72rem;color:var(--muted)">Places disponibles</div>
+            </div>
+            <div style="background:#f8fafc;border-radius:10px;padding:.9rem;text-align:center">
+              <div style="font-size:1.5rem;font-weight:700;color:var(--gold)">{{ transport.prix|number_format(2, ',', ' ') }} DT</div>
+              <div style="font-size:.72rem;color:var(--muted)">Par place</div>
+            </div>
+          </div>
+
+          {% if transport.description %}
+            <p style="color:var(--muted);font-size:.875rem;line-height:1.65">{{ transport.description }}</p>
+          {% endif %}
+
+          <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);font-size:.8rem;color:var(--muted)">
+            <i class="fas fa-info-circle" style="color:var(--gold)"></i>
+            Prix de départ du type : <strong>{{ transport.transportType.prixDepart|number_format(2, ',', ' ') }} DT</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Reservation form -->
+    <div>
+      <div class="form-card">
+        {% if placesRestantes > 0 %}
+          <h2 class="form-title"><i class="fas fa-calendar-plus" style="color:var(--gold);margin-right:.5rem"></i>Réserver ce transport</h2>
+
+          {{ form_start(form, {attr: {id: 'reservation-form'}}) }}
+
+          <div class="form-group">
+            {{ form_label(form.nomClient) }}
+            {{ form_widget(form.nomClient) }}
+            {{ form_errors(form.nomClient) }}
+          </div>
+          <div class="form-group">
+            {{ form_label(form.emailClient) }}
+            {{ form_widget(form.emailClient) }}
+            {{ form_errors(form.emailClient) }}
+          </div>
+          <div class="form-group">
+            {{ form_label(form.nombrePlaces) }}
+            {{ form_widget(form.nombrePlaces, {attr: {id: 'nb-places', min: 1, max: placesRestantes}}) }}
+            {{ form_errors(form.nombrePlaces) }}
+          </div>
+
+          <!-- Price preview -->
+          <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:1rem;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
+            <span style="color:var(--muted);font-size:.85rem">Montant estimé</span>
+            <strong id="price-preview" style="color:var(--gold);font-size:1.2rem">{{ transport.prix|number_format(2, ',', ' ') }} DT</strong>
+          </div>
+
+          <button type="submit" class="btn-submit"><i class="fas fa-check-circle"></i> Confirmer la réservation</button>
+
+          {{ form_end(form) }}
+        {% else %}
+          <div style="text-align:center;padding:2rem 1rem;">
+            <i class="fas fa-user-times" style="font-size:3rem;color:#ef4444;margin-bottom:1rem;"></i>
+            <h2 style="color:var(--navy);margin-bottom:.5rem;">Véhicule Complet</h2>
+            <p style="color:var(--muted);font-size:.9rem;">Désolé, toutes les places pour ce véhicule ont déjà été réservées.</p>
+            <a href="{{ path('transport_index') }}" class="btn btn-primary" style="margin-top:1.5rem;display:inline-block;"><i class="fas fa-search"></i> Chercher un autre transport</a>
+          </div>
+        {% endif %}
+      </div>
+
+      <div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:1rem;margin-top:1rem;font-size:.8rem;color:var(--muted)">
+        <i class="fas fa-shield-alt" style="color:var(--gold)"></i>
+        Retrouvez votre réservation via <a href="{{ path('mes_reservations_index') }}" style="color:var(--gold)">Mes Réservations</a> avec votre email.
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+{{ parent() }}
+<script>
+  const prix = {{ transport.prix }};
+  const input = document.getElementById('nb-places');
+  const preview = document.getElementById('price-preview');
+  if (input && preview) {
+    input.addEventListener('input', () => {
+      const n = parseInt(input.value) || 1;
+      preview.textContent = (prix * n).toFixed(2).replace('.', ',') + ' DT';
+    });
+  }
+</script>
+{% endblock %}

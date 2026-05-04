@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; color: #333; line-height: 1.5; }
+        .header { text-align: center; border-bottom: 2px solid #C9A84C; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { color: #01204E; font-size: 24px; font-weight: bold; }
+        .title { font-size: 18px; color: #C9A84C; margin-top: 10px; }
+        .section { margin-bottom: 25px; background: #f9f9f9; padding: 15px; border-radius: 5px; }
+        .label { font-size: 12px; color: #666; text-transform: uppercase; }
+        .value { font-size: 16px; font-weight: bold; color: #01204E; }
+        .footer { text-align: center; font-size: 10px; color: #999; margin-top: 50px; border-top: 1px solid #eee; padding-top: 10px; }
+        .grid { display: table; width: 100%; }
+        .col { display: table-cell; width: 50%; }
+        .ia-badge { background: #01204E; color: #C9A84C; padding: 5px 10px; border-radius: 3px; font-size: 12px; }
+        .urgent-stamp { border: 3px solid #dc2626; color: #dc2626; padding: 10px; font-size: 14px; font-weight: bold; transform: rotate(-5deg); text-align: center; border-radius: 5px; float: right; margin-top: -60px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        {% if data.isUrgent %}
+            <div class="urgent-stamp">DÉPART IMMÉDIAT<br>URGENT</div>
+        {% endif %}
+        <div class="logo">SMARTTRIP</div>
+        <div class="title">PLAN DE VOYAGE INTELLIGENT (IA)</div>
+    </div>
+
+    <div class="section">
+        <div class="grid">
+            <div class="col">
+                <div class="label">Départ</div>
+                <div class="value">{{ data.depart }}</div>
+            </div>
+            <div class="col">
+                <div class="label">Destination</div>
+                <div class="value">{{ data.arrivee }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="label">Moyen de transport recommandé</div>
+        <div class="value" style="font-size: 20px;">{{ data.compagnie }}</div>
+        <div style="margin-top: 10px;">
+            <span class="ia-badge">ANALYSE IA : Prédiction de retard +{{ data.retard }} min</span>
+        </div>
+    </div>
+
+    <div class="grid" style="margin-bottom: 30px;">
+        <div class="col" style="padding-right: 10px;">
+            <div class="section" style="margin-bottom: 0;">
+                <div class="label">Durée Estimée</div>
+                <div class="value">{{ data.duree }} minutes</div>
+            </div>
+        </div>
+        <div class="col" style="padding-left: 10px;">
+            <div class="section" style="margin-bottom: 0;">
+                <div class="label">Prix Total</div>
+                <div class="value">{{ data.prix }} DT</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="label">Avis Météo</div>
+        <p style="margin: 5px 0 0 0; font-size: 14px;">{{ data.meteo }}</p>
+    </div>
+
+    <div class="section" style="background: #fff; border: 1px solid #eee;">
+        <div class="label">Analyse de Sécurité</div>
+        <p style="margin: 5px 0 0 0; font-size: 14px; font-weight: bold;">{{ data.risk }}</p>
+    </div>
+
+    <div class="footer">
+        Document généré par l'IA SmartTrip le {{ "now"|date("d/m/Y à H:i") }}.<br>
+        Ce document ne constitue pas un billet officiel mais un plan de voyage recommandé.
+    </div>
+</body>
+</html>

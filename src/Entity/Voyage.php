@@ -10,46 +10,76 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: 'voyages')]
 class Voyage
 {
-    // 1. id — int(11) NOT NULL AUTO_INCREMENT
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
-    // 2. destination — varchar(255) NOT NULL
     #[ORM\Column(name: 'destination', type: 'string', length: 255)]
-    #[Assert\NotBlank(message: 'Le nom de destination est obligatoire')]
+    #[Assert\NotBlank(message: 'Le nom de la destination est obligatoire.')]
+    #[Assert\Length(
+        min: 2,
+        max: 255,
+        minMessage: 'La destination doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'La destination ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $destination = null;
 
-    // 3. dateDebut — date NOT NULL
     #[ORM\Column(name: 'dateDebut', type: 'date')]
-    #[Assert\NotNull(message: 'La date de début est obligatoire')]
+    #[Assert\NotNull(message: 'La date de début est obligatoire.')]
+    #[Assert\GreaterThanOrEqual(
+        value: 'today',
+        message: 'La date de début ne peut pas être dans le passé.'
+    )]
     private ?\DateTimeInterface $dateDebut = null;
 
-    // 4. dateFin — date NOT NULL
     #[ORM\Column(name: 'dateFin', type: 'date')]
-    #[Assert\NotNull(message: 'La date de fin est obligatoire')]
+    #[Assert\NotNull(message: 'La date de fin est obligatoire.')]
+    #[Assert\GreaterThan(
+        propertyPath: 'dateDebut',
+        message: 'La date de fin doit être après la date de début.'
+    )]
     private ?\DateTimeInterface $dateFin = null;
 
-    // 5. prix — double NOT NULL
     #[ORM\Column(name: 'prix', type: 'float')]
-    #[Assert\NotNull]
-    #[Assert\Positive(message: 'Le prix doit être positif')]
+    #[Assert\NotNull(message: 'Le prix est obligatoire.')]
+    #[Assert\Positive(message: 'Le prix doit être un nombre positif.')]
+    #[Assert\LessThanOrEqual(
+        value: 999999,
+        message: 'Le prix ne peut pas dépasser {{ compared_value }} TND.'
+    )]
     private ?float $prix = null;
 
-    // 6. imagePath — varchar(255) NULL
     #[ORM\Column(name: 'imagePath', type: 'string', length: 255, nullable: true)]
     private ?string $imagePath = null;
 
-    // 7. description — text NULL
     #[ORM\Column(name: 'description', type: 'text', nullable: true)]
+    #[Assert\Length(
+        min: 10,
+        max: 2000,
+        minMessage: 'La description doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'La description ne peut pas dépasser {{ limit }} caractères.'
+    )]
     private ?string $description = null;
 
+<<<<<<< HEAD
     // 9. pays_depart — varchar(100) NULL
     #[ORM\Column(name: 'pays_depart', type: 'string', length: 100, nullable: true)]
+=======
+    #[ORM\Column(name: 'pays_depart', type: 'string', length: 100, nullable: true)]
+    #[Assert\Length(
+        min: 2,
+        max: 100,
+        minMessage: 'Le pays de départ doit contenir au moins {{ limit }} caractères.',
+        maxMessage: 'Le pays de départ ne peut pas dépasser {{ limit }} caractères.'
+    )]
+    #[Assert\Regex(
+        pattern: '/^[\p{L}\s\-\,]+$/u',
+        message: 'Le pays de départ ne peut contenir que des lettres, espaces et tirets.'
+    )]
+>>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
     private ?string $paysDepart = null;
 
-    // 8. destination_id — int(11) NULL (FK vers destination)
     #[ORM\ManyToOne(targetEntity: Destination::class, inversedBy: 'voyages')]
     #[ORM\JoinColumn(name: 'destination_id', referencedColumnName: 'id', nullable: true)]
     private ?Destination $destinationRel = null;
@@ -71,6 +101,20 @@ class Voyage
     public function setPrix(float $v): static { $this->prix = $v; return $this; }
 
     public function getImagePath(): ?string { return $this->imagePath; }
+
+    // ── Retourne uniquement la première image (séparateur ; ou |) ──
+    public function getFirstImagePath(): ?string
+    {
+        if (!$this->imagePath) return null;
+
+        $parts = preg_split('/[;|]/', $this->imagePath);
+        foreach ($parts as $part) {
+            $p = trim($part);
+            if ($p !== '') return $p;
+        }
+        return null;
+    }
+
     public function setImagePath(?string $v): static { $this->imagePath = $v; return $this; }
 
     public function getDescription(): ?string { return $this->description; }
@@ -88,8 +132,5 @@ class Voyage
         return (int) $this->dateDebut->diff($this->dateFin)->days;
     }
 
-    public function __toString(): string
-    {
-        return $this->destination ?? '';
-    }
+    public function __toString(): string { return $this->destination ?? ''; }
 }

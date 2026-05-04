@@ -1,0 +1,106 @@
+# translations/messages.en.yaml
+
+# ── NAVBAR ──
+nav.destinations: "Destinations"
+nav.voyages: "Trips"
+nav.about: "About"
+nav.plan: "Plan"
+nav.login: "Login"
+nav.logout: "Logout"
+nav.add: "Add"
+
+# ── HERO ──
+hero.badge: "Exceptional Journeys"
+hero.title: "Discover the world with <em>elegance</em>"
+hero.subtitle: "Tailor-made travel experiences, designed for curious minds and wandering souls."
+hero.btn_plan: "Plan my trip"
+hero.btn_discover: "Discover our offers"
+
+# ── SEARCH ──
+search.destination: "Destination"
+search.destination_placeholder: "Where do you want to go?"
+search.depart: "Departure"
+search.duration: "Duration"
+search.duration_placeholder: "Choose"
+search.btn: "Search"
+
+# ── DESTINATIONS ──
+dest.title: "<em>Popular</em> Destinations"
+dest.label: "Our destinations"
+dest.subtitle: "Explore our carefully selected destinations to offer you unique experiences."
+dest.all: "View all destinations"
+dest.from: "From"
+
+# ── PACKAGES ──
+pkg.title: "Our <em>Packages</em>"
+pkg.label: "Organized trips"
+pkg.subtitle: "All-inclusive packages adapted to your wishes and budget."
+pkg.popular: "Popular"
+pkg.per_person: "/person"
+pkg.book: "Book"
+
+# ── ABOUT ──
+about.label: "Who we are"
+about.title: "Your trusted travel partner"
+about.subtitle: "For over 10 years, Smart Trip has been creating unforgettable experiences for travelers worldwide."
+about.years: "Years of experience"
+about.feat1_title: "Local Expertise"
+about.feat1_desc: "Passionate local guides at every destination."
+about.feat2_title: "Tailor-made"
+about.feat2_desc: "Every trip is unique and personalized for you."
+about.feat3_title: "24/7 Support"
+about.feat3_desc: "Our team is available at any time."
+about.feat4_title: "Best Price"
+about.feat4_desc: "The best deals without compromising quality."
+about.btn: "Learn more"
+
+# ── CONTACT ──
+contact.label: "Contact us"
+contact.title: "Let's talk about your <em>trip</em>"
+contact.subtitle: "Our team is at your disposal to create the adventure of your dreams."
+contact.phone: "Phone"
+contact.email: "Email"
+contact.address: "Address"
+contact.form_title: "Send us a message"
+contact.firstname: "First name"
+contact.lastname: "Last name"
+contact.email_field: "Email"
+contact.subject: "Subject"
+contact.message: "Message"
+contact.send: "Send message"
+
+# ── FOOTER ──
+footer.desc: "Your trusted partner for exceptional travel experiences."
+footer.destinations: "Destinations"
+footer.all_dest: "All destinations"
+footer.add_dest: "Add a destination"
+footer.voyages: "Trips"
+footer.all_voyages: "All trips"
+footer.create_voyage: "Create a trip"
+footer.info: "Information"
+footer.about: "About"
+footer.contact: "Contact"
+footer.sarah: "Talk to Sarah ✈️"
+footer.rights: "All rights reserved."
+footer.made_with: "Made with"
+footer.for: "for travel lovers"
+
+# ── LOGIN MODAL ──
+login.title: "Login to your account"
+login.password_tab: "Password"
+login.faceid_tab: "Face ID"
+login.email: "Email Address"
+login.password: "Password"
+login.remember: "Remember me"
+login.submit: "Sign in"
+login.face_center: "Center your face in the oval"
+login.face_scan: "Scan my face"
+
+# ── SARAH CHAT ──
+sarah.welcome: "Hello! I'm <strong>Sarah</strong>, your Smart Trip advisor 🌍✈️"
+sarah.welcome_sub: "Tell me your dream trip, and I'll create a tailor-made stay for you!"
+sarah.placeholder: "Type your message..."
+sarah.typing: "Sarah is typing..."
+sarah.unavailable: "Sarah is momentarily unavailable. Please try again."
+sarah.voyage_created: "🎉 Your trip has been created! A confirmation email has been sent."
+sarah.powered_by: "Powered by"

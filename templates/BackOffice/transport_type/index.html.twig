@@ -1,0 +1,73 @@
+{% extends 'BackOffice/base_admin.html.twig' %}
+{% block title %}Types de Transport – Admin{% endblock %}
+{% block page_title %}Types de Transport{% endblock %}
+
+{% block body %}
+<div class="stat-row">
+  <div class="stat-card">
+    <div class="stat-icon gold"><i class="fas fa-tags"></i></div>
+    <div><div class="stat-value">{{ pagination.totalItemCount }}</div><div class="stat-label">Types enregistrés</div></div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h2><i class="fas fa-tags" style="color:var(--gold);margin-right:.5rem"></i>Liste des types</h2>
+    <a href="{{ path('admin_transport_type_new') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Nouveau type</a>
+  </div>
+  <div class="card-body" style="padding:0">
+    {% if pagination is empty %}
+      <div style="padding:2.5rem;text-align:center;color:var(--muted);">
+        <i class="fas fa-inbox" style="font-size:2.5rem;margin-bottom:.8rem;display:block;opacity:.3"></i>
+        Aucun type de transport. <a href="{{ path('admin_transport_type_new') }}" style="color:var(--gold)">Créer le premier</a>
+      </div>
+    {% else %}
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Image</th>
+            <th>Nom</th>
+            <th>Prix de départ</th>
+            <th>Véhicules</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for type in pagination %}
+          <tr>
+            <td style="color:var(--muted);font-size:.8rem">{{ type.id }}</td>
+            <td>
+              {% if type.image %}
+                <img src="{{ type.image }}" alt="{{ type.nom }}" style="width:48px;height:34px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">
+              {% else %}
+                <div style="width:48px;height:34px;background:#f1f5f9;border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted)"><i class="fas fa-image"></i></div>
+              {% endif %}
+            </td>
+            <td><strong>{{ type.nom }}</strong></td>
+            <td><span style="color:var(--gold);font-weight:700">{{ type.prixDepart|number_format(2, ',', ' ') }} DT</span></td>
+            <td>
+              <span class="badge" style="background:rgba(59,130,246,0.1);color:var(--accent)">
+                {{ type.transports|length }} véhicule(s)
+              </span>
+            </td>
+            <td>
+              <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+                <a href="{{ path('admin_transport_type_edit', {id: type.id}) }}" class="btn btn-secondary btn-sm"><i class="fas fa-edit"></i> Modifier</a>
+                <form method="POST" action="{{ path('admin_transport_type_delete', {id: type.id}) }}" onsubmit="return confirm('Supprimer ce type ?')">
+                  <input type="hidden" name="_token" value="{{ csrf_token('delete_transport_type_' ~ type.id) }}">
+                  <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i> Supprimer</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  </div>
+  <div class="card-footer" style="padding:1rem;display:flex;justify-content:center">
+    {{ knp_pagination_render(pagination) }}
+  </div>
+</div>
+{% endblock %}

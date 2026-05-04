@@ -116,11 +116,21 @@ h1 em{color:var(--gold);font-style:italic;}
 .alt-city{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;}
 .alt-country{font-size:0.62rem;color:var(--muted);letter-spacing:0.08em;}
 .alt-reason{font-size:0.65rem;color:var(--muted);line-height:1.5;margin-top:0.5rem;}
-.result-actions{padding:1.5rem 2.5rem;border-top:1px solid var(--border);display:flex;gap:1rem;flex-wrap:wrap;}
+.result-actions{padding:1.5rem 2.5rem;border-top:1px solid var(--border);display:flex;gap:1rem;flex-wrap:wrap;flex-direction:column;}
+.actions-row{display:flex;gap:1rem;flex-wrap:wrap;}
 .btn-book{flex:1;min-width:200px;background:var(--gold);color:var(--bg);border:none;padding:0.9rem 1.5rem;font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:opacity 0.2s;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;}
 .btn-book:hover{opacity:0.85;}
 .btn-retry{background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.9rem 1.5rem;font-family:'Space Mono',monospace;font-size:0.68rem;letter-spacing:0.15em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
 .btn-retry:hover{border-color:var(--white);color:var(--white);}
+.pdf-prompt{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;padding:0.85rem 1rem;border:1px solid rgba(212,168,83,0.25);background:rgba(212,168,83,0.04);}
+.pdf-prompt-label{font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:0.6rem;}
+.pdf-prompt-label span{color:var(--gold);font-size:0.85rem;}
+.pdf-btns{display:flex;gap:0.5rem;}
+.btn-pdf-yes{background:var(--gold);color:var(--bg);border:none;padding:0.5rem 1.25rem;font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:opacity 0.2s;display:flex;align-items:center;gap:0.5rem;}
+.btn-pdf-yes:hover{opacity:0.85;}
+.btn-pdf-no{background:transparent;border:1px solid var(--border);color:var(--muted);padding:0.5rem 1rem;font-family:'Space Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;cursor:pointer;transition:all 0.2s;}
+.btn-pdf-no:hover{border-color:var(--white);color:var(--white);}
+.pdf-done{display:none;font-size:0.62rem;letter-spacing:0.12em;color:var(--accent);text-transform:uppercase;align-items:center;gap:0.5rem;padding:0.5rem 0;}
 @media(max-width:768px){.main{grid-template-columns:1fr;}.left-panel{border-right:none;border-bottom:1px solid var(--border);padding:2.5rem 1.5rem;}header{padding:1.25rem 1.5rem;}.right-panel{padding:2rem 1.5rem;}.result-body{padding:1.5rem;}.result-header{padding:1.5rem;}.result-actions{padding:1.25rem 1.5rem;}}
 </style>
 </head>
@@ -205,13 +215,25 @@ h1 em{color:var(--gold);font-style:italic;}
       </div>
     </div>
     <div class="result-actions" id="resultActions" style="display:none">
-      <a class="btn-book" id="btnBook" href="#">Réserver cette destination</a>
-      <button class="btn-retry" onclick="closeResult()">Scanner à nouveau</button>
+      <div class="actions-row">
+        <a class="btn-book" id="btnBook" href="#">Réserver cette destination</a>
+        <button class="btn-retry" onclick="closeResult()">Scanner à nouveau</button>
+      </div>
+      <!-- ── Question PDF ── -->
+      <div class="pdf-prompt" id="pdfPrompt">
+        <div class="pdf-prompt-label"><span>📄</span> Souhaitez-vous exporter ces résultats en PDF ?</div>
+        <div class="pdf-btns">
+          <button class="btn-pdf-yes" id="btnPdfYes" onclick="exportToPdf()">✓ Oui, exporter</button>
+          <button class="btn-pdf-no" onclick="hidePdfPrompt()">✕ Non</button>
+        </div>
+      </div>
+      <div class="pdf-done" id="pdfDone">✅ PDF téléchargé avec succès !</div>
     </div>
   </div>
 </div>
 
 <script defer src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ─── Route Symfony vers le proxy ───
 const SUGGEST_URL = "{{ path('face_travel_suggest') }}";
@@ -227,7 +249,7 @@ const MOODS = {
   neutral:   {fr:'Serein / Équilibré',       en:'serene and balanced',          emoji:'😐', extra:'open-minded, curious, calm explorer, no rush'}
 };
 
-let stream=null, modelsLoaded=false, scanning=false, currentCity='';
+let stream=null, modelsLoaded=false, scanning=false, currentCity='', currentDest=null, currentMood=null, currentConfidence=0;
 
 function setStatus(txt,type='idle'){
   document.getElementById('statusTxt').textContent=txt;
@@ -296,11 +318,15 @@ function stopCamera(){
 
 function openResultPanel(moodKey,confidence){
   const mood=MOODS[moodKey]||MOODS.neutral;
+  currentMood=mood; currentConfidence=confidence;
   document.getElementById('rMoodValue').textContent=mood.emoji+' '+mood.fr;
   document.getElementById('rMoodConf').textContent='Confiance : '+confidence+'%';
   document.getElementById('aiThinking').style.display='flex';
   document.getElementById('resultActions').style.display='none';
   const prev=document.getElementById('destCard');if(prev)prev.remove();
+  // Réinitialiser le prompt PDF
+  document.getElementById('pdfPrompt').style.display='flex';
+  document.getElementById('pdfDone').style.display='none';
   document.getElementById('resultOverlay').style.display='flex';
   askServer(moodKey,mood,confidence);
 }
@@ -327,6 +353,7 @@ async function askServer(moodKey,mood,confidence){
 }
 
 function renderDestination(dest){
+  currentDest=dest; // ← stocker pour le PDF
   document.getElementById('aiThinking').style.display='none';
   const card=document.createElement('div');card.id='destCard';
   const gem=dest.hidden_gem?`<span class="gem-badge">Pépite cachée</span>`:'';
@@ -365,6 +392,168 @@ function renderDestination(dest){
 
 function closeResult(){document.getElementById('resultOverlay').style.display='none';}
 document.getElementById('resultOverlay').addEventListener('click',function(e){if(e.target===this)closeResult();});
+
+function hidePdfPrompt(){
+  document.getElementById('pdfPrompt').style.display='none';
+}
+
+function exportToPdf(){
+  if(!currentDest) return;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W=210, margin=18, lineH=7;
+  let y=margin;
+
+  // ── Fond sombre ──
+  doc.setFillColor(8,10,15);
+  doc.rect(0,0,W,297,'F');
+
+  // ── En-tête ──
+  doc.setFillColor(14,17,24);
+  doc.rect(0,0,W,38,'F');
+  doc.setDrawColor(212,168,83);
+  doc.setLineWidth(0.4);
+  doc.line(margin,38,W-margin,38);
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(20);
+  doc.setTextColor(212,168,83);
+  doc.text('Face·Voyage', margin, 16);
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(7);
+  doc.setTextColor(120,120,130);
+  doc.text('IA · SANS LIMITES', margin, 22);
+
+  // Date
+  const now=new Date();
+  doc.setFontSize(7);
+  doc.setTextColor(100,100,110);
+  doc.text('Généré le '+now.toLocaleDateString('fr-FR')+' à '+now.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}), W-margin, 22, {align:'right'});
+
+  y=50;
+
+  // ── Émotion détectée ──
+  if(currentMood){
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(7);
+    doc.setTextColor(126,200,200);
+    doc.text('EXPRESSION DÉTECTÉE', margin, y); y+=5;
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(13);
+    doc.setTextColor(240,236,227);
+    doc.text(currentMood.fr, margin, y); y+=5;
+    doc.setFontSize(7);
+    doc.setTextColor(100,100,110);
+    doc.text('Confiance : '+currentConfidence+'%', margin, y); y+=10;
+  }
+
+  // ── Séparateur ──
+  doc.setDrawColor(212,168,83,0.3);
+  doc.line(margin,y,W-margin,y); y+=8;
+
+  // ── Destination principale ──
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(7);
+  doc.setTextColor(212,168,83);
+  doc.text('DESTINATION RECOMMANDÉE', margin, y); y+=6;
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(17);
+  doc.setTextColor(240,236,227);
+  doc.text((currentDest.flag||'')+'  '+currentDest.city, margin, y); y+=7;
+
+  doc.setFont('helvetica','normal');
+  doc.setFontSize(8);
+  doc.setTextColor(150,150,160);
+  doc.text(currentDest.country+' · '+currentDest.continent, margin, y); y+=8;
+
+  // Description
+  if(currentDest.description){
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8);
+    doc.setTextColor(200,196,190);
+    const lines=doc.splitTextToSize(currentDest.description, W-margin*2-4);
+    doc.setDrawColor(212,168,83);
+    doc.setLineWidth(0.8);
+    doc.line(margin,y,margin,y+lines.length*4.5);
+    doc.text(lines, margin+4, y); y+=lines.length*4.5+6;
+  }
+
+  // Méta-données
+  const metas=[
+    {label:'Budget',val:currentDest.budget},
+    {label:'Durée idéale',val:currentDest.duration},
+    {label:'Meilleure saison',val:currentDest.best_season},
+    {label:'Climat',val:currentDest.climate}
+  ].filter(m=>m.val);
+
+  if(metas.length){
+    const colW=(W-margin*2)/metas.length;
+    metas.forEach((m,i)=>{
+      const x=margin+i*colW;
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(6);
+      doc.setTextColor(100,100,110);
+      doc.text(m.label.toUpperCase(), x, y);
+      doc.setFontSize(8);
+      doc.setTextColor(240,236,227);
+      doc.text(m.val, x, y+4.5);
+    });
+    y+=14;
+  }
+
+  // Tags
+  if(currentDest.tags && currentDest.tags.length){
+    doc.setFontSize(6);
+    doc.setTextColor(100,100,110);
+    doc.text('TAGS : '+currentDest.tags.join(' · '), margin, y); y+=8;
+  }
+
+  // ── Séparateur ──
+  doc.setDrawColor(50,55,65);
+  doc.line(margin,y,W-margin,y); y+=7;
+
+  // ── Alternatives ──
+  if(currentDest.alternatives && currentDest.alternatives.length){
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(7);
+    doc.setTextColor(126,200,200);
+    doc.text('AUTRES SUGGESTIONS DE L\'IA', margin, y); y+=7;
+
+    currentDest.alternatives.forEach(a=>{
+      if(y>265){doc.addPage();doc.setFillColor(8,10,15);doc.rect(0,0,W,297,'F');y=18;}
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(9);
+      doc.setTextColor(240,236,227);
+      doc.text((a.flag||'')+'  '+a.city, margin, y);
+      doc.setFont('helvetica','normal');
+      doc.setFontSize(7);
+      doc.setTextColor(120,120,130);
+      doc.text(a.country, margin+35, y); y+=5;
+      if(a.reason){
+        doc.setFontSize(7);
+        doc.setTextColor(160,156,150);
+        const rLines=doc.splitTextToSize(a.reason, W-margin*2);
+        doc.text(rLines, margin, y); y+=rLines.length*4+3;
+      }
+    });
+  }
+
+  // ── Pied de page ──
+  doc.setFillColor(14,17,24);
+  doc.rect(0,285,W,12,'F');
+  doc.setFontSize(6);
+  doc.setTextColor(60,65,75);
+  doc.text('Face·Voyage — IA Sans Limites · Exporté automatiquement', W/2, 291, {align:'center'});
+
+  // ── Téléchargement ──
+  const filename='FaceVoyage_'+currentDest.city.replace(/\s+/g,'_')+'_'+now.getFullYear()+'.pdf';
+  doc.save(filename);
+
+  // Feedback visuel
+  document.getElementById('pdfPrompt').style.display='none';
+  document.getElementById('pdfDone').style.display='flex';
+}
 </script>
 </body>
 </html>

@@ -3,7 +3,11 @@ framework:
     form:
         csrf_protection:
             enabled: true
+<<<<<<< HEAD
             field_name: _token
     csrf_protection:
         enabled: true
 
+=======
+            field_name: _token
+>>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c

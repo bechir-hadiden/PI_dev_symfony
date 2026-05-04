@@ -1,0 +1,166 @@
+{% extends 'FrontOffice/base_user.html.twig' %}
+
+{% block title %}Résultats – SmartTrip Advisor{% endblock %}
+
+{% block body %}
+<section style="padding: 3rem 0; background: #f8fafc; min-height: 100vh;">
+    <div class="container" style="max-width: 1100px; margin: 0 auto; padding: 0 1rem;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <a href="{{ path('user_transport_recommendation_index') }}" style="color: var(--muted); text-decoration: none; font-weight: 600;"><i class="fas fa-arrow-left"></i> Retour au simulateur</a>
+                <h1 style="font-size: 2rem; color: var(--navy); margin-top: 0.5rem;">Analyse du trajet : {{ params.depart }} → {{ params.arrivee }}</h1>
+            </div>
+            <div style="text-align: right;">
+                <span class="badge" style="background: var(--gold); color: #fff; padding: 0.5rem 1rem; border-radius: 8px;">{{ recommendation.distance }} km</span>
+                <div style="margin-top: 0.5rem; font-weight: 700; color: var(--navy);">Budget : {{ params.budget }} DT</div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 3fr; gap: 2rem;">
+            
+            <!-- SIDEBAR: API DATA -->
+            <aside>
+                <div class="card" style="padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 15px; border: none; box-shadow: var(--shadow);">
+                    <h3 style="font-size: 0.9rem; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem;"><i class="fas fa-cloud-sun"></i> API B : Météo Directe</h3>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="font-size: 2rem; color: var(--{{ recommendation.weather.color }});">
+                            {% if recommendation.weather.status == 'Danger' %}<i class="fas fa-bolt"></i>{% else %}<i class="fas fa-sun"></i>{% endif %}
+                        </div>
+                        <div>
+                            <div style="font-weight: 800; font-size: 1.2rem;">{{ recommendation.weather.temperature }}°C</div>
+                            <div style="color: var(--{{ recommendation.weather.color }}); font-weight: 600; font-size: 0.8rem;">Statut : {{ recommendation.weather.status }}</div>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.85rem; margin-top: 1rem; color: #475569; line-height: 1.4;">{{ recommendation.weather.message }}</p>
+                </div>
+
+                <div class="card" style="padding: 1.5rem; border-radius: 15px; border: none; box-shadow: var(--shadow); background: var(--navy); color: #fff;">
+                    <h3 style="font-size: 0.9rem; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem;"><i class="fas fa-brain"></i> IA : Analyse du trafic</h3>
+                    <p style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 1rem;">L'IA analyse l'heure de départ ({{ params.hour }}) et les conditions actuelles.</p>
+                    <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px;">
+                        <div style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.3rem;">Risque de retard global</div>
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--gold);">{{ recommendation.results|first.ia_prediction.probability }}%</div>
+                    </div>
+                </div>
+
+                <div class="card" style="padding: 1.5rem; border-radius: 15px; border: 1px solid #e2e8f0; box-shadow: var(--shadow); background: #fff;">
+                    <h3 style="font-size: 0.9rem; text-transform: uppercase; color: var(--navy); margin-bottom: 1rem;"><i class="fas fa-shield-alt" style="color:var(--gold);"></i> Critères de Sécurité</h3>
+                    <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 1rem;">Comment la couleur de risque est-elle calculée ?</p>
+                    <ul style="list-style: none; padding: 0; margin: 0; font-size: 0.8rem;">
+                        <li style="margin-bottom: 0.7rem; display: flex; gap: 0.5rem; align-items: flex-start;">
+                            <span style="color: #ef4444; margin-top: 2px;"><i class="fas fa-circle"></i></span>
+                            <div><strong>Rouge (Danger)</strong> <br><span style="color:var(--muted);">Météo extrême (Tempête). Déconseillé.</span></div>
+                        </li>
+                        <li style="margin-bottom: 0.7rem; display: flex; gap: 0.5rem; align-items: flex-start;">
+                            <span style="color: #f59e0b; margin-top: 2px;"><i class="fas fa-circle"></i></span>
+                            <div><strong>Orange (Risque)</strong> <br><span style="color:var(--muted);">Avion + Vent fort, Nuit (0h-5h) + >100km, ou Bus + >200km (Fatigue).</span></div>
+                        </li>
+                        <li style="display: flex; gap: 0.5rem; align-items: flex-start;">
+                            <span style="color: #22c55e; margin-top: 2px;"><i class="fas fa-circle"></i></span>
+                            <div><strong>Vert (Sûr)</strong> <br><span style="color:var(--muted);">Conditions normales, pas de danger détecté.</span></div>
+                        </li>
+                    </ul>
+                </div>
+            </aside>
+
+            <!-- MAIN: RECOMMENDATIONS -->
+            <main>
+                <h2 style="font-size: 1.3rem; color: var(--navy); margin-bottom: 1.5rem;">Transports recommandés par ordre de pertinence</h2>
+                
+                {% for item in recommendation.results %}
+                <div class="card" style="display: flex; padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 20px; border: 2px solid {{ item.availability.status ? (loop.first ? 'var(--gold)' : '#fff') : '#fee2e2' }}; align-items: center; gap: 1.5rem; position: relative; {{ not item.availability.status ? 'opacity: 0.7; border-style: dashed;' : '' }}">
+                    {% if loop.first and item.availability.status %}
+                        <div style="position: absolute; top: -12px; right: 20px; background: var(--gold); color: #fff; padding: 0.2rem 1rem; border-radius: 20px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;">Meilleur Choix</div>
+                    {% endif %}
+                    
+                    {% if not item.availability.status %}
+                        <div style="position: absolute; top: -12px; left: 20px; background: #ef4444; color: #fff; padding: 0.2rem 1rem; border-radius: 20px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;">Indisponible actuellement</div>
+                    {% elseif item.isVeryUrgent %}
+                        <div style="position: absolute; top: -12px; left: 20px; background: #dc2626; color: #fff; padding: 0.2rem 1rem; border-radius: 20px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;"><i class="fas fa-bolt"></i> Urgent - Priorité Vitesse</div>
+                    {% endif %}
+                    
+                    <div style="width: 100px; height: 100px; border-radius: 15px; overflow: hidden; background: #f1f5f9; flex-shrink: 0;">
+                        <img src="{{ item.transport.imageUrl|default('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=200') }}" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+
+                    <div style="flex: 1;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <span class="badge" style="background: rgba(59,130,246,0.1); color: var(--accent); margin-bottom: 0.3rem;">{{ item.transport.transportType.nom }}</span>
+                                <h3 style="font-size: 1.2rem; color: var(--navy); margin: 0;">{{ item.transport.compagnie }}</h3>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.7rem; color: var(--muted); text-transform: uppercase; font-weight: 700; margin-bottom: 0.2rem;">Prix Total (Dynamique)</div>
+                                <div style="font-size: 1.6rem; font-weight: 800; color: var(--gold); line-height: 1;">{{ item.totalPrice }} DT</div>
+                                
+                                <div style="font-size: 0.7rem; color: #64748b; margin-top: 0.4rem; background: #f8fafc; padding: 0.4rem 0.6rem; border-radius: 6px; text-align: left; display: inline-block; border: 1px solid #e2e8f0;">
+                                    <div style="font-weight: 700; margin-bottom: 0.2rem;"><i class="fas fa-calculator"></i> Détail du calcul :</div>
+                                    <div style="margin-bottom: 0.2rem;">Base : {{ item.pricing.base_price }} DT x {{ params.passengers }} voy.</div>
+                                    {% if item.pricing.rules|length > 0 %}
+                                        <div style="border-top: 1px dashed #cbd5e1; margin: 0.3rem 0; padding-top: 0.2rem;"></div>
+                                        {% for rule in item.pricing.rules %}
+                                            <div style="color: var(--navy);"><i class="fas fa-tag" style="color:var(--gold); font-size:0.6rem;"></i> {{ rule }}</div>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 1.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f1f5f9;">
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--muted);"><i class="fas fa-clock"></i> Durée estimée</div>
+                                <div style="font-weight: 700; color: var(--navy);">{{ item.estimated_duration }} min</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--muted);"><i class="fas fa-exclamation-circle"></i> Prédiction Retard (IA)</div>
+                                <div style="font-weight: 700; color: {{ item.ia_prediction.level == 'High' ? '#ef4444' : '#22c55e' }};">+{{ item.ia_prediction.minutes }} min</div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--muted);"><i class="fas fa-shield-alt"></i> Analyse de Sécurité</div>
+                                <div style="font-weight: 700; color: {{ item.risk.color == 'red' ? '#ef4444' : (item.risk.color == 'orange' ? '#f59e0b' : '#22c55e') }};">
+                                    <i class="fas fa-{{ item.risk.level == 'Safe' ? 'check-circle' : 'exclamation-triangle' }}"></i> {{ item.risk.message }}
+                                </div>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.75rem; color: var(--muted);"><i class="fas fa-star"></i> Score Pertinence</div>
+                                <div style="font-weight: 700; color: var(--navy);">{{ item.score }} pts</div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            {% if not item.availability.status %}
+                                <span style="font-size: 0.75rem; background: #fee2e2; border: 1px solid #fecaca; padding: 0.2rem 0.6rem; border-radius: 4px; color: #dc2626; font-weight: 700;"><i class="fas fa-exclamation-triangle"></i> {{ item.availability.message }}</span>
+                            {% endif %}
+                            {% for reason in item.reasons %}
+                                <span style="font-size: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; padding: 0.2rem 0.6rem; border-radius: 4px; color: #64748b;"><i class="fas fa-check" style="color: #22c55e;"></i> {{ reason }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div style="margin-left: 1rem;">
+                        <form method="POST" action="{{ path('user_transport_recommendation_export_pdf') }}">
+                            <input type="hidden" name="pdf_data" value="{{ {
+                                'depart': params.depart,
+                                'arrivee': params.arrivee,
+                                'compagnie': item.transport.compagnie,
+                                'prix': item.totalPrice,
+                                'duree': item.estimated_duration,
+                                'retard': item.ia_prediction.minutes,
+                                'meteo': recommendation.weather.message,
+                                'isUrgent': item.isVeryUrgent,
+                                'risk': item.risk.message
+                            }|json_encode }}">
+                            <button type="submit" class="btn" {{ not item.availability.status ? 'disabled' : '' }} style="background: {{ item.availability.status ? 'var(--gold)' : '#cbd5e1' }}; color: #fff; border: none; border-radius: 10px; padding: 0.8rem 1.5rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 700; transition: transform 0.2s; cursor: {{ item.availability.status ? 'pointer' : 'not-allowed' }};">
+                                <i class="fas fa-file-pdf"></i> {{ item.availability.status ? 'Télécharger le Plan IA' : 'Indisponible' }}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+
+            </main>
+        </div>
+    </div>
+</section>
+{% endblock %}

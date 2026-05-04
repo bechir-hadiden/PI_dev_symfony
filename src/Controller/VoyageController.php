@@ -11,29 +11,39 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-
-#[Route('/voyages', name: 'voyage_')]
+use Knp\Component\Pager\PaginatorInterface;
+#[Route('/admin/voyages', name: 'admin_voyage_')]
 class VoyageController extends AbstractController
 {
-    #[Route('', name: 'index', methods: ['GET'])]
-    public function index(Request $request, VoyageRepository $repo, DestinationRepository $destRepo): Response
-    {
-        $q             = $request->query->get('q');
-        $destinationId = $request->query->getInt('destination') ?: null;
+   #[Route('', name: 'index', methods: ['GET'])]
+public function index(
+    Request $request,
+    VoyageRepository $repo,
+    DestinationRepository $destRepo,
+    PaginatorInterface $paginator
+): Response {
+    $q = $request->query->get('q');
+    $destinationId = $request->query->getInt('destination') ?: null;
 
-        if ($q) {
-            $voyages = $repo->search($q);
-        } else {
-            $voyages = $repo->findDisponibles($destinationId);
-        }
-
-        return $this->render('voyage/index.html.twig', [
-            'voyages'      => $voyages,
-            'destinations' => $destRepo->findAll(),
-            'query'        => $q,
-            'filtreDestId' => $destinationId,
-        ]);
+    if ($q) {
+        $query = $repo->searchQuery($q); // ✅
+    } else {
+        $query = $repo->findDisponiblesQuery($destinationId); // ✅
     }
+
+    $voyages = $paginator->paginate(
+        $query,
+        $request->query->getInt('page', 1),
+        6 // nombre par page
+    );
+
+    return $this->render('voyage/index.html.twig', [
+        'voyages'      => $voyages,
+        'destinations' => $destRepo->findAll(),
+        'query'        => $q,
+        'filtreDestId' => $destinationId,
+    ]);
+}
 
     #[Route('/new', name: 'new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $em): Response
@@ -48,7 +58,7 @@ class VoyageController extends AbstractController
 
             // ✅ getDestination() et non getTitre() qui n'existe pas
             $this->addFlash('success', '✅ Voyage « ' . $voyage->getDestination() . ' » créé avec succès !');
-            return $this->redirectToRoute('voyage_index');
+            return $this->redirectToRoute('admin_voyage_index');
         }
 
         return $this->render('voyage/form.html.twig', [
@@ -75,7 +85,7 @@ class VoyageController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $em->flush();
             $this->addFlash('success', '✅ Voyage mis à jour !');
-            return $this->redirectToRoute('voyage_index');
+            return $this->redirectToRoute('admin_voyage_index');
         }
 
         return $this->render('voyage/form.html.twig', [
@@ -93,6 +103,6 @@ class VoyageController extends AbstractController
             $em->flush();
             $this->addFlash('success', '🗑️ Voyage supprimé.');
         }
-        return $this->redirectToRoute('voyage_index');
+        return $this->redirectToRoute('admin_voyage_index');
     }
 }

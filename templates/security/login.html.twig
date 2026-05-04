@@ -1,4 +1,5 @@
 {% extends 'base_dark.html.twig' %}
+<<<<<<< HEAD
 
 {% block title %}Connexion - SmartTrip{% endblock %}
 
@@ -26,10 +27,160 @@
             <div class="form-group">
                 <label for="inputPassword">Mot de passe</label>
                 <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
+=======
+{% block title %}Connexion — SmartTrip{% endblock %}
+
+{% block extra_css %}
+.login-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6rem 1rem 3rem;
+    background: var(--navy);
+    position: relative;
+    overflow: hidden;
+}
+.login-wrapper::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=80') center/cover no-repeat;
+    opacity: 0.08;
+}
+.login-card {
+    position: relative; z-index: 2;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 20px;
+    padding: 3rem 2.5rem;
+    width: 100%; max-width: 420px;
+    backdrop-filter: blur(20px);
+}
+.login-logo {
+    text-align: center; margin-bottom: 2rem;
+}
+.login-logo h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 700;
+    color: var(--gold); letter-spacing: 1px;
+}
+.login-logo h1 span { color: var(--white); }
+.login-logo p {
+    font-size: .8rem; color: rgba(255,255,255,0.4);
+    margin-top: .4rem; letter-spacing: .05em;
+}
+.login-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem; font-weight: 300;
+    color: var(--white); margin-bottom: 1.8rem;
+    text-align: center;
+}
+.form-field { margin-bottom: 1.2rem; }
+.form-field label {
+    display: block; font-size: .7rem; font-weight: 600;
+    letter-spacing: .12em; text-transform: uppercase;
+    color: rgba(255,255,255,0.5); margin-bottom: .5rem;
+}
+.form-field input {
+    width: 100%; padding: .85rem 1.1rem;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 10px; color: var(--white);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .9rem; outline: none;
+    transition: border-color .3s;
+}
+.form-field input:focus { border-color: var(--gold); }
+.form-field input::placeholder { color: rgba(255,255,255,0.25); }
+.remember-row {
+    display: flex; align-items: center; gap: .5rem;
+    margin-bottom: 1.5rem;
+}
+.remember-row input[type="checkbox"] { accent-color: var(--gold); }
+.remember-row label {
+    font-size: .78rem; color: rgba(255,255,255,0.45);
+}
+.btn-login {
+    width: 100%; padding: .95rem;
+    background: linear-gradient(135deg, var(--gold), var(--gold-l));
+    color: var(--navy); border: none; border-radius: 10px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: .9rem; font-weight: 700; cursor: pointer;
+    transition: transform .3s, box-shadow .3s;
+    letter-spacing: .05em;
+}
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(201,168,76,0.4);
+}
+.login-error {
+    background: rgba(248,113,113,.1);
+    border: 1px solid rgba(248,113,113,.3);
+    border-radius: 10px; padding: .85rem 1rem;
+    color: #fca5a5; font-size: .82rem;
+    margin-bottom: 1.2rem; text-align: center;
+}
+.login-back {
+    display: block; text-align: center;
+    margin-top: 1.5rem; font-size: .78rem;
+    color: rgba(255,255,255,0.35); text-decoration: none;
+    transition: color .2s;
+}
+.login-back:hover { color: var(--gold); }
+.role-hint {
+    display: flex; gap: .8rem; margin-bottom: 1.8rem;
+}
+.role-badge {
+    flex: 1; padding: .6rem;
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 8px; text-align: center;
+    font-size: .7rem; color: rgba(255,255,255,0.4);
+}
+.role-badge strong { display: block; color: var(--gold); font-size: .75rem; margin-bottom: .2rem; }
+{% endblock %}
+
+{% block body %}
+<div class="login-wrapper">
+    <div class="login-card">
+
+        <div class="login-logo">
+            <h1>Smart<span>Trip</span></h1>
+            <p>Agence de Voyage Premium</p>
+        </div>
+
+        <p class="login-title">Connexion</p>
+
+        {% if error %}
+            <div class="login-error">
+                ❌ {{ error.messageKey|trans(error.messageData, 'security') }}
+            </div>
+        {% endif %}
+
+        <form method="post">
+            <div class="form-field">
+                <label for="email">Adresse Email</label>
+                <input type="email" id="email" name="email"
+                       value="{{ last_username }}"
+                       placeholder="votre@email.com"
+                       autocomplete="email" required autofocus>
+            </div>
+
+            <div class="form-field">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" name="password"
+                       placeholder="••••••••"
+                       autocomplete="current-password" required>
+            </div>
+
+            <div class="remember-row">
+                <input type="checkbox" id="remember" name="_remember_me">
+                <label for="remember">Se souvenir de moi</label>
+>>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
             </div>
 
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
+<<<<<<< HEAD
             {#
                 Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
                 See https://symfony.com/doc/current/security/remember_me.html
@@ -53,6 +204,16 @@
                 </p>
             </div>
         </form>
+=======
+            <button type="submit" class="btn-login">
+                Se connecter →
+            </button>
+        </form>
+
+        <a href="{{ path('app_home') }}" class="login-back">
+            ← Retour à l'accueil
+        </a>
+>>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
     </div>
 </div>
 {% endblock %}

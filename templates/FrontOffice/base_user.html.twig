@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Transport – SmartTrip{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root {
+      --navy: #0d1b2a; --navy-2: #112236;
+      --gold: #c9a84c; --gold-l: #e8c97a;
+      --cream: #f5f0e8; --white: #ffffff;
+      --muted: #64748b; --border: #e2e8f0;
+      --green: #22c55e; --red: #ef4444;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Inter',sans-serif; background:var(--cream); color:var(--navy); }
+
+    /* ── NAV ── */
+    nav {
+      position:sticky; top:0; z-index:100;
+      background:rgba(13,27,42,0.97); backdrop-filter:blur(20px);
+      border-bottom:1px solid rgba(201,168,76,0.18);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1rem 5%;
+    }
+    .nav-logo { font-family:'Playfair Display',serif; font-size:1.3rem; font-weight:700; color:var(--gold); text-decoration:none; }
+    .nav-logo span { color:#fff; }
+    .nav-links { display:flex; gap:1.5rem; list-style:none; align-items:center; }
+    .nav-links a { color:rgba(255,255,255,0.7); text-decoration:none; font-size:.85rem; font-weight:500; transition:color .25s; }
+    .nav-links a:hover, .nav-links a.active { color:var(--gold); }
+    .nav-badge { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); padding:.35rem 1rem; border-radius:50px; font-weight:700 !important; font-size:.8rem !important; }
+
+    /* ── FLASH ── */
+    .flash-zone { padding:.6rem 5%; }
+    .flash { padding:.85rem 1.2rem; border-radius:10px; margin-bottom:.6rem; font-size:.875rem; display:flex; align-items:center; gap:.5rem; }
+    .flash-success { background:#f0fdf4; border:1px solid #86efac; color:#15803d; }
+    .flash-error   { background:#fef2f2; border:1px solid #fca5a5; color:var(--red); }
+
+    /* ── CONTENT WRAPPER ── */
+    .wrap { padding:2.5rem 5%; max-width:1300px; margin:0 auto; }
+    .page-header { margin-bottom:2rem; }
+    .page-header h1 { font-family:'Playfair Display',serif; font-size:2rem; color:var(--navy); }
+    .page-header p { color:var(--muted); margin-top:.4rem; font-size:.9rem; }
+
+    /* ── TRANSPORT CARD ── */
+    .transport-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(290px,1fr)); gap:1.4rem; }
+    .transport-card {
+      background:#fff; border:1px solid var(--border); border-radius:16px; overflow:hidden;
+      transition:transform .3s, box-shadow .3s; text-decoration:none; color:inherit;
+      display:flex; flex-direction:column;
+    }
+    .transport-card:hover { transform:translateY(-6px); box-shadow:0 20px 50px rgba(13,27,42,0.12); }
+    .transport-card-img { height:170px; overflow:hidden; background:linear-gradient(135deg,var(--navy),var(--navy-2)); position:relative; }
+    .transport-card-img img { width:100%; height:100%; object-fit:cover; transition:transform .5s; }
+    .transport-card:hover .transport-card-img img { transform:scale(1.08); }
+    .transport-card-img-placeholder { width:100%; height:100%; display:flex; align-items:center; justify-content:center; color:var(--gold); font-size:3rem; }
+    .transport-type-badge { position:absolute; top:.75rem; left:.75rem; background:var(--gold); color:var(--navy); font-size:.65rem; font-weight:700; padding:.2rem .55rem; border-radius:50px; }
+    .transport-card-body { padding:1.2rem; flex:1; display:flex; flex-direction:column; gap:.6rem; }
+    .transport-card-title { font-size:1rem; font-weight:700; }
+    .transport-card-meta { font-size:.8rem; color:var(--muted); display:flex; gap:.8rem; flex-wrap:wrap; }
+    .transport-card-meta span { display:flex; align-items:center; gap:.3rem; }
+    .transport-card-footer { display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); padding-top:.8rem; margin-top:auto; }
+    .transport-card-price { font-size:1.15rem; font-weight:700; color:var(--gold); }
+    .btn-reserve { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); border:none; padding:.45rem 1rem; border-radius:8px; font-size:.8rem; font-weight:700; cursor:pointer; text-decoration:none; transition:transform .2s, box-shadow .2s; }
+    .btn-reserve:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(201,168,76,0.35); }
+
+    /* ── FILTER BAR ── */
+    .filter-bar { display:flex; gap:.6rem; flex-wrap:wrap; margin-bottom:1.8rem; align-items:center; }
+    .filter-btn { padding:.4rem .9rem; border-radius:50px; font-size:.8rem; font-weight:600; cursor:pointer;
+      text-decoration:none; border:1px solid var(--border); background:#fff; color:var(--muted); transition:all .2s; }
+    .filter-btn.active, .filter-btn:hover { background:var(--navy); color:var(--gold); border-color:var(--navy); }
+    .search-input { flex:1; min-width:200px; padding:.5rem 1rem; border:1px solid var(--border); border-radius:50px;
+      font-size:.85rem; outline:none; transition:border-color .2s; }
+    .search-input:focus { border-color:var(--gold); }
+
+    /* ── BUTTONS GENERIC ── */
+    .btn { display:inline-flex; align-items:center; gap:.4rem; padding:.55rem 1.1rem; border-radius:8px;
+      font-size:.83rem; font-weight:600; text-decoration:none; border:none; cursor:pointer; transition:all .2s; }
+    .btn-nav { background:var(--navy); color:var(--gold); border:1px solid rgba(201,168,76,0.25); }
+    .btn-nav:hover { background:var(--gold); color:var(--navy); }
+    .btn-outline { background:transparent; border:1px solid var(--border); color:var(--navy); }
+    .btn-outline:hover { background:var(--navy); color:var(--gold); }
+    .btn-danger-sm { background:#fee2e2; color:var(--red); border:1px solid #fca5a5; padding:.35rem .8rem; border-radius:6px; font-size:.78rem; }
+    .btn-danger-sm:hover { background:#fecaca; }
+    
+    .btn-ai-nav {
+      background: rgba(201,168,76,0.1);
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: .5rem 1.2rem;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: .85rem;
+      text-decoration: none;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .btn-ai-nav:hover {
+      background: var(--gold);
+      color: var(--navy);
+      box-shadow: 0 4px 15px rgba(201,168,76,0.3);
+    }
+
+    /* ── FORM ── */
+    .form-card { background:#fff; border:1px solid var(--border); border-radius:16px; padding:2rem; }
+    .form-title { font-family:'Playfair Display',serif; font-size:1.2rem; margin-bottom:1.4rem; }
+    .form-group { margin-bottom:1.1rem; }
+    .form-group label { display:block; font-size:.75rem; font-weight:600; color:var(--muted); margin-bottom:.35rem; text-transform:uppercase; letter-spacing:.4px; }
+    .form-group input, .form-group select, .form-group textarea {
+      width:100%; padding:.6rem .9rem; border:1px solid var(--border); border-radius:8px;
+      font-size:.875rem; font-family:'Inter',sans-serif; outline:none; transition:border-color .2s;
+    }
+    .form-group input:focus, .form-group select:focus { border-color:var(--gold); box-shadow:0 0 0 3px rgba(201,168,76,0.1); }
+    .form-error { color:var(--red); font-size:.75rem; margin-top:.25rem; }
+    .btn-submit { width:100%; background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy);
+      border:none; cursor:pointer; padding:.85rem; border-radius:10px; font-weight:700; font-size:.95rem;
+      font-family:'Inter',sans-serif; display:flex; align-items:center; justify-content:center; gap:.5rem; transition:all .3s; }
+    .btn-submit:hover { transform:translateY(-2px); box-shadow:0 10px 28px rgba(201,168,76,0.4); }
+
+    /* ── BADGE ── */
+    .badge { display:inline-block; padding:.2rem .55rem; border-radius:50px; font-size:.7rem; font-weight:700; }
+    .badge-pending { background:#fef9c3; color:#92400e; }
+    .badge-confirm { background:#dcfce7; color:#15803d; }
+    .badge-cancel  { background:#fee2e2; color:var(--red); }
+
+    /* ── FOOTER ── */
+    footer { background:var(--navy); border-top:1px solid rgba(201,168,76,0.1); padding:2rem 5%; margin-top:4rem; }
+    footer p { color:rgba(255,255,255,0.4); font-size:.8rem; text-align:center; }
+    footer span { color:var(--gold); }
+  </style>
+  {% block stylesheets %}{% endblock %}
+</head>
+<body>
+
+<nav>
+  <a href="{{ path('app_home') }}" class="nav-logo">Smart<span>Trip</span></a>
+  <ul class="nav-links">
+    <li><a href="{{ path('transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'transport_' ? 'active' : '' }}">Transports</a></li>
+    <li><a href="{{ path('mes_reservations_index') }}" class="{{ app.request.attributes.get('_route') starts with 'mes_reservations' ? 'active' : '' }}">Mes Réservations</a></li>
+    <li><a href="{{ path('app_home') }}">Voyages</a></li>
+    <li><a href="{{ path('admin_transport_index') }}" class="nav-badge"><i class="fas fa-shield-alt"></i> Admin</a></li>
+  </ul>
+</nav>
+
+<div class="flash-zone">
+  {% for msg in app.flashes('success') %}
+    <div class="flash flash-success"><i class="fas fa-check-circle"></i> {{ msg }}</div>
+  {% endfor %}
+  {% for msg in app.flashes('error') %}
+    <div class="flash flash-error"><i class="fas fa-exclamation-circle"></i> {{ msg }}</div>
+  {% endfor %}
+</div>
+
+{% block body %}{% endblock %}
+
+<footer>
+  <p>© 2025 <span>SmartTrip</span> – Gestion Transport. Tous droits réservés.</p>
+</footer>
+
+{% block javascripts %}{% endblock %}
+
+<!-- ================= SMARTTRIP CHATBOT WIDGET ================= -->
+<div id="smart-chatbot-container">
+  <!-- The Chat Window -->
+  <div id="chatbot-window">
+    <div id="chatbot-header">
+      <div>
+        <i class="fas fa-robot"></i> SmartTrip Bot
+      </div>
+      <button id="chatbot-close-btn">&times;</button>
+    </div>
+    <div id="chatbot-messages">
+      <div class="chat-msg bot-msg">Bonjour ! 👋 Je suis l'Assistant IA SmartTrip. Comment puis-je vous aider ?</div>
+    </div>
+    <div id="chatbot-input-area">
+      <input type="text" id="chatbot-input" placeholder="Posez votre question...">
+      <button id="chatbot-send-btn"><i class="fas fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- The Floating Toggle Button -->
+  <button id="chatbot-toggle-btn">
+    <i class="fas fa-comment-dots"></i>
+  </button>
+</div>
+
+<style>
+/* Chatbot CSS */
+#smart-chatbot-container {
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  z-index: 9999;
+  font-family: 'Inter', sans-serif;
+}
+
+#chatbot-toggle-btn {
+  background: var(--navy);
+  color: var(--gold);
+  border: 2px solid var(--gold);
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  font-size: 1.8rem;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(1,32,78,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+#chatbot-toggle-btn:hover {
+  transform: scale(1.1) translateY(-5px);
+  background: var(--gold);
+  color: var(--navy);
+  border-color: var(--navy);
+}
+
+#chatbot-window {
+  display: none;
+  width: 340px;
+  height: 480px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+  border: 1px solid var(--border);
+  flex-direction: column;
+  overflow: hidden;
+  position: absolute;
+  bottom: 80px;
+  right: 0;
+  transform-origin: bottom right;
+  animation: slideUpChat 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slideUpChat {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+#chatbot-header {
+  background: linear-gradient(135deg, var(--navy), #0a3272);
+  color: #fff;
+  padding: 1rem 1.2rem;
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 3px solid var(--gold);
+  font-size: 1.1rem;
+}
+
+#chatbot-close-btn {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+#chatbot-messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.chat-msg {
+  max-width: 85%;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.bot-msg {
+  background: #fff;
+  color: var(--navy);
+  border: 1px solid var(--border);
+  align-self: flex-start;
+  border-bottom-left-radius: 4px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+
+.user-msg {
+  background: var(--navy);
+  color: #fff;
+  align-self: flex-end;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 8px rgba(1,32,78,0.2);
+}
+
+#chatbot-input-area {
+  display: flex;
+  padding: 0.8rem;
+  background: #fff;
+  border-top: 1px solid var(--border);
+  gap: 0.5rem;
+}
+
+#chatbot-input {
+  flex: 1;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 50px;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  transition: border-color 0.2s;
+}
+#chatbot-input:focus {
+  border-color: var(--gold);
+}
+
+#chatbot-send-btn {
+  background: var(--gold);
+  color: var(--navy);
+  border: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s;
+}
+#chatbot-send-btn:hover {
+  transform: scale(1.1);
+}
+
+.typing-indicator {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  align-self: flex-start;
+  width: fit-content;
+}
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+  background: var(--muted);
+  border-radius: 50%;
+  animation: typing 1s infinite alternate;
+}
+.typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+.typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+  0% { transform: translateY(0); opacity: 0.5; }
+  100% { transform: translateY(-3px); opacity: 1; }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const toggleBtn = document.getElementById('chatbot-toggle-btn');
+  const chatWindow = document.getElementById('chatbot-window');
+  const closeBtn = document.getElementById('chatbot-close-btn');
+  const sendBtn = document.getElementById('chatbot-send-btn');
+  const input = document.getElementById('chatbot-input');
+  const messagesArea = document.getElementById('chatbot-messages');
+
+  let isChatOpen = false;
+
+  const toggleChat = () => {
+    isChatOpen = !isChatOpen;
+    chatWindow.style.display = isChatOpen ? 'flex' : 'none';
+    if(isChatOpen) input.focus();
+  };
+
+  toggleBtn.addEventListener('click', toggleChat);
+  closeBtn.addEventListener('click', toggleChat);
+
+  const addMessage = (text, isUser = false) => {
+    const msgDiv = document.createElement('div');
+    msgDiv.className = `chat-msg ${isUser ? 'user-msg' : 'bot-msg'}`;
+    msgDiv.innerHTML = text; // allow bold and links
+    messagesArea.appendChild(msgDiv);
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+  };
+
+  const showTyping = () => {
+    const div = document.createElement('div');
+    div.className = 'typing-indicator';
+    div.id = 'chat-typing';
+    div.innerHTML = '<span></span><span></span><span></span>';
+    messagesArea.appendChild(div);
+    messagesArea.scrollTop = messagesArea.scrollHeight;
+  };
+
+  const removeTyping = () => {
+    const typing = document.getElementById('chat-typing');
+    if(typing) typing.remove();
+  };
+
+  const sendMessage = () => {
+    const text = input.value.trim();
+    if (!text) return;
+    
+    // Add user msg
+    addMessage(text, true);
+    input.value = '';
+    
+    showTyping();
+
+    // Call API
+    fetch('/chatbot/message', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: text })
+    })
+    .then(res => res.json())
+    .then(data => {
+      removeTyping();
+      addMessage(data.reply);
+    })
+    .catch(err => {
+      removeTyping();
+      addMessage("Erreur de connexion au serveur.", false);
+    });
+  };
+
+  sendBtn.addEventListener('click', sendMessage);
+  input.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') sendMessage();
+  });
+});
+</script>
+
+</body>
+</html>

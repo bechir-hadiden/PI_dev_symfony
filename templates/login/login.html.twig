@@ -1,0 +1,51 @@
+
+{# ─── Login Classique ─── #}
+<form method="post">
+    <input type="email"    name="email"    placeholder="Email">
+    <input type="password" name="password" placeholder="Mot de passe">
+    <button type="submit">Se connecter</button>
+</form>
+
+<hr> <p style="text-align:center">─── OU ───</p>
+
+{# ─── Face ID Login ─── #}
+<div id="faceLogin">
+    <input type="email" id="faceEmail" placeholder="Votre email d'abord">
+    <video id="webcam" width="320" height="240" autoplay></video>
+    <canvas id="canvas" width="320" height="240" hidden></canvas>
+    <button id="faceLoginBtn">🔐 Se connecter avec Face ID</button>
+    <p id="faceResult"></p>
+</div>
+
+<script>
+const video = document.getElementById('webcam');
+navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => video.srcObject = stream);
+
+document.getElementById('faceLoginBtn').addEventListener('click', async () => {
+    const email   = document.getElementById('faceEmail').value;
+    const canvas  = document.getElementById('canvas');
+    const ctx     = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0, 320, 240);
+
+    const imageData = canvas.toDataURL('image/jpeg');
+    const result    = document.getElementById('faceResult');
+
+    result.textContent = '⏳ Vérification...';
+
+    const formData = new FormData();
+    formData.append('email',      email);
+    formData.append('face_image', imageData);
+
+    const res  = await fetch('/face-login', { method: 'POST', body: formData });
+    const data = await res.json();
+
+    if (data.success) {
+        result.textContent = `✅ Bienvenue ! (${data.confidence}%)`;
+        window.location = data.redirect;
+    } else {
+        result.textContent = `❌ Échec : ${data.error} (${data.confidence}%)`;
+        result.style.color = 'red';
+    }
+});
+</script>

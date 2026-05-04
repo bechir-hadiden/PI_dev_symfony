@@ -1,0 +1,440 @@
+{% extends 'FrontOffice/base_user.html.twig' %}
+{% block title %}Transports disponibles – SmartTrip{% endblock %}
+
+{% block body %}
+<div class="wrap">
+  <div class="page-header" style="display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <h1><i class="fas fa-bus-alt" style="color:var(--gold);margin-right:.5rem"></i>Transports disponibles</h1>
+      <p>Choisissez votre véhicule et réservez en quelques clics.</p>
+    </div>
+    <div style="display:flex; gap:.75rem; align-items:center;">
+      <button id="gps-search-btn" onclick="detectClientPosition()" class="btn" style="background:var(--navy);color:var(--gold);border:2px solid var(--gold);border-radius:50px;padding:.7rem 1.4rem;font-weight:700;display:flex;align-items:center;gap:.5rem;cursor:pointer;transition:all .2s;"
+        onmouseover="this.style.background='var(--gold)';this.style.color='#fff';"
+        onmouseout="this.style.background='var(--navy)';this.style.color='var(--gold)';">
+        <i class="fas fa-crosshairs"></i> Recherche par ma position
+      </button>
+      <a href="{{ path('user_transport_recommendation_index') }}" class="btn-ai-nav" style="border-width: 2px;">
+        <i class="fas fa-robot"></i> Smart Trip Advisor (IA)
+      </a>
+    </div>
+  </div>
+
+  {# GPS Banner #}
+  <div id="gps-banner" style="display:none; background:linear-gradient(135deg,#01204E,#0a3272);color:#fff;padding:1rem 1.5rem;border-radius:15px;margin-bottom:1.5rem;align-items:center;gap:1.2rem;box-shadow:0 8px 25px rgba(1,32,78,.3);">
+    <i class="fas fa-satellite-dish" style="font-size:1.5rem;color:var(--gold);animation:gps-pulse 1.5s infinite;"></i>
+    <div>
+      <div style="font-weight:700;font-size:.9rem;">Mode : Recherche par Position GPS</div>
+      <div id="gps-banner-status" style="font-size:.8rem;opacity:.8;">Localisation en cours…</div>
+    </div>
+    <div id="gps-banner-coords" style="margin-left:auto;font-size:.75rem;opacity:.7;font-family:monospace;"></div>
+    <button onclick="resetPosition()" style="background:rgba(255,255,255,.15);border:none;color:#fff;padding:.4rem .9rem;border-radius:8px;cursor:pointer;font-size:.8rem;">✕ Réinitialiser</button>
+  </div>
+
+  {# ══ WEATHER DETECTOR WIDGET ══ #}
+  <div id="weather-widget" style="background:#fff;border-radius:16px;border:1px solid var(--border);box-shadow:0 4px 20px rgba(0,0,0,.07);padding:1.2rem 1.5rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+
+    {# Server-side weather (Tunis default from API) #}
+    <div style="display:flex;align-items:center;gap:1rem;flex:1;min-width:220px;">
+      <div id="weather-icon" style="font-size:2.2rem;">
+        {% if weather.status == 'Danger' %}<span style="color:#ef4444;">⛈️</span>
+        {% elseif weather.status == 'Warning' %}<span style="color:#f59e0b;">🌬️</span>
+        {% else %}<span style="color:#22c55e;">☀️</span>{% endif %}
+      </div>
+      <div>
+        <div style="font-size:.7rem;text-transform:uppercase;color:var(--muted);font-weight:700;letter-spacing:.05em;">
+          <i class="fas fa-cloud-sun" style="margin-right:.3rem;color:var(--gold);"></i>Météo Actuelle (API)
+        </div>
+        <div id="weather-temp" style="font-size:1.5rem;font-weight:800;color:var(--navy);line-height:1.1;">
+          {{ weather.temperature ?? '—' }}°C
+        </div>
+        <div style="font-size:.75rem;color:var(--muted);">
+          Vent: <strong>{{ weather.windspeed ?? '—' }} km/h</strong>
+        </div>
+      </div>
+    </div>
+
+    {# Alert banner #}
+    <div id="weather-alert" style="flex:2;min-width:220px;padding:.8rem 1.2rem;border-radius:12px;
+      background:{% if weather.status == 'Danger' %}#fee2e2{% elseif weather.status == 'Warning' %}#fef3c7{% else %}#dcfce7{% endif %};
+      border-left:4px solid {% if weather.status == 'Danger' %}#ef4444{% elseif weather.status == 'Warning' %}#f59e0b{% else %}#22c55e{% endif %};">
+      <div style="font-weight:700;color:{% if weather.status == 'Danger' %}#dc2626{% elseif weather.status == 'Warning' %}#d97706{% else %}#16a34a{% endif %};">
+        {% if weather.status == 'Danger' %}<i class="fas fa-exclamation-triangle"></i> ALERTE MÉTÉO
+        {% elseif weather.status == 'Warning' %}<i class="fas fa-wind"></i> CONDITIONS DIFFICILES
+        {% else %}<i class="fas fa-check-circle"></i> CONDITIONS IDÉALES
+        {% endif %}
+      </div>
+      <div id="weather-msg" style="font-size:.82rem;color:#475569;margin-top:.25rem;">{{ weather.message }}</div>
+    </div>
+
+    {# GPS Live Update Button #}
+    <div style="flex-shrink:0;">
+      <div style="font-size:.7rem;text-transform:uppercase;color:var(--muted);font-weight:700;margin-bottom:.5rem;">📍 Météo locale</div>
+      <button onclick="fetchWeatherForMyPosition()" id="live-weather-btn"
+        style="background:var(--navy);color:var(--gold);border:2px solid var(--gold);border-radius:10px;padding:.6rem 1.1rem;cursor:pointer;font-weight:700;font-size:.8rem;transition:all .2s;display:flex;align-items:center;gap:.5rem;"
+        onmouseover="this.style.background='var(--gold)';this.style.color='#fff';"
+        onmouseout="this.style.background='var(--navy)';this.style.color='var(--gold)';">
+        <i class="fas fa-location-arrow"></i> Ma météo GPS
+      </button>
+    </div>
+  </div>
+
+  <!-- FILTER SECTION -->
+  <div class="filter-section" style="background:white;padding:1.5rem;border-radius:16px;border:1px solid var(--border);box-shadow:0 4px 6px -1px rgba(0,0,0,.1);margin-bottom:2rem;">
+    <div style="margin-bottom:1.5rem;">
+      <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.05em;margin-bottom:.75rem;">
+        <i class="fas fa-th-large" style="margin-right:.4rem;"></i> Catégories
+      </label>
+      <div style="display:flex;flex-wrap:wrap;gap:.6rem;">
+        <a href="{{ path('transport_index') }}" class="filter-btn {{ activeType == '' and q == '' ? 'active' : '' }}" style="padding:.5rem 1.25rem;font-size:.875rem;">Tous</a>
+        {% for type in types %}
+          <a href="{{ path('transport_index', {type: type.nom}) }}" class="filter-btn {{ activeType == type.nom ? 'active' : '' }}" style="padding:.5rem 1.25rem;font-size:.875rem;">{{ type.nom }}</a>
+        {% endfor %}
+      </div>
+    </div>
+
+    <form method="GET" action="{{ path('transport_index') }}" style="display:grid;grid-template-columns:1fr auto auto;gap:1rem;align-items:end;">
+      {% if activeType %}<input type="hidden" name="type" value="{{ activeType }}">{% endif %}
+      <div>
+        <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.05em;margin-bottom:.75rem;">
+          <i class="fas fa-search" style="margin-right:.4rem;"></i> Recherche
+        </label>
+        <div style="position:relative;">
+          <i class="fas fa-search" style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;"></i>
+          <input type="text" name="q" value="{{ q }}" class="search-input" placeholder="Compagnie, numéro de véhicule..." style="padding-left:2.75rem;width:100%;border-radius:12px;">
+        </div>
+      </div>
+      <div style="min-width:200px;">
+        <label style="display:block;font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--muted);letter-spacing:.05em;margin-bottom:.75rem;">
+          <i class="fas fa-sort-amount-down" style="margin-right:.4rem;"></i> Trier par
+        </label>
+        <select name="order" onchange="this.form.submit()" class="search-input" style="width:100%;padding-right:2rem;border-radius:12px;cursor:pointer;">
+          <option value="ASC" {{ sort == 'prix' and order == 'ASC' ? 'selected' : '' }}>💰 Prix Croissant</option>
+          <option value="DESC" {{ sort == 'prix' and order == 'DESC' ? 'selected' : '' }}>💰 Prix Décroissant</option>
+        </select>
+        <input type="hidden" name="sort" value="prix">
+      </div>
+      <div style="display:flex;gap:.5rem;">
+        <button type="submit" class="btn btn-primary" style="border-radius:12px;height:46px;padding:0 1.5rem;display:flex;align-items:center;gap:.5rem;">Appliquer</button>
+        {% if q or activeType or sort == 'prix' %}
+          <a href="{{ path('transport_index') }}" class="btn btn-outline" title="Réinitialiser" style="border-radius:12px;height:46px;width:46px;display:flex;align-items:center;justify-content:center;padding:0;">
+            <i class="fas fa-redo"></i>
+          </a>
+        {% endif %}
+      </div>
+    </form>
+  </div>
+
+  <!-- TRANSPORT GRID -->
+  {% if pagination is empty %}
+    <div style="text-align:center;padding:4rem 0;color:var(--muted)">
+      <i class="fas fa-search" style="font-size:3rem;opacity:.25;display:block;margin-bottom:1rem"></i>
+      <p>Aucun transport trouvé. <a href="{{ path('transport_index') }}" style="color:var(--gold)">Réinitialiser</a></p>
+    </div>
+  {% else %}
+    <div class="transport-grid" id="transport-grid">
+      {% for t in pagination %}
+      {% set dispo = t.placesDisponibles %}
+      <{% if dispo > 0 %}a href="{{ path('transport_show', {id: t.id}) }}"{% else %}div style="opacity: 0.75; filter: grayscale(50%);"{% endif %} class="transport-card"
+         data-lat="{{ t.latitude ?? '' }}"
+         data-lon="{{ t.longitude ?? '' }}"
+         data-loc="{{ t.localisation ?? 'Position non définie' }}"
+         data-id="{{ t.id }}">
+        <div class="transport-card-img" style="position:relative;overflow:hidden;height:200px;">
+          {% set typeIcon = {'Avion':'plane','Bus':'bus','Train':'train','Taxi':'taxi','Covoiturage':'car'}[t.transportType.nom] ?? 'bus-alt' %}
+          {% if t.imageUrl and t.imageUrl starts with 'http' %}
+            <img src="{{ t.imageUrl }}" alt="{{ t.compagnie }}"
+                 style="width:100%;height:100%;object-fit:cover;transition:transform .45s ease;"
+                 class="card-vehicle-img"
+                 onerror="this.parentElement.innerHTML='<div style=\'height:200px;background:linear-gradient(135deg,#01204E,#0a3272);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#C9A84C;gap:.5rem;\'><i class=\'fas fa-{{ typeIcon }}\' style=\'font-size:2.5rem;\'></i><span style=\'font-size:.8rem;opacity:.7;\'>{{ t.compagnie }}</span></div>'">
+          {% else %}
+            <div style="height:200px;background:linear-gradient(135deg,#01204E 0%,#0a3272 60%,#1a4a9e 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--gold);gap:.6rem;">
+              <i class="fas fa-{{ typeIcon }}" style="font-size:2.8rem;"></i>
+              <span style="font-size:.8rem;font-weight:600;opacity:.7;">{{ t.compagnie }}</span>
+            </div>
+          {% endif %}
+          {# Gradient overlay at bottom of image #}
+          <div style="position:absolute;bottom:0;left:0;right:0;height:70px;background:linear-gradient(transparent,rgba(0,0,0,.45));pointer-events:none;"></div>
+          <span class="transport-type-badge" style="position:absolute;top:.6rem;left:.6rem;">
+            <i class="fas fa-{{ typeIcon }}"></i> {{ t.transportType.nom }}
+          </span>
+        </div>
+        <div class="transport-card-body">
+          <div class="transport-card-title">{{ t.compagnie }}</div>
+          <div class="transport-card-meta">
+            <span><i class="fas fa-hashtag" style="color:var(--gold)"></i>{{ t.numero }}</span>
+            {% if dispo > 0 %}
+              <span style="color:#16a34a;font-weight:600;"><i class="fas fa-user-check"></i> {{ dispo }} places libres</span>
+            {% else %}
+              <span style="color:#ef4444;font-weight:700;"><i class="fas fa-user-times"></i> Complet</span>
+            {% endif %}
+          </div>
+
+          {# Vehicle Position Info #}
+          <div class="vehicle-location-info" style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--muted);margin:.4rem 0;">
+            <i class="fas fa-map-pin" style="color:var(--gold);font-size:.8rem;"></i>
+            <span class="loc-city">{{ t.localisation ?? 'Position non définie' }}</span>
+          </div>
+
+          {# ETA badge — populated by JS when GPS is active #}
+          <div class="eta-badge" style="display:none;background:linear-gradient(135deg,#01204E,#0a3272);color:#fff;border-radius:8px;padding:.4rem .8rem;font-size:.75rem;font-weight:700;margin:.5rem 0;align-items:center;gap:.5rem;">
+            <i class="fas fa-route" style="color:var(--gold);"></i>
+            <span class="eta-text">—</span>
+          </div>
+
+          {% if t.description %}
+            <p style="font-size:.8rem;color:var(--muted);line-height:1.55">{{ t.description|slice(0, 90) }}{% if t.description|length > 90 %}…{% endif %}</p>
+          {% endif %}
+          <div class="transport-card-footer">
+            <div class="transport-card-price">{{ t.prix|number_format(2, ',', ' ') }} DT <small style="font-size:.65rem;color:var(--muted)">/place</small></div>
+            {% if dispo > 0 %}
+              <span class="btn-reserve"><i class="fas fa-arrow-right"></i> Réserver</span>
+            {% else %}
+              <span class="btn-reserve" style="background:#f1f5f9;color:#94a3b8;border-color:#e2e8f0;cursor:not-allowed;"><i class="fas fa-ban"></i> Indisponible</span>
+            {% endif %}
+          </div>
+        </div>
+      </{% if dispo > 0 %}a{% else %}div{% endif %}>
+      {% endfor %}
+    </div>
+    
+    <div style="display:flex; justify-content:center; margin-top:2rem;">
+      {{ knp_pagination_render(pagination) }}
+    </div>
+  {% endif %}
+</div>
+
+<style>
+@keyframes gps-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.eta-badge { display:flex!important; }
+#weather-widget { transition: all .3s; }
+
+/* Zoom effect on vehicle card images */
+.transport-card:hover .card-vehicle-img {
+  transform: scale(1.06);
+}
+.transport-card { overflow: hidden; }
+</style>
+
+<script>
+// ── Weather Detector ────────────────────────────────────────────────────────
+const WC_MAP = {
+  // Weather code → { icon, label }
+  0:  ['☀️','Ciel dégagé'],
+  1:  ['🌤️','Principalement dégagé'],
+  2:  ['⛅','Partiellement nuageux'],
+  3:  ['☁️','Couvert'],
+  45: ['🌫️','Brouillard'],
+  48: ['🌫️','Brouillard givrant'],
+  51: ['🌦️','Bruine légère'],
+  61: ['🌧️','Pluie légère'],
+  63: ['🌧️','Pluie modérée'],
+  65: ['🌧️','Pluie forte'],
+  71: ['❄️','Neige légère'],
+  75: ['❄️','Neige forte'],
+  80: ['🌦️','Averses'],
+  82: ['⛈️','Averses violentes'],
+  95: ['⛈️','Orage'],
+  96: ['⛈️','Orage avec grêle'],
+  99: ['⛈️','Orage violent avec grêle'],
+};
+
+function classifyWeather(temp, windspeed, code) {
+  if ([95,96,99,75,82].includes(code)) return { status:'Danger',  bg:'#fee2e2', border:'#ef4444', tc:'#dc2626', label:'⚠️ ALERTE MÉTÉO', msg:'Conditions dangereuses ! Déconseillé de voyager.' };
+  if (windspeed > 40 || temp > 40 || temp < 0) return { status:'Warning', bg:'#fef3c7', border:'#f59e0b', tc:'#d97706', label:'🌬️ CONDITIONS DIFFICILES', msg:'Vent fort ou température extrême. Soyez prudent.' };
+  return { status:'Safe',    bg:'#dcfce7', border:'#22c55e', tc:'#16a34a', label:'✅ CONDITIONS IDÉALES', msg:'Bonne météo, conditions optimales pour voyager !' };
+}
+
+async function fetchWeatherForMyPosition() {
+  const btn = document.getElementById('live-weather-btn');
+  if (!navigator.geolocation) { alert('GPS non supporté.'); return; }
+
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Détection…';
+  btn.style.pointerEvents = 'none';
+
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    const lat = pos.coords.latitude.toFixed(4);
+    const lon = pos.coords.longitude.toFixed(4);
+
+    try {
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+      const res  = await fetch(url);
+      const data = await res.json();
+      const cw   = data.current_weather;
+      const code = cw.weathercode;
+      const wcInfo = WC_MAP[code] ?? ['🌡️', 'Inconnu'];
+      const cls  = classifyWeather(cw.temperature, cw.windspeed, code);
+
+      // Update icon + temp
+      document.getElementById('weather-icon').innerHTML = `<span style="font-size:2rem;">${wcInfo[0]}</span>`;
+      document.getElementById('weather-temp').textContent = `${cw.temperature}°C`;
+
+      // Update alert block
+      const alert = document.getElementById('weather-alert');
+      alert.style.background   = cls.bg;
+      alert.style.borderLeftColor = cls.border;
+      alert.children[0].style.color = cls.tc;
+      alert.children[0].textContent = cls.label;
+      document.getElementById('weather-msg').textContent = `${wcInfo[1]} — ${cls.msg} | Vent: ${cw.windspeed} km/h`;
+
+      // Label button
+      btn.innerHTML = `<i class="fas fa-check"></i> ${wcInfo[0]} ${cw.temperature}°C (local)`;
+      btn.style.background = '#22c55e';
+      btn.style.color = '#fff';
+
+      // If danger, flash transport cards
+      if (cls.status === 'Danger') {
+        document.querySelectorAll('.transport-card').forEach(c => {
+          c.style.outline = '2px solid #ef4444';
+          c.style.opacity = '.75';
+        });
+        const warning = document.createElement('div');
+        warning.style.cssText = 'position:fixed;bottom:2rem;right:2rem;background:#dc2626;color:#fff;padding:1rem 1.5rem;border-radius:12px;font-weight:700;z-index:9999;box-shadow:0 8px 25px rgba(220,38,38,.4);';
+        warning.innerHTML = '⚠️ Alerte météo — Voyager est risqué actuellement !';
+        document.body.appendChild(warning);
+        setTimeout(() => warning.remove(), 5000);
+      }
+
+    } catch(e) {
+      btn.innerHTML = '<i class="fas fa-times"></i> Erreur réseau';
+    }
+    btn.style.pointerEvents = 'auto';
+  }, () => {
+    btn.innerHTML = '<i class="fas fa-crosshairs"></i> Ma météo GPS';
+    btn.style.pointerEvents = 'auto';
+  }, { enableHighAccuracy: true, timeout: 10000 });
+}
+
+// Tunisian city coordinates (same mapping as Smart Advisor)
+const CITIES = [
+  { name:'Tunis',    lat:36.8065, lon:10.1815 },
+  { name:'Bizerte',  lat:37.2746, lon:9.8739  },
+  { name:'Nabeul',   lat:36.4561, lon:10.7376 },
+  { name:'Hammamet', lat:36.4000, lon:10.6167 },
+  { name:'Sousse',   lat:35.8256, lon:10.6369 },
+  { name:'Monastir', lat:35.7643, lon:10.8113 },
+  { name:'Sfax',     lat:34.7400, lon:10.7600 },
+  { name:'Gabès',    lat:33.8833, lon:10.1167 },
+  { name:'Tozeur',   lat:33.9197, lon: 8.1335 },
+  { name:'Djerba',   lat:33.8111, lon:10.9553 },
+];
+
+// Average speeds (km/h) by transport type
+const AVG_SPEEDS = {
+  'Bus': 60, 'Train': 90, 'Avion': 600,
+  'Taxi': 70, 'Voiture privée': 80,
+  'Covoiturage': 75, 'default': 65
+};
+
+let clientLat = null, clientLon = null;
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function formatDuration(minutes) {
+  if (minutes < 60) return `${Math.round(minutes)} min`;
+  const h = Math.floor(minutes / 60), m = Math.round(minutes % 60);
+  return m > 0 ? `${h}h ${m}min` : `${h}h`;
+}
+
+function updateCards() {
+  if (clientLat === null) return;
+  document.querySelectorAll('.transport-card').forEach(card => {
+    const vLat = parseFloat(card.dataset.lat);
+    const vLon = parseFloat(card.dataset.lon);
+    const type = card.querySelector('.transport-type-badge')?.textContent?.trim() || 'default';
+    const badge = card.querySelector('.eta-badge');
+    const etaText = card.querySelector('.eta-text');
+
+    if (!vLat || !vLon || isNaN(vLat) || isNaN(vLon)) {
+      badge.style.display = 'flex';
+      etaText.textContent = 'Position non renseignée';
+      badge.style.background = '#f1f5f9';
+      badge.style.color = '#64748b';
+      return;
+    }
+
+    const dist = haversine(clientLat, clientLon, vLat, vLon);
+    const speed = AVG_SPEEDS[type] ?? AVG_SPEEDS['default'];
+    const minutes = (dist / speed) * 60;
+
+    badge.style.display = 'flex';
+    badge.style.background = 'linear-gradient(135deg,#01204E,#0a3272)';
+    badge.style.color = '#fff';
+    etaText.innerHTML = `${Math.round(dist)} km de vous &bull; ETA : ${formatDuration(minutes)}`;
+  });
+
+  // Sort cards by distance from client
+  const grid = document.getElementById('transport-grid');
+  if (!grid) return;
+  const cards = Array.from(grid.querySelectorAll('.transport-card'));
+  cards.sort((a, b) => {
+    const aLat = parseFloat(a.dataset.lat), aLon = parseFloat(a.dataset.lon);
+    const bLat = parseFloat(b.dataset.lat), bLon = parseFloat(b.dataset.lon);
+    const aDist = (aLat && aLon) ? haversine(clientLat, clientLon, aLat, aLon) : 99999;
+    const bDist = (bLat && bLon) ? haversine(clientLat, clientLon, bLat, bLon) : 99999;
+    return aDist - bDist;
+  });
+  cards.forEach(c => grid.appendChild(c));
+}
+
+function detectClientPosition() {
+  const btn = document.getElementById('gps-search-btn');
+  const banner = document.getElementById('gps-banner');
+  const status = document.getElementById('gps-banner-status');
+  const coords = document.getElementById('gps-banner-coords');
+
+  if (!navigator.geolocation) { alert('Géolocalisation non supportée.'); return; }
+
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Détection…';
+  btn.style.pointerEvents = 'none';
+  banner.style.display = 'flex';
+  status.textContent = 'Acquisition du signal GPS…';
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      clientLat = pos.coords.latitude;
+      clientLon = pos.coords.longitude;
+      coords.textContent = `${clientLat.toFixed(4)}°N, ${clientLon.toFixed(4)}°E`;
+
+      // Closest city for display
+      let closest = CITIES[0], minD = Infinity;
+      CITIES.forEach(c => { const d = haversine(clientLat, clientLon, c.lat, c.lon); if (d < minD) { minD = d; closest = c; } });
+      status.textContent = `Vous êtes près de ${closest.name} — véhicules triés par proximité`;
+
+      btn.innerHTML = '<i class="fas fa-check"></i> Position active';
+      btn.style.background = '#22c55e';
+      btn.style.color = '#fff';
+      btn.style.pointerEvents = 'auto';
+      updateCards();
+    },
+    (err) => {
+      const msgs = { 1:'Accès GPS refusé.', 2:'Position indisponible.', 3:'Timeout GPS.' };
+      status.textContent = msgs[err.code] || 'Erreur GPS.';
+      btn.innerHTML = '<i class="fas fa-crosshairs"></i> Recherche par ma position';
+      btn.style.pointerEvents = 'auto';
+    },
+    { enableHighAccuracy: true, timeout: 10000 }
+  );
+}
+
+function resetPosition() {
+  clientLat = null; clientLon = null;
+  document.getElementById('gps-banner').style.display = 'none';
+  document.getElementById('gps-search-btn').innerHTML = '<i class="fas fa-crosshairs"></i> Recherche par ma position';
+  document.getElementById('gps-search-btn').style.background = 'var(--navy)';
+  document.getElementById('gps-search-btn').style.color = 'var(--gold)';
+  document.querySelectorAll('.eta-badge').forEach(b => { b.style.display = 'none'; });
+  // Restore original order
+  const grid = document.getElementById('transport-grid');
+  const cards = Array.from(grid.querySelectorAll('.transport-card'));
+  cards.sort((a, b) => parseInt(a.dataset.id) - parseInt(b.dataset.id));
+  cards.forEach(c => grid.appendChild(c));
+}
+</script>
+{% endblock %}

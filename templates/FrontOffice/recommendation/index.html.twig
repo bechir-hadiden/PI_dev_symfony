@@ -1,0 +1,175 @@
+{% extends 'FrontOffice/base_user.html.twig' %}
+
+{% block title %}Smart Advisor – SmartTrip{% endblock %}
+
+{% block body %}
+<section style="padding: 4rem 0; background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%); min-height: 80vh; display: flex; align-items: center;">
+    <div class="container" style="max-width: 900px; margin: 0 auto; padding: 0 1rem;">
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <span style="background: rgba(201, 168, 76, 0.1); color: var(--gold); padding: 0.5rem 1.2rem; border-radius: 50px; font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;">Module IA & Métier</span>
+            <h1 style="font-size: 2.5rem; color: var(--navy); margin: 1rem 0 0.5rem 0; font-weight: 800;">Smart Transport Advisor</h1>
+            <p style="color: var(--muted); font-size: 1.1rem;">Laissez notre IA choisir le meilleur transport pour votre prochain trajet.</p>
+        </div>
+
+        {# Geolocation status banner #}
+        <div id="geo-banner" style="display:none; background: linear-gradient(135deg, #01204E, #0a3272); color:#fff; padding: 1rem 1.5rem; border-radius: 15px; margin-bottom: 1.5rem; display: none; align-items: center; gap: 1rem; box-shadow: 0 8px 25px rgba(1,32,78,0.3);">
+            <i class="fas fa-satellite-dish" style="font-size: 1.5rem; color: var(--gold); animation: pulse 1.5s infinite;"></i>
+            <div>
+                <div style="font-weight: 700; font-size: 0.9rem;">Position détectée via GPS</div>
+                <div id="geo-status" style="font-size: 0.8rem; opacity: 0.8;">Localisation en cours…</div>
+            </div>
+            <div id="geo-coords" style="margin-left: auto; font-size: 0.75rem; opacity: 0.7; font-family: monospace;"></div>
+        </div>
+
+        <div class="card" style="padding: 2.5rem; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); background: #fff;">
+            <form method="POST" action="{{ path('user_transport_recommendation_index') }}">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+
+                    {# ---- DÉPART avec bouton GPS ---- #}
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--navy);">
+                            <i class="fas fa-map-marker-alt" style="margin-right: 0.5rem; color: var(--gold);"></i>Point de départ
+                        </label>
+                        <div style="display: flex; gap: 0.5rem; align-items: stretch;">
+                            <select id="depart-select" name="depart" class="form-control" style="flex:1; padding: 0.8rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+                                <option value="Tunis">Tunis</option>
+                                <option value="Bizerte">Bizerte</option>
+                                <option value="Nabeul">Nabeul</option>
+                                <option value="Hammamet">Hammamet</option>
+                                <option value="Sousse">Sousse</option>
+                                <option value="Monastir">Monastir</option>
+                                <option value="Sfax">Sfax</option>
+                                <option value="Djerba">Djerba</option>
+                                <option value="Tozeur">Tozeur</option>
+                                <option value="Gabès">Gabès</option>
+                            </select>
+                            <button type="button" id="gps-btn" onclick="detectPosition()" title="Détecter ma position GPS"
+                                style="background: var(--navy); color: var(--gold); border: none; border-radius: 10px; padding: 0 1rem; cursor: pointer; font-size: 1rem; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;"
+                                onmouseover="this.style.background='var(--gold)';this.style.color='#fff';"
+                                onmouseout="this.style.background='var(--navy)';this.style.color='var(--gold)';">
+                                <i class="fas fa-crosshairs"></i> Ma position
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--navy);"><i class="fas fa-flag-checkered" style="margin-right: 0.5rem; color: var(--gold);"></i>Destination</label>
+                        <select name="arrivee" class="form-control" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+                            <option value="Hammamet">Hammamet</option>
+                            <option value="Sousse">Sousse</option>
+                            <option value="Monastir">Monastir</option>
+                            <option value="Sfax">Sfax</option>
+                            <option value="Djerba">Djerba</option>
+                            <option value="Tozeur">Tozeur</option>
+                            <option value="Gabès">Gabès</option>
+                            <option value="Bizerte">Bizerte</option>
+                            <option value="Nabeul">Nabeul</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--navy);"><i class="fas fa-wallet" style="margin-right: 0.5rem; color: var(--gold);"></i>Budget max (DT)</label>
+                        <input type="number" name="budget" value="100" class="form-control" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--navy);"><i class="fas fa-users" style="margin-right: 0.5rem; color: var(--gold);"></i>Nombre de voyageurs</label>
+                        <input type="number" name="passengers" value="1" min="1" max="50" class="form-control" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+                    </div>
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--navy);"><i class="fas fa-clock" style="margin-right: 0.5rem; color: var(--gold);"></i>Heure de départ</label>
+                        <input type="time" name="hour" value="{{ "now"|date("H:i") }}" class="form-control" style="width: 100%; padding: 0.8rem; border-radius: 10px; border: 1px solid #e2e8f0;">
+                    </div>
+                    <div class="form-group" style="display: flex; align-items: flex-end;">
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.9rem; border-radius: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+                            <i class="fas fa-magic" style="margin-right: 0.5rem;"></i> Analyser & Recommander
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<style>
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+#gps-btn.loading { animation: pulse 1s infinite; pointer-events: none; }
+</style>
+
+<script>
+// Mapping coordonnées → villes tunisiennes les plus proches
+const TUNISIAN_CITIES = [
+    { name: 'Tunis',    lat: 36.8065, lon: 10.1815 },
+    { name: 'Bizerte',  lat: 37.2746, lon: 9.8739  },
+    { name: 'Nabeul',   lat: 36.4561, lon: 10.7376 },
+    { name: 'Hammamet', lat: 36.4000, lon: 10.6167 },
+    { name: 'Sousse',   lat: 35.8256, lon: 10.6369 },
+    { name: 'Monastir', lat: 35.7643, lon: 10.8113 },
+    { name: 'Sfax',     lat: 34.7400, lon: 10.7600 },
+    { name: 'Gabès',    lat: 33.8833, lon: 10.1167 },
+    { name: 'Tozeur',   lat: 33.9197, lon:  8.1335 },
+    { name: 'Djerba',   lat: 33.8111, lon: 10.9553 },
+];
+
+function getDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function detectPosition() {
+    const btn = document.getElementById('gps-btn');
+    const banner = document.getElementById('geo-banner');
+    const status = document.getElementById('geo-status');
+    const coords = document.getElementById('geo-coords');
+
+    if (!navigator.geolocation) {
+        alert('La géolocalisation n\'est pas supportée par votre navigateur.');
+        return;
+    }
+
+    btn.classList.add('loading');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Détection…';
+    banner.style.display = 'flex';
+    status.textContent = 'Acquisition du signal GPS…';
+    coords.textContent = '';
+
+    navigator.geolocation.getCurrentPosition(
+        function(pos) {
+            const lat = pos.coords.latitude;
+            const lon = pos.coords.longitude;
+
+            coords.textContent = `${lat.toFixed(4)}° N, ${lon.toFixed(4)}° E`;
+
+            // Trouver la ville tunisienne la plus proche
+            let closest = TUNISIAN_CITIES[0];
+            let minDist = Infinity;
+            TUNISIAN_CITIES.forEach(city => {
+                const d = getDistance(lat, lon, city.lat, city.lon);
+                if (d < minDist) { minDist = d; closest = city; }
+            });
+
+            // Mettre à jour le select
+            const select = document.getElementById('depart-select');
+            for (let opt of select.options) {
+                if (opt.value === closest.name) { opt.selected = true; break; }
+            }
+
+            status.textContent = `Ville la plus proche : ${closest.name} (${Math.round(minDist)} km)`;
+            btn.classList.remove('loading');
+            btn.innerHTML = '<i class="fas fa-check"></i> ' + closest.name;
+            btn.style.background = '#22c55e';
+            btn.style.color = '#fff';
+        },
+        function(err) {
+            const msgs = { 1:'Accès refusé au GPS.', 2:'Position indisponible.', 3:'Timeout GPS.' };
+            status.textContent = msgs[err.code] || 'Erreur GPS.';
+            btn.classList.remove('loading');
+            btn.innerHTML = '<i class="fas fa-crosshairs"></i> Ma position';
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
+</script>
+
+{% endblock %}

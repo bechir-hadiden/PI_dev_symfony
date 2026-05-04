@@ -1,0 +1,108 @@
+{% extends 'BackOffice/base_admin.html.twig' %}
+{% block title %}{{ transport.compagnie }} – Admin{% endblock %}
+{% block page_title %}Fiche véhicule : {{ transport.compagnie }}{% endblock %}
+
+{% block body %}
+<div style="display:flex;gap:1.5rem;align-items:flex-start">
+
+  <!-- LEFT: Transport card -->
+  <div style="flex:1;max-width:420px">
+    <div class="card">
+      {% if transport.imageUrl %}
+        <img src="{{ transport.imageUrl }}" alt="{{ transport.compagnie }}" style="width:100%;height:200px;object-fit:cover">
+      {% else %}
+        <div style="width:100%;height:140px;background:linear-gradient(135deg,var(--navy),var(--navy-2));display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:3rem">
+          <i class="fas fa-bus-alt"></i>
+        </div>
+      {% endif %}
+      <div class="card-body">
+        <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap">
+          <span class="badge" style="background:rgba(201,168,76,0.1);color:var(--gold)">{{ transport.transportType.nom }}</span>
+        </div>
+        <h2 style="font-size:1.2rem;margin-bottom:.3rem">{{ transport.compagnie }}</h2>
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:1rem">Numéro : <code style="background:#f1f5f9;padding:.1rem .4rem;border-radius:4px">{{ transport.numero }}</code></p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1rem">
+          <div style="background:#f8fafc;border-radius:8px;padding:.8rem;text-align:center">
+            <div style="font-size:1.3rem;font-weight:700;color:var(--navy)">{{ transport.capacite }}</div>
+            <div style="font-size:.72rem;color:var(--muted)">Places</div>
+          </div>
+          <div style="background:#f8fafc;border-radius:8px;padding:.8rem;text-align:center">
+            <div style="font-size:1.3rem;font-weight:700;color:var(--gold)">{{ transport.prix|number_format(2, ',', ' ') }} DT</div>
+            <div style="font-size:.72rem;color:var(--muted)">Prix / place</div>
+          </div>
+        </div>
+        {% if transport.description %}
+          <p style="font-size:.85rem;color:var(--muted);line-height:1.6">{{ transport.description }}</p>
+        {% endif %}
+
+        <div style="margin-top:1.5rem;padding:1rem;background:rgba(255,215,0,0.05);border:1px solid rgba(201,168,76,0.2);border-radius:12px">
+          <h4 style="margin:0 0 .8rem 0;font-size:.85rem;color:var(--navy);text-transform:uppercase;letter-spacing:.5px">Métier Avancé</h4>
+          
+          <div style="margin-bottom:1rem">
+            <div style="display:flex;justify-content:between;align-items:center;margin-bottom:.3rem">
+              <span style="font-weight:600;font-size:.8rem;color:var(--navy)">Eco-Score</span>
+              <span style="font-weight:700;font-size:.9rem;color:{{ ecoScore > 60 ? '#22c55e' : (ecoScore > 30 ? '#f59e0b' : '#ef4444') }}">{{ ecoScore }}/100</span>
+            </div>
+            <div style="width:100%;height:6px;background:#e2e8f0;border-radius:5px;overflow:hidden">
+              <div style="width:{{ ecoScore }}%;height:100%;background:{{ ecoScore > 60 ? '#22c55e' : (ecoScore > 30 ? '#f59e0b' : '#ef4444') }}"></div>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center">
+             <span style="font-weight:600;font-size:.8rem;color:var(--navy)">Prix Dynamique :</span>
+             <span class="badge" style="background:var(--gold);color:#fff;font-size:1rem">{{ dynamicPrice|number_format(2, ',', ' ') }} DT</span>
+          </div>
+          <small style="display:block;margin-top:.4rem;color:var(--muted);font-size:.7rem">(Basé sur le type, la capacité et la date)</small>
+        </div>
+        <div style="display:flex;gap:.5rem;margin-top:1.2rem">
+          <a href="{{ path('admin_transport_edit', {id: transport.id}) }}" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Modifier</a>
+          <form method="POST" action="{{ path('admin_transport_delete', {id: transport.id}) }}" onsubmit="return confirm('Supprimer ?')">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete_transport_' ~ transport.id) }}">
+            <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+          </form>
+          <a href="{{ path('admin_transport_index') }}" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: Reservations -->
+  <div style="flex:1">
+    <div class="card">
+      <div class="card-header">
+        <h2><i class="fas fa-calendar-check" style="color:var(--gold);margin-right:.5rem"></i>Réservations ({{ transport.reservations|length }})</h2>
+      </div>
+      <div class="card-body" style="padding:0">
+        {% if transport.reservations is empty %}
+          <div style="padding:2rem;text-align:center;color:var(--muted)">Aucune réservation pour ce véhicule.</div>
+        {% else %}
+          <table>
+            <thead><tr><th>#</th><th>Client</th><th>Email</th><th>Places</th><th>Date</th><th>Statut</th></tr></thead>
+            <tbody>
+              {% for r in transport.reservations %}
+              <tr>
+                <td style="color:var(--muted);font-size:.8rem">{{ r.id }}</td>
+                <td>{{ r.nomClient }}</td>
+                <td style="font-size:.8rem;color:var(--muted)">{{ r.emailClient }}</td>
+                <td>{{ r.nombrePlaces }}</td>
+                <td style="font-size:.8rem">{{ r.dateReservation|date('d/m/Y H:i') }}</td>
+                <td>
+                  {% if r.statut == 'confirmee' %}
+                    <span class="badge badge-confirm">Confirmée</span>
+                  {% elseif r.statut == 'annulee' %}
+                    <span class="badge badge-cancel">Annulée</span>
+                  {% else %}
+                    <span class="badge badge-pending">En attente</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

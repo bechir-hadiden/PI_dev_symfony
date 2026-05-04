@@ -12,7 +12,7 @@
         {{ mode == 'new' ? 'Nouvelle Destination' : destination.nom }}
       </h1>
     </div>
-    <a href="{{ path('destination_index') }}" class="btn-outline-light" style="padding:.6rem 1.4rem;font-size:.85rem;">
+    <a href="{{ path('admin_destination_index') }}" class="btn-outline-light" style="padding:.6rem 1.4rem;font-size:.85rem;">
       <i class="fas fa-arrow-left"></i> Retour
     </a>
   </div>
@@ -21,10 +21,6 @@
 {# ── FORMULAIRE ── #}
 <div style="padding:3rem 5%;background:var(--cream);">
 
-  {#
-    ✅ On utilise form_start MAIS on va gérer imageFiles manuellement.
-    enctype="multipart/form-data" est obligatoire pour l'upload.
-  #}
   {{ form_start(form, {attr: {novalidate: 'novalidate', enctype: 'multipart/form-data'}}) }}
 
   <div style="max-width:800px;display:flex;flex-direction:column;gap:1.4rem;">
@@ -77,7 +73,6 @@
         <i class="fas fa-images" style="color:var(--gold);"></i> Photos
       </h3>
 
-      {# Zone cliquable #}
       <div id="dropzone"
            onclick="document.getElementById('imageFilesInput').click()"
            style="border:2px dashed rgba(201,168,76,0.4);border-radius:12px;padding:2rem;text-align:center;background:rgba(201,168,76,0.03);cursor:pointer;transition:all .3s;"
@@ -92,13 +87,6 @@
         </div>
       </div>
 
-      {#
-        ✅ FIX FINAL :
-        - On N'utilise PAS form_widget(form.imageFiles) du tout (ni visible ni caché)
-        - Input 100% manuel avec name="destination[imageFiles][]"
-        - Le [] final est CRUCIAL → PHP reçoit un tableau de fichiers
-        - Le controller lit via $request->files->get('destination')['imageFiles']
-      #}
       <input type="file"
              id="imageFilesInput"
              name="destination[imageFiles][]"
@@ -107,7 +95,6 @@
              style="display:none;"
              onchange="handleFileChange(this)">
 
-      {# Images existantes (mode edit) #}
       <div id="previewGrid" style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem;">
         {% for img in destination.allImages %}
           <div style="position:relative;">
@@ -171,7 +158,7 @@
 
     {# ── Actions ── #}
     <div style="display:flex;gap:1rem;justify-content:flex-end;padding-bottom:2rem;">
-      <a href="{{ path('destination_index') }}" class="btn-navy">Annuler</a>
+      <a href="{{ path('admin_destination_index') }}" class="btn-navy">Annuler</a>
       <button type="submit" class="btn-primary">
         <i class="fas fa-{{ mode == 'new' ? 'plus' : 'save' }}"></i>
         {{ mode == 'new' ? 'Créer la destination' : 'Sauvegarder' }}
@@ -187,17 +174,13 @@
 {% block javascripts %}
 {{ parent() }}
 <script>
-const YOUTUBE_SEARCH_URL = '{{ path('destination_youtube_search') }}';
+const YOUTUBE_SEARCH_URL = '{{ path('admin_destination_youtube_search') }}';
 
-// ── Prévisualisation des images sélectionnées ──────────────────
 function handleFileChange(input) {
   const grid = document.getElementById('previewGrid');
-  // Supprime les anciennes previews "nouvelles" seulement
   grid.querySelectorAll('.new-preview').forEach(el => el.remove());
-
   const files = input.files;
   if (!files || files.length === 0) return;
-
   Array.from(files).forEach((file, i) => {
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -215,32 +198,26 @@ function handleFileChange(input) {
     };
     reader.readAsDataURL(file);
   });
-
   document.getElementById('dropzoneText').textContent = files.length + ' image(s) sélectionnée(s) ✅';
   document.getElementById('dropzone').style.borderColor = '#4ade80';
 }
 
-// ── Recherche YouTube ──────────────────────────────────────────
 async function searchYoutube() {
   const q = document.getElementById('youtubeSearch').value.trim();
   if (!q) return;
-
   const btn = document.querySelector('button[onclick="searchYoutube()"]');
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Recherche...';
   btn.disabled = true;
-
   try {
     const res  = await fetch(YOUTUBE_SEARCH_URL + '?q=' + encodeURIComponent(q));
     const data = await res.json();
     const container = document.getElementById('youtubeResults');
     container.innerHTML = '';
     container.style.display = 'grid';
-
     if (!data.length) {
       container.innerHTML = '<p style="color:var(--muted);font-size:.82rem;grid-column:1/-1;">Aucun résultat.</p>';
       return;
     }
-
     data.forEach(video => {
       const div = document.createElement('div');
       div.style.cssText = 'cursor:pointer;border-radius:10px;overflow:hidden;border:2px solid transparent;transition:all .2s;background:var(--cream);';

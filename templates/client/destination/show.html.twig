@@ -1,0 +1,388 @@
+{% extends 'client/base.html.twig' %}
+
+{% block title %}{{ destination.nom }}{% endblock %}
+
+{% block extra_css %}
+/* ── HERO SLIDER ── */
+.dest-hero {
+    position: relative; height: 65vh; min-height: 480px;
+    background: var(--ink); overflow: hidden;
+    margin-top: 4rem;
+}
+.slide {
+    position: absolute; inset: 0;
+    opacity: 0; transition: opacity 0.8s ease;
+}
+.slide.active { opacity: 1; }
+.slide img {
+    width: 100%; height: 100%; object-fit: cover; opacity: 0.65;
+}
+.slide-placeholder {
+    width: 100%; height: 100%;
+    background: linear-gradient(135deg, var(--ink) 0%, #1a3c5e 50%, rgba(201,168,76,0.3) 100%);
+}
+.hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(13,27,42,0.85) 0%, transparent 55%);
+}
+.hero-info {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 3rem 3.5rem;
+    display: flex; justify-content: space-between; align-items: flex-end;
+}
+.hero-info-left {}
+.hero-breadcrumb {
+    font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: rgba(245,240,232,0.5); margin-bottom: 0.6rem;
+    display: flex; align-items: center; gap: 0.6rem;
+}
+.hero-breadcrumb a { color: var(--gold-lt); text-decoration: none; }
+.hero-breadcrumb a:hover { color: var(--gold); }
+.hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem,5vw,4.5rem); font-weight: 300;
+    color: var(--white); line-height: 1.1;
+}
+.hero-country {
+    font-size: 0.82rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--gold); margin-top: 0.5rem;
+    display: flex; align-items: center; gap: 0.6rem;
+}
+.iata-badge {
+    background: rgba(201,168,76,0.2); border: 0.5px solid rgba(201,168,76,0.5);
+    padding: 0.2rem 0.6rem; font-size: 0.68rem;
+}
+
+/* Slider controls */
+.slider-controls {
+    display: flex; gap: 0.5rem; align-items: center;
+}
+.sl-btn {
+    width: 40px; height: 40px; background: rgba(245,240,232,0.12);
+    border: 0.5px solid rgba(201,168,76,0.4); cursor: pointer;
+    color: var(--gold); font-size: 1rem; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    backdrop-filter: blur(8px);
+}
+.sl-btn:hover { background: var(--gold); color: var(--ink); border-color: var(--gold); }
+.sl-dots {
+    display: flex; gap: 0.5rem; align-items: center; padding: 0 0.5rem;
+}
+.sl-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: rgba(245,240,232,0.3); cursor: pointer; transition: all 0.3s;
+}
+.sl-dot.active { background: var(--gold); transform: scale(1.3); }
+
+/* Thumbnails */
+.thumbs-strip {
+    display: flex; gap: 0.5rem; padding: 1rem 3.5rem;
+    background: var(--ink); overflow-x: auto;
+    scrollbar-width: none;
+}
+.thumbs-strip::-webkit-scrollbar { display:none; }
+.thumb {
+    width: 80px; height: 56px; flex-shrink: 0; cursor: pointer;
+    border: 1.5px solid transparent; transition: border-color 0.25s;
+    overflow: hidden;
+}
+.thumb.active { border-color: var(--gold); }
+.thumb img { width:100%; height:100%; object-fit:cover; opacity:0.65; transition:opacity 0.2s; }
+.thumb:hover img, .thumb.active img { opacity: 1; }
+.thumb-ph { width:100%; height:100%; background: rgba(201,168,76,0.15); }
+
+/* ── CONTENT ── */
+.dest-content {
+    display: grid; grid-template-columns: 1fr 340px;
+    gap: 4rem; padding: 5rem 3.5rem;
+    align-items: start;
+}
+.dest-main {}
+.desc-label {
+    font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); display: flex; align-items: center; gap: 0.7rem;
+    margin-bottom: 1.2rem;
+}
+.desc-label::before { content:''; display:block; width:28px; height:0.5px; background:var(--gold); }
+.dest-desc-text {
+    font-size: 0.96rem; line-height: 1.9; color: var(--muted);
+    max-width: 600px;
+}
+
+/* Video */
+.video-wrap {
+    margin-top: 3rem; position: relative; padding-bottom: 56.25%;
+    height: 0; overflow: hidden;
+}
+.video-wrap iframe {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    border: none;
+}
+.video-label {
+    font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); display: flex; align-items: center; gap: 0.7rem;
+    margin-bottom: 1rem; margin-top: 2.5rem;
+}
+.video-label::before { content:''; display:block; width:28px; height:0.5px; background:var(--gold); }
+
+/* Voyages liés */
+.related-label {
+    font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold); display: flex; align-items: center; gap: 0.7rem;
+    margin: 3.5rem 0 1.5rem;
+}
+.related-label::before { content:''; display:block; width:28px; height:0.5px; background:var(--gold); }
+.voyage-card-mini {
+    background: var(--sand); border: 0.5px solid rgba(201,168,76,0.2);
+    padding: 1.4rem; margin-bottom: 1px; text-decoration: none;
+    display: block; transition: background 0.25s;
+}
+.voyage-card-mini:hover { background: var(--ink); }
+.voyage-card-mini:hover .vcm-dest { color: var(--white); }
+.voyage-card-mini:hover .vcm-detail { color: rgba(245,240,232,0.5); }
+.voyage-card-mini:hover .vcm-price { color: var(--gold); }
+.vcm-dest {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; font-weight: 300; color: var(--ink);
+    transition: color 0.25s;
+}
+.vcm-detail {
+    font-size: 0.74rem; color: var(--muted); margin-top: 0.3rem;
+    letter-spacing: 0.04em; transition: color 0.25s;
+}
+.vcm-price {
+    font-size: 1rem; font-weight: 600; color: var(--ink);
+    margin-top: 0.6rem; transition: color 0.25s;
+}
+
+/* Sidebar */
+.dest-sidebar {}
+.qr-card {
+    background: var(--white);
+    border: 0.5px solid rgba(201,168,76,0.25);
+    padding: 2rem; text-align: center; margin-bottom: 1.5px;
+}
+.qr-card img { width: 140px; height: 140px; display: block; margin: 0 auto 1rem; }
+.qr-label {
+    font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--muted);
+}
+.info-card {
+    background: var(--sand);
+    border: 0.5px solid rgba(201,168,76,0.2);
+    padding: 2rem;
+}
+.info-row {
+    display: flex; justify-content: space-between;
+    align-items: center; padding: 0.75rem 0;
+    border-bottom: 0.5px solid rgba(201,168,76,0.15);
+}
+.info-row:last-child { border-bottom: none; }
+.info-key {
+    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); font-weight: 500;
+}
+.info-val {
+    font-size: 0.84rem; font-weight: 600; color: var(--ink);
+    text-align: right;
+}
+.cta-card {
+    background: var(--ink); padding: 2rem; margin-top: 1.5px; text-align: center;
+}
+.cta-card p {
+    font-size: 0.8rem; color: rgba(245,240,232,0.55);
+    line-height: 1.7; margin-bottom: 1.2rem;
+}
+.cta-card .btn-primary { display: block; text-align: center; }
+{% endblock %}
+
+{% block body %}
+
+{# ── HERO SLIDER ── #}
+{% set images = destination.allImages %}
+<div class="dest-hero" id="heroSlider">
+    {% if images is not empty %}
+        {% for img in images %}
+            <div class="slide {% if loop.first %}active{% endif %}">
+                <img src="{{ img }}" alt="{{ destination.nom }} — photo {{ loop.index }}">
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="slide active">
+            <div class="slide-placeholder"></div>
+        </div>
+    {% endif %}
+
+    <div class="hero-overlay"></div>
+
+    <div class="hero-info">
+        <div class="hero-info-left">
+            <div class="hero-breadcrumb">
+                <a href="{{ path('client_destination_index') }}">Destinations</a>
+                <span>·</span>
+                <span>{{ destination.pays }}</span>
+            </div>
+            <div class="hero-title">{{ destination.nom }}</div>
+            <div class="hero-country">
+                {{ destination.pays }}
+                {% if destination.codeIata %}
+                    <span class="iata-badge">{{ destination.codeIata }}</span>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if images|length > 1 %}
+        <div class="slider-controls">
+            <button class="sl-btn" id="slPrev">←</button>
+            <div class="sl-dots" id="slDots">
+                {% for img in images %}
+                    <div class="sl-dot {% if loop.first %}active{% endif %}" data-idx="{{ loop.index0 }}"></div>
+                {% endfor %}
+            </div>
+            <button class="sl-btn" id="slNext">→</button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# Miniatures #}
+{% if images|length > 1 %}
+<div class="thumbs-strip" id="thumbsStrip">
+    {% for img in images %}
+        <div class="thumb {% if loop.first %}active{% endif %}" data-idx="{{ loop.index0 }}">
+            <img src="{{ img }}" alt="Aperçu {{ loop.index }}">
+        </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+{# ── CONTENT GRID ── #}
+<div class="dest-content">
+    <div class="dest-main">
+
+        {# Description #}
+        {% if destination.description %}
+            <div class="desc-label">À propos</div>
+            <p class="dest-desc-text">{{ destination.description }}</p>
+        {% endif %}
+
+        {# Vidéo YouTube #}
+        {% if destination.videoUrl %}
+            <div class="video-label">Vidéo de la destination</div>
+            <div class="video-wrap">
+                <iframe
+                    src="https://www.youtube.com/embed/{{ destination.videoUrl }}?rel=0&modestbranding=1"
+                    title="{{ destination.nom }}"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+                </iframe>
+            </div>
+        {% endif %}
+
+        {# Voyages liés #}
+        {% if destination.voyages is not empty %}
+            <div class="related-label">Voyages disponibles ({{ destination.voyages|length }})</div>
+            {% for voyage in destination.voyages %}
+                <a href="{{ path('client_voyage_show', {id: voyage.id}) }}" class="voyage-card-mini">
+                    <div class="vcm-dest">{{ voyage.destination }}</div>
+                    <div class="vcm-detail">
+                        {{ voyage.dateDebut|date('d M Y') }} → {{ voyage.dateFin|date('d M Y') }}
+                        &nbsp;·&nbsp; {{ voyage.dureeJours }} jours
+                        {% if voyage.paysDepart %}&nbsp;·&nbsp; Départ : {{ voyage.paysDepart }}{% endif %}
+                    </div>
+                    <div class="vcm-price">{{ voyage.prix|number_format(0, ',', ' ') }} TND</div>
+                </a>
+            {% endfor %}
+        {% endif %}
+
+    </div>{# /dest-main #}
+
+    <aside class="dest-sidebar">
+
+        {# QR Code #}
+        {% if qrCodeUrl %}
+        <div class="qr-card">
+            <img src="{{ qrCodeUrl }}" alt="QR Code {{ destination.nom }}">
+            <div class="qr-label">Scannez pour partager</div>
+        </div>
+        {% endif %}
+
+        {# Infos #}
+        <div class="info-card">
+            <div class="info-row">
+                <span class="info-key">Destination</span>
+                <span class="info-val">{{ destination.nom }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Pays</span>
+                <span class="info-val">{{ destination.pays }}</span>
+            </div>
+            {% if destination.codeIata %}
+            <div class="info-row">
+                <span class="info-key">Code IATA</span>
+                <span class="info-val">{{ destination.codeIata }}</span>
+            </div>
+            {% endif %}
+            <div class="info-row">
+                <span class="info-key">Voyages dispo</span>
+                <span class="info-val">{{ destination.voyages|length }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-key">Ajoutée le</span>
+                <span class="info-val">{{ destination.dateCreation|date('d/m/Y') }}</span>
+            </div>
+        </div>
+
+        {# CTA #}
+        <div class="cta-card">
+            <p>Intéressé par cette destination ? Découvrez nos voyages disponibles ou contactez-nous.</p>
+            {% if destination.voyages is not empty %}
+                <a href="{{ path('client_voyage_index', {destination: destination.id}) }}" class="btn-primary">
+                    Voir les voyages →
+                </a>
+            {% else %}
+                <a href="{{ path('app_home') }}#contact" class="btn-primary">
+                    Nous contacter →
+                </a>
+            {% endif %}
+        </div>
+
+    </aside>
+</div>
+
+{% endblock %}
+
+{% block javascripts %}
+<script>
+(function() {
+    const slides  = document.querySelectorAll('#heroSlider .slide');
+    const dots    = document.querySelectorAll('#slDots .sl-dot');
+    const thumbs  = document.querySelectorAll('#thumbsStrip .thumb');
+    let current = 0;
+    let timer;
+
+    function goTo(idx) {
+        slides[current]?.classList.remove('active');
+        dots[current]?.classList.remove('active');
+        thumbs[current]?.classList.remove('active');
+        current = (idx + slides.length) % slides.length;
+        slides[current]?.classList.add('active');
+        dots[current]?.classList.add('active');
+        thumbs[current]?.classList.add('active');
+        thumbs[current]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+
+    function startAuto() {
+        clearInterval(timer);
+        timer = setInterval(() => goTo(current + 1), 4500);
+    }
+
+    document.getElementById('slNext')?.addEventListener('click', () => { goTo(current + 1); startAuto(); });
+    document.getElementById('slPrev')?.addEventListener('click', () => { goTo(current - 1); startAuto(); });
+    dots.forEach(d => d.addEventListener('click', () => { goTo(+d.dataset.idx); startAuto(); }));
+    thumbs.forEach(t => t.addEventListener('click', () => { goTo(+t.dataset.idx); startAuto(); }));
+
+    if (slides.length > 1) startAuto();
+})();
+</script>
+{% endblock %}

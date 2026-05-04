@@ -1,0 +1,109 @@
+{% extends 'BackOffice/base_admin.html.twig' %}
+{% block title %}{{ mode == 'new' ? 'Nouveau véhicule' : 'Modifier' }} – Admin{% endblock %}
+{% block page_title %}{{ mode == 'new' ? 'Ajouter un véhicule' : 'Modifier : ' ~ transport.compagnie }}{% endblock %}
+
+{% block body %}
+<div style="max-width:680px">
+  <div class="card">
+    <div class="card-header">
+      <h2><i class="fas fa-{{ mode == 'new' ? 'plus' : 'edit' }}" style="color:var(--gold);margin-right:.5rem"></i>
+        {{ mode == 'new' ? 'Nouveau véhicule' : 'Modifier le véhicule' }}
+      </h2>
+    </div>
+    <div class="card-body">
+      {{ form_start(form) }}
+
+      <div class="form-group">
+        {{ form_label(form.transportType) }}
+        {{ form_widget(form.transportType) }}
+        {{ form_errors(form.transportType) }}
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          {{ form_label(form.compagnie) }}
+          {{ form_widget(form.compagnie) }}
+          {{ form_errors(form.compagnie) }}
+        </div>
+        <div class="form-group">
+          {{ form_label(form.numero) }}
+          {{ form_widget(form.numero) }}
+          {{ form_errors(form.numero) }}
+        </div>
+        <div class="form-group">
+          {{ form_label(form.capacite) }}
+          {{ form_widget(form.capacite) }}
+          {{ form_errors(form.capacite) }}
+        </div>
+        <div class="form-group">
+          {{ form_label(form.prix) }}
+          {{ form_widget(form.prix) }}
+          {{ form_errors(form.prix) }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        {{ form_label(form.imageUrl) }}
+        {{ form_widget(form.imageUrl) }}
+        {{ form_errors(form.imageUrl) }}
+        {% if transport.imageUrl %}
+          <div style="margin-top:.5rem"><img src="{{ transport.imageUrl }}" alt="Preview" style="height:60px;border-radius:6px;border:1px solid var(--border)"></div>
+        {% endif %}
+      </div>
+
+      <div class="form-group">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
+          {{ form_label(form.description) }}
+          {% if mode == 'edit' %}
+            <button type="button" id="btn-ai-gen" class="btn btn-secondary btn-sm" style="background:rgba(201,168,76,0.1);color:var(--gold);border-color:var(--gold)">
+              <i class="fas fa-robot"></i> IA (Api D) : Générer avec IA
+            </button>
+          {% endif %}
+        </div>
+        {{ form_widget(form.description) }}
+        {{ form_errors(form.description) }}
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> {{ mode == 'new' ? 'Créer' : 'Enregistrer' }}</button>
+        <a href="{{ path('admin_transport_index') }}" class="btn btn-secondary"><i class="fas fa-arrow-left"></i> Annuler</a>
+      </div>
+
+      {{ form_end(form) }}
+    </div>
+  </div>
+</div>
+{% if mode == 'edit' %}
+<script>
+document.getElementById('btn-ai-gen')?.addEventListener('click', function() {
+    const btn = this;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyse en cours...';
+    btn.disabled = true;
+
+    fetch("{{ path('admin_transport_ai_description', {id: transport.id}) }}", {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.description) {
+            document.querySelector('textarea[name$="[description]"]').value = data.description;
+            btn.innerHTML = '<i class="fas fa-check"></i> Terminé !';
+            setTimeout(() => {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }, 2000);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        btn.innerHTML = '<i class="fas fa-exclamation-circle"></i> Erreur';
+        btn.disabled = false;
+    });
+});
+</script>
+{% endif %}
+{% endblock %}

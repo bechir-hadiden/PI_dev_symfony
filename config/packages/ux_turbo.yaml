@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 # Turbo configuration
 framework:
     csrf_protection:
         enabled: true
 
+=======
+framework:
+    csrf_protection:
+        enabled: true
+>>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c

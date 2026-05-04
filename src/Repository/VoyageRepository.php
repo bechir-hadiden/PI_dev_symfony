@@ -29,7 +29,7 @@ class VoyageRepository extends ServiceEntityRepository
 
         if ($destinationId) {
             $qb->andWhere('v.destinationRel = :did')
-               ->setParameter('did', $destinationId);
+                ->setParameter('did', $destinationId);
         }
 
         return $qb->getQuery()->getResult();
@@ -37,11 +37,38 @@ class VoyageRepository extends ServiceEntityRepository
 
     public function search(string $q): array
     {
+        return $this->searchQuery($q)->getResult();
+    }
+
+    public function searchQuery(string $q): \Doctrine\ORM\Query
+    {
         return $this->createQueryBuilder('v')
             ->andWhere('v.destination LIKE :q OR v.paysDepart LIKE :q')
             ->setParameter('q', '%' . $q . '%')
             ->orderBy('v.dateDebut', 'ASC')
-            ->getQuery()
-            ->getResult();
+            ->getQuery();
     }
+
+    // public function findDisponiblesQuery(?int $destinationId = null): \Doctrine\ORM\Query
+    // {
+    //     $qb = $this->createQueryBuilder('v')
+    //         ->orderBy('v.dateDebut', 'ASC');
+
+    //     if ($destinationId) {
+    //         $qb->andWhere('v.destinationRel = :did')
+    //             ->setParameter('did', $destinationId);
+    //     }
+
+    //     return $qb->getQuery();
+    // }
+
+    public function findDisponiblesQuery(?int $destinationId = null)    {
+        $qb = $this->createQueryBuilder('v');
+
+        if ($destinationId) {
+            $qb->andWhere('v.destination = :dest')
+                ->setParameter('dest', $destinationId);
+        }
+
+        return $qb->getQuery();    }
 }
