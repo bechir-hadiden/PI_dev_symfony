@@ -1,0 +1,912 @@
+{% extends 'base_dark.html.twig' %}
+
+
+{% block title %}VoyageÉlite — Agence de Voyage{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --ink:      #0d0d0d;
+            --sand:     #f0e8d8;
+            --cream:    #faf6ef;
+            --gold:     #b8963e;
+            --gold-lt:  #d4b06a;
+            --muted:    #6b6560;
+            --white:    #ffffff;
+            --chat-bg:  #1a1714;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            overflow-x: hidden;
+        }
+
+        /* NAVIGATION */
+        .voyage-nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.4rem 3.5rem;
+            background: rgba(250, 246, 239, 0.88);
+            backdrop-filter: blur(12px);
+            border-bottom: 0.5px solid rgba(184,150,62,0.25);
+        }
+        .voyage-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem; font-weight: 300; letter-spacing: 0.12em;
+            color: var(--ink); text-decoration: none;
+        }
+        .voyage-logo span { color: var(--gold); font-style: italic; }
+        .voyage-nav-links { display: flex; gap: 2.4rem; list-style: none; }
+        .voyage-nav-links a {
+            font-size: 0.78rem; font-weight: 400; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--muted);
+            text-decoration: none; transition: color 0.2s;
+        }
+        .voyage-nav-links a:hover { color: var(--gold); }
+        .voyage-nav-cta {
+            font-size: 0.78rem; font-weight: 500; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--ink);
+            border: 0.5px solid var(--gold); padding: 0.55rem 1.4rem;
+            text-decoration: none; transition: all 0.25s;
+        }
+        .voyage-nav-cta:hover { background: var(--gold); color: var(--white); }
+
+        /* HERO */
+        .voyage-hero {
+            min-height: 100vh;
+            display: grid; grid-template-columns: 1fr 1fr;
+            padding-top: 5rem;
+        }
+        .voyage-hero-left {
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 5rem 3.5rem 5rem 3.5rem;
+        }
+        .voyage-hero-tag {
+            font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
+            color: var(--gold); margin-bottom: 1.6rem;
+            display: flex; align-items: center; gap: 0.7rem;
+        }
+        .voyage-hero-tag::before {
+            content: ''; display: block; width: 32px; height: 0.5px;
+            background: var(--gold);
+        }
+        .voyage-hero h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(3rem, 5vw, 5rem);
+            font-weight: 300; line-height: 1.08;
+            letter-spacing: -0.01em;
+            margin-bottom: 1.6rem;
+        }
+        .voyage-hero h1 em { font-style: italic; color: var(--gold); }
+        .voyage-hero-desc {
+            font-size: 0.92rem; line-height: 1.8; color: var(--muted);
+            max-width: 380px; margin-bottom: 2.8rem;
+        }
+        .hero-actions { display: flex; gap: 1.2rem; align-items: center; }
+        .voyage-btn-primary {
+            background: var(--ink); color: var(--white);
+            padding: 0.9rem 2rem; font-size: 0.8rem;
+            letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500;
+            text-decoration: none; transition: all 0.25s;
+            border: none; cursor: pointer;
+            display: inline-block;
+        }
+        .voyage-btn-primary:hover { background: var(--gold); color: var(--ink); }
+        .voyage-btn-ghost {
+            font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+            font-weight: 400; color: var(--muted); text-decoration: none;
+            display: flex; align-items: center; gap: 0.5rem;
+            transition: color 0.2s;
+        }
+        .voyage-btn-ghost:hover { color: var(--ink); }
+        .voyage-btn-ghost .arrow {
+            display: inline-block; transition: transform 0.2s;
+        }
+        .voyage-btn-ghost:hover .arrow { transform: translateX(4px); }
+
+        .voyage-hero-right {
+            position: relative; overflow: hidden;
+            background: var(--ink);
+        }
+        .voyage-hero-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, transparent 50%, rgba(13,13,13,0.4) 100%);
+        }
+        .voyage-hero-badge {
+            position: absolute; bottom: 2.5rem; right: 2.5rem;
+            background: rgba(250,246,239,0.12);
+            backdrop-filter: blur(16px);
+            border: 0.5px solid rgba(184,150,62,0.5);
+            padding: 1.2rem 1.8rem; text-align: right;
+        }
+        .voyage-hero-badge .num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.4rem; font-weight: 300; color: var(--white);
+            line-height: 1;
+        }
+        .voyage-hero-badge .label {
+            font-size: 0.68rem; letter-spacing: 0.18em;
+            text-transform: uppercase; color: var(--gold-lt);
+        }
+
+        /* TICKER */
+        .voyage-ticker-wrap {
+            background: var(--gold); overflow: hidden;
+            padding: 0.7rem 0;
+        }
+        .voyage-ticker {
+            display: flex; gap: 0;
+            animation: ticker 28s linear infinite;
+            white-space: nowrap;
+        }
+        .voyage-ticker span {
+            font-size: 0.72rem; letter-spacing: 0.2em;
+            text-transform: uppercase; color: var(--ink);
+            padding: 0 2rem;
+        }
+        .ticker-dot {
+            color: rgba(0,0,0,0.35); user-select: none;
+        }
+        @keyframes ticker {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* SECTION TAG */
+        .voyage-section-tag {
+            font-size: 0.72rem; letter-spacing: 0.2em;
+            text-transform: uppercase; color: var(--gold);
+            display: flex; align-items: center; gap: 0.7rem;
+            margin-bottom: 1rem;
+        }
+        .voyage-section-tag::before {
+            content: ''; display: block; width: 28px; height: 0.5px;
+            background: var(--gold);
+        }
+        .voyage-h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 3.5vw, 3rem);
+            font-weight: 300; line-height: 1.15;
+        }
+
+        /* DESTINATIONS */
+        .voyage-destinations {
+            padding: 7rem 3.5rem;
+        }
+        .voyage-dest-header {
+            display: flex; justify-content: space-between;
+            align-items: flex-end; margin-bottom: 3.5rem;
+        }
+        .voyage-dest-header h2 { max-width: 360px; }
+        .voyage-dest-header p {
+            font-size: 0.88rem; color: var(--muted);
+            line-height: 1.75; max-width: 280px; text-align: right;
+        }
+        .voyage-dest-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 1px;
+            background: rgba(184,150,62,0.2);
+        }
+        .voyage-dest-card {
+            position: relative; overflow: hidden;
+            cursor: pointer; background: var(--ink);
+        }
+        .voyage-dest-card:first-child {
+            grid-row: 1 / 3;
+            min-height: 580px;
+        }
+        .voyage-dest-card:not(:first-child) { min-height: 280px; }
+        .voyage-dest-card img {
+            width: 100%; height: 100%; object-fit: cover;
+            opacity: 0.72; transition: opacity 0.5s, transform 0.6s;
+            display: block;
+        }
+        .voyage-dest-card:hover img { opacity: 0.55; transform: scale(1.04); }
+        .voyage-dest-info {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 1.8rem;
+            background: linear-gradient(to top, rgba(13,13,13,0.85) 0%, transparent 100%);
+        }
+        .voyage-dest-info h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem; font-weight: 300; color: var(--white);
+            letter-spacing: 0.04em;
+        }
+        .voyage-dest-card:first-child .voyage-dest-info h3 { font-size: 2.2rem; }
+        .voyage-dest-info p {
+            font-size: 0.72rem; letter-spacing: 0.16em;
+            text-transform: uppercase; color: var(--gold-lt);
+            margin-top: 0.3rem;
+        }
+        .voyage-dest-arrow {
+            position: absolute; top: 1.4rem; right: 1.4rem;
+            width: 36px; height: 36px;
+            border: 0.5px solid rgba(184,150,62,0.6);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--gold-lt); font-size: 1rem;
+            opacity: 0; transform: translateY(-6px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .voyage-dest-card:hover .voyage-dest-arrow { opacity: 1; transform: translateY(0); }
+
+        /* AGENT SECTION */
+        .voyage-agent-section {
+            padding: 7rem 3.5rem;
+            background: var(--sand);
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 5rem; align-items: center;
+        }
+        .agent-left .voyage-section-tag { margin-bottom: 1rem; }
+        .agent-left .voyage-h2 { margin-bottom: 1.2rem; }
+        .agent-left p {
+            font-size: 0.9rem; color: var(--muted);
+            line-height: 1.8; margin-bottom: 2rem;
+        }
+        .voyage-features { display: flex; flex-direction: column; gap: 1rem; }
+        .voyage-feature {
+            display: flex; gap: 1rem; align-items: flex-start;
+        }
+        .voyage-feature-icon {
+            width: 36px; height: 36px; flex-shrink: 0;
+            border: 0.5px solid var(--gold);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--gold); font-size: 0.9rem;
+        }
+        .voyage-feature-text h4 {
+            font-size: 0.82rem; font-weight: 500; letter-spacing: 0.06em;
+            text-transform: uppercase; margin-bottom: 0.2rem;
+        }
+        .voyage-feature-text p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+        /* CHAT WIDGET */
+        .voyage-chat-widget {
+            background: var(--chat-bg);
+            border: 0.5px solid rgba(184,150,62,0.3);
+            overflow: hidden;
+        }
+        .voyage-chat-header {
+            padding: 1rem 1.4rem;
+            border-bottom: 0.5px solid rgba(184,150,62,0.2);
+            display: flex; align-items: center; gap: 0.8rem;
+        }
+        .voyage-chat-avatar {
+            width: 36px; height: 36px;
+            background: var(--gold);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem; color: var(--ink);
+            border-radius: 50%;
+        }
+        .voyage-chat-name {
+            font-size: 0.82rem; font-weight: 500; color: rgba(250,246,239,0.9);
+            letter-spacing: 0.05em;
+        }
+        .voyage-chat-status {
+            font-size: 0.7rem; color: rgba(184,150,62,0.8);
+            display: flex; align-items: center; gap: 0.35rem;
+        }
+        .voyage-status-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #4caf6b; display: inline-block;
+        }
+        .chat-header-actions { margin-left: auto; display: flex; gap: 8px; }
+        .chat-header-actions span {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(255,255,255,0.15); display: block;
+        }
+
+        .voyage-chat-messages {
+            padding: 1.4rem; display: flex; flex-direction: column;
+            gap: 1rem; min-height: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .voyage-msg { display: flex; gap: 0.7rem; align-items: flex-end; }
+        .voyage-msg.user { flex-direction: row-reverse; }
+        .voyage-msg-bubble {
+            padding: 0.75rem 1rem;
+            font-size: 0.82rem; line-height: 1.6;
+            max-width: 78%;
+        }
+        .voyage-msg-bubble.agent {
+            background: rgba(255,255,255,0.06);
+            color: rgba(250,246,239,0.85);
+            border: 0.5px solid rgba(184,150,62,0.18);
+        }
+        .voyage-msg-bubble.user {
+            background: var(--gold);
+            color: var(--ink);
+        }
+        .voyage-msg-avatar {
+            width: 28px; height: 28px; flex-shrink: 0;
+            background: var(--gold);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; color: var(--ink); font-weight: 500;
+            border-radius: 50%;
+        }
+        .voyage-msg-avatar.user-av {
+            background: rgba(255,255,255,0.12); color: rgba(250,246,239,0.7);
+        }
+        .voyage-typing { display: flex; gap: 4px; align-items: center; padding: 0.75rem 1rem; }
+        .voyage-typing span {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: rgba(184,150,62,0.6);
+            animation: blink 1.2s infinite;
+        }
+        .voyage-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .voyage-typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes blink {
+            0%, 80%, 100% { opacity: 0.3; transform: scale(1); }
+            40%  { opacity: 1; transform: scale(1.15); }
+        }
+        .voyage-chat-input-row {
+            padding: 0.9rem 1.4rem;
+            border-top: 0.5px solid rgba(184,150,62,0.2);
+            display: flex; align-items: center; gap: 0.8rem;
+        }
+        .voyage-chat-input {
+            flex: 1; background: rgba(255,255,255,0.05);
+            border: 0.5px solid rgba(184,150,62,0.25); outline: none;
+            padding: 0.65rem 0.9rem; color: rgba(250,246,239,0.8);
+            font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
+        }
+        .voyage-chat-input::placeholder { color: rgba(240,232,216,0.3); }
+        .voyage-chat-send {
+            width: 36px; height: 36px; background: var(--gold);
+            border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; color: var(--ink); flex-shrink: 0;
+            transition: background 0.2s;
+        }
+        .voyage-chat-send:hover { background: var(--gold-lt); }
+
+        /* EXPERIENCE STRIP */
+        .voyage-experience {
+            padding: 7rem 3.5rem;
+            display: grid; grid-template-columns: repeat(4,1fr); gap: 1px;
+            background: rgba(184,150,62,0.2);
+        }
+        .voyage-exp-card {
+            background: var(--cream); padding: 2.5rem 2rem;
+            transition: background 0.3s;
+        }
+        .voyage-exp-card:hover { background: var(--ink); }
+        .voyage-exp-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem; font-weight: 300; color: var(--gold);
+            line-height: 1;
+        }
+        .voyage-exp-card h3 {
+            font-size: 0.85rem; font-weight: 500; letter-spacing: 0.08em;
+            text-transform: uppercase; margin: 0.8rem 0 0.5rem;
+            color: var(--ink); transition: color 0.3s;
+        }
+        .voyage-exp-card:hover h3 { color: var(--white); }
+        .voyage-exp-card p {
+            font-size: 0.82rem; color: var(--muted); line-height: 1.7;
+            transition: color 0.3s;
+        }
+        .voyage-exp-card:hover p { color: rgba(240,232,216,0.55); }
+
+        /* TESTIMONIALS */
+        .voyage-testimonials {
+            padding: 7rem 3.5rem;
+            background: var(--ink); color: var(--white);
+        }
+        .voyage-test-header {
+            display: flex; justify-content: space-between;
+            align-items: flex-end; margin-bottom: 3.5rem;
+        }
+        .voyage-test-header h2 { color: var(--white); }
+        .voyage-test-header .voyage-section-tag { color: var(--gold-lt); }
+        .voyage-test-header .voyage-section-tag::before { background: var(--gold-lt); }
+        .test-btn {
+            width: auto; padding: 0 1.5rem;
+            background: transparent; border: 0.5px solid rgba(184,150,62,0.4);
+            color: var(--gold); height: 38px;
+            display: flex; align-items: center; justify-content: center;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .test-btn:hover { background: var(--gold); color: var(--ink); }
+        .voyage-test-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5px; }
+        .voyage-test-card {
+            background: rgba(255,255,255,0.04);
+            border: 0.5px solid rgba(184,150,62,0.15);
+            padding: 2.2rem; transition: background 0.3s;
+        }
+        .voyage-test-card:hover { background: rgba(255,255,255,0.07); }
+        .voyage-stars {
+            color: var(--gold); letter-spacing: 2px;
+            font-size: 0.75rem; margin-bottom: 1rem;
+        }
+        .voyage-test-card p {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.15rem; font-weight: 300; line-height: 1.65;
+            font-style: italic; color: rgba(250,246,239,0.85);
+            margin-bottom: 1.5rem;
+        }
+        .voyage-test-author {
+            display: flex; align-items: center; gap: 0.8rem;
+        }
+        .voyage-test-av {
+            width: 38px; height: 38px;
+            background: rgba(184,150,62,0.25);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; font-weight: 500; color: var(--gold);
+            border-radius: 50%;
+        }
+        .voyage-test-name { font-size: 0.8rem; font-weight: 500; }
+        .voyage-test-trip { font-size: 0.72rem; color: var(--gold-lt); margin-top: 2px; }
+
+        /* NEWSLETTER */
+        .voyage-newsletter {
+            padding: 5rem 3.5rem;
+            border-top: 0.5px solid rgba(184,150,62,0.25);
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 3rem;
+        }
+        .voyage-newsletter h2 { max-width: 360px; }
+        .voyage-newsletter p { font-size: 0.88rem; color: var(--muted); margin-top: 0.6rem; }
+        .voyage-nl-form { display: flex; gap: 0; }
+        .voyage-nl-input {
+            padding: 0.85rem 1.2rem; border: 0.5px solid rgba(184,150,62,0.4);
+            background: var(--white); font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem; outline: none; width: 280px;
+            color: var(--ink);
+        }
+        .voyage-nl-input::placeholder { color: #aaa; }
+        .voyage-nl-submit {
+            padding: 0.85rem 1.6rem; background: var(--gold);
+            border: none; cursor: pointer; font-size: 0.78rem;
+            font-weight: 500; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--ink);
+            font-family: 'DM Sans', sans-serif; transition: background 0.2s;
+        }
+        .voyage-nl-submit:hover { background: var(--ink); color: var(--white); }
+
+        /* FOOTER */
+        .voyage-footer {
+            background: var(--ink); padding: 3.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 0.5px solid rgba(184,150,62,0.2);
+        }
+        .voyage-footer-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem; font-weight: 300; letter-spacing: 0.1em;
+            color: var(--white);
+        }
+        .voyage-footer-logo span { color: var(--gold); font-style: italic; }
+        .voyage-footer-links { display: flex; gap: 2rem; }
+        .voyage-footer-links a {
+            font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+            color: rgba(240,232,216,0.45); text-decoration: none;
+            transition: color 0.2s;
+        }
+        .voyage-footer-links a:hover { color: var(--gold); }
+        .footer-copy {
+            font-size: 0.7rem; color: rgba(240,232,216,0.3);
+            letter-spacing: 0.06em;
+        }
+
+        /* ANIMATIONS */
+        .fade-up {
+            opacity: 0; transform: translateY(28px);
+            animation: fadeUp 0.9s cubic-bezier(0.22,1,0.36,1) forwards;
+        }
+        .fade-up:nth-child(1) { animation-delay: 0.1s; }
+        .fade-up:nth-child(2) { animation-delay: 0.25s; }
+        .fade-up:nth-child(3) { animation-delay: 0.4s; }
+        .fade-up:nth-child(4) { animation-delay: 0.55s; }
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* PLACEHOLDER IMAGES */
+        .ph-santorini { background: linear-gradient(155deg,#1a3c5e 0%,#2a5f8a 40%,#d4a05a 100%); }
+        .ph-maldives  { background: linear-gradient(155deg,#0e4a4a 0%,#1a8080 50%,#b8e0e0 100%); }
+        .ph-tokyo     { background: linear-gradient(155deg,#2d1a3e 0%,#6b3fa0 50%,#e87b8b 100%); }
+        .ph-marrakech { background: linear-gradient(155deg,#5a2200 0%,#c45a1a 50%,#f0c080 100%); }
+        .ph-paris     { background: linear-gradient(155deg,#1a1a2e 0%,#3a3a6e 50%,#b0b0d8 100%); }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .voyage-nav { padding: 1rem 1.5rem; }
+            .voyage-hero { grid-template-columns: 1fr; }
+            .voyage-agent-section { grid-template-columns: 1fr; }
+            .voyage-dest-grid { grid-template-columns: 1fr; }
+            .voyage-dest-card:first-child { grid-row: auto; min-height: 300px; }
+            .voyage-experience { grid-template-columns: repeat(2,1fr); }
+            .voyage-test-grid { grid-template-columns: 1fr; }
+            .voyage-newsletter { flex-direction: column; text-align: center; }
+            .voyage-footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+            .voyage-footer-links { flex-wrap: wrap; justify-content: center; }
+        }
+
+        @media (max-width: 768px) {
+            .voyage-nav-links { display: none; }
+            .voyage-hero-left { padding: 3rem 1.5rem; }
+            .voyage-destinations, .voyage-agent-section, .voyage-experience, .voyage-testimonials, .voyage-newsletter { padding: 3rem 1.5rem; }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="voyage-container">
+    <!-- NAVIGATION -->
+    <nav class="voyage-nav">
+        <a href="{{ path('app_home') }}" class="voyage-logo">Voyage<span>Élite</span></a>
+        <ul class="voyage-nav-links">
+            <li><a href="#destinations">Destinations</a></li>
+            <li><a href="{{ path('app_avis_index') }}">Avis</a></li>
+            <li><a href="#agent">Expériences</a></li>
+            <li><a href="#agent">Sur Mesure</a></li>
+        </ul>
+        {% if app.user and 'ROLE_ADMIN' in app.user.roles %}
+            <a href="{{ path('admin_dashboard') }}" class="voyage-nav-cta">Administration</a>
+        {% else %}
+            <a href="#agent" class="voyage-nav-cta">Consulter l'Agent</a>
+        {% endif %}
+    </nav>
+
+    <!-- HERO -->
+    <section class="voyage-hero">
+        <div class="voyage-hero-left">
+            <div class="voyage-hero-tag fade-up">Agence de Voyage Exclusive</div>
+            <h1 class="fade-up">L'Art du<br><em>Voyage</em><br>Parfait.</h1>
+            <p class="voyage-hero-desc fade-up">Des itinéraires sur mesure conçus pour les voyageurs exigeants. Chaque détail, chaque moment — orchestré avec soin par notre agent expert.</p>
+            <div class="hero-actions fade-up">
+                <a href="#agent" class="voyage-btn-primary">Planifier mon Voyage</a>
+                <a href="#destinations" class="voyage-btn-ghost">
+                    Nos Destinations <span class="arrow">→</span>
+                </a>
+            </div>
+        </div>
+        <div class="voyage-hero-right">
+            <div class="ph-santorini" style="width:100%;height:100%;"></div>
+            <div class="voyage-hero-overlay"></div>
+            <div class="voyage-hero-badge">
+                <div class="num">{{ stats.nombreAvis ?? 240 }}+</div>
+                <div class="label">Destinations Exclusives</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TICKER -->
+    <div class="voyage-ticker-wrap">
+        <div class="voyage-ticker">
+            {% for i in 0..1 %}
+                <span>Santorini</span><span class="ticker-dot">✦</span>
+                <span>Maldives</span><span class="ticker-dot">✦</span>
+                <span>Tokyo</span><span class="ticker-dot">✦</span>
+                <span>Marrakech</span><span class="ticker-dot">✦</span>
+                <span>Patagonie</span><span class="ticker-dot">✦</span>
+                <span>Kyoto</span><span class="ticker-dot">✦</span>
+                <span>Amalfi</span><span class="ticker-dot">✦</span>
+                <span>Bali</span><span class="ticker-dot">✦</span>
+                <span>Islande</span><span class="ticker-dot">✦</span>
+                <span>Dubai</span><span class="ticker-dot">✦</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- DESTINATIONS -->
+    <section class="voyage-destinations" id="destinations">
+        <div class="voyage-dest-header">
+            <div>
+                <div class="voyage-section-tag">Sélection du Moment</div>
+                <h2 class="voyage-h2">Destinations<br><em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold)">incontournables</em></h2>
+            </div>
+            <p>Chaque destination choisie pour son caractère unique, ses expériences authentiques et son raffinement exceptionnel.</p>
+        </div>
+        <div class="voyage-dest-grid">
+            <div class="voyage-dest-card">
+                <div class="ph-santorini" style="width:100%;height:100%;"></div>
+                <div class="voyage-dest-arrow">↗</div>
+                <div class="voyage-dest-info">
+                    <h3>Santorin</h3>
+                    <p>Grèce · Séjour 7 nuits</p>
+                </div>
+            </div>
+            <div class="voyage-dest-card">
+                <div class="ph-maldives" style="width:100%;height:100%;"></div>
+                <div class="voyage-dest-arrow">↗</div>
+                <div class="voyage-dest-info">
+                    <h3>Maldives</h3>
+                    <p>Asie · Sur-l'eau</p>
+                </div>
+            </div>
+            <div class="voyage-dest-card">
+                <div class="ph-tokyo" style="width:100%;height:100%;"></div>
+                <div class="voyage-dest-arrow">↗</div>
+                <div class="voyage-dest-info">
+                    <h3>Tokyo</h3>
+                    <p>Japon · Immersion</p>
+                </div>
+            </div>
+            <div class="voyage-dest-card">
+                <div class="ph-marrakech" style="width:100%;height:100%;"></div>
+                <div class="voyage-dest-arrow">↗</div>
+                <div class="voyage-dest-info">
+                    <h3>Marrakech</h3>
+                    <p>Maroc · Riad Privé</p>
+                </div>
+            </div>
+            <div class="voyage-dest-card">
+                <div class="ph-paris" style="width:100%;height:100%;"></div>
+                <div class="voyage-dest-arrow">↗</div>
+                <div class="voyage-dest-info">
+                    <h3>Paris</h3>
+                    <p>France · Art de Vivre</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AGENT SECTION -->
+    <section class="voyage-agent-section" id="agent">
+        <div class="agent-left">
+            <div class="voyage-section-tag">Votre Conseiller</div>
+            <h2 class="voyage-h2">Un agent<br><em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold)">intelligent</em><br>à votre service</h2>
+            <p>Notre agent IA de voyage comprend vos désirs les plus subtils. Décrivez votre voyage idéal — il crée l'itinéraire parfait, réserve les meilleurs hôtels et anticipe chaque besoin.</p>
+            <div class="voyage-features">
+                <div class="voyage-feature">
+                    <div class="voyage-feature-icon">✦</div>
+                    <div class="voyage-feature-text">
+                        <h4>Itinéraires Sur Mesure</h4>
+                        <p>Conçus en quelques secondes selon vos préférences et votre budget.</p>
+                    </div>
+                </div>
+                <div class="voyage-feature">
+                    <div class="voyage-feature-icon">◈</div>
+                    <div class="voyage-feature-text">
+                        <h4>Disponible 24/7</h4>
+                        <p>Votre conseiller personnel répond à toute heure, de partout dans le monde.</p>
+                    </div>
+                </div>
+                <div class="voyage-feature">
+                    <div class="voyage-feature-icon">◇</div>
+                    <div class="voyage-feature-text">
+                        <h4>Accès Exclusif</h4>
+                        <p>Hôtels privés, tables d'exception et expériences hors des sentiers battus.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHAT WIDGET -->
+        <div class="voyage-chat-widget">
+            <div class="voyage-chat-header">
+                <div class="voyage-chat-avatar">E</div>
+                <div>
+                    <div class="voyage-chat-name">Élise — Conseillère VoyageÉlite</div>
+                    <div class="voyage-chat-status"><span class="voyage-status-dot"></span> En ligne maintenant</div>
+                </div>
+                <div class="chat-header-actions">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+            <div class="voyage-chat-messages" id="chatMessages">
+                <div class="voyage-msg">
+                    <div class="voyage-msg-avatar">E</div>
+                    <div class="voyage-msg-bubble agent">Bonjour ! Je suis Élise, votre conseillère de voyage exclusive. Où rêvez-vous de partir ?</div>
+                </div>
+            </div>
+            <div class="voyage-chat-input-row">
+                <input type="text" class="voyage-chat-input" id="chatInput" placeholder="Écrivez votre message…" />
+                <button class="voyage-chat-send" id="chatSend">→</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- EXPERIENCE STRIP -->
+    <section class="voyage-experience">
+        <div class="voyage-exp-card">
+            <div class="voyage-exp-num">240+</div>
+            <h3>Destinations</h3>
+            <p>Des îles privées aux capitales culturelles — le monde à votre portée.</p>
+        </div>
+        <div class="voyage-exp-card">
+            <div class="voyage-exp-num">18</div>
+            <h3>Ans d'Excellence</h3>
+            <p>Une décennie et demie au service des voyageurs les plus exigeants.</p>
+        </div>
+        <div class="voyage-exp-card">
+            <div class="voyage-exp-num">{{ stats.noteMoyenne ?? 4.9 }}</div>
+            <h3>Note Moyenne</h3>
+            <p>Évalué par plus de {{ stats.nombreAvis ?? 12000 }} clients qui nous ont confié leurs rêves.</p>
+        </div>
+        <div class="voyage-exp-card">
+            <div class="voyage-exp-num">100%</div>
+            <h3>Sur Mesure</h3>
+            <p>Aucun voyage n'est identique. Chaque itinéraire est unique comme vous.</p>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="voyage-testimonials" id="testimonials">
+        <div class="voyage-test-header">
+            <div>
+                <div class="voyage-section-tag">Avis Clients</div>
+                <h2 class="voyage-h2">Ils ont voyagé<br>avec <em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold-lt)">VoyageÉlite</em></h2>
+            </div>
+            <a href="{{ path('app_avis_index') }}" class="test-btn">
+                Voir tous →
+            </a>
+        </div>
+        <div class="voyage-test-grid">
+            {% if reviews is defined and reviews|length > 0 %}
+                {% for review in reviews|slice(0, 3) %}
+                <div class="voyage-test-card">
+                    <div class="voyage-stars">
+                        {% for i in 1..5 %}
+                            {% if i <= review.note %}★{% else %}☆{% endif %}
+                        {% endfor %}
+                    </div>
+                    <p>« {{ review.commentaire|slice(0, 120) }}{% if review.commentaire|length > 120 %}...{% endif %} »</p>
+                    <div class="voyage-test-author">
+                        <div class="voyage-test-av">{{ review.nomClient|slice(0, 2)|upper }}</div>
+                        <div>
+                            <div class="voyage-test-name">{{ review.nomClient }}</div>
+                            <div class="voyage-test-trip">{{ review.destination ?? 'Voyage' }} · {{ review.dateAvis|date('F Y') }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="voyage-test-card">
+                    <div class="voyage-stars">★★★★★</div>
+                    <p>« Un voyage aux Maldives absolument époustouflant. Chaque détail avait été anticipé — de la villa sur pilotis au dîner sous les étoiles. »</p>
+                    <div class="voyage-test-author">
+                        <div class="voyage-test-av">SC</div>
+                        <div>
+                            <div class="voyage-test-name">Sophie C.</div>
+                            <div class="voyage-test-trip">Maldives · Juillet 2024</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="voyage-test-card">
+                    <div class="voyage-stars">★★★★★</div>
+                    <p>« L'agent Élise a compris immédiatement ce que je cherchais. Notre périple japonais était parfait — inoubliable et profondément authentique. »</p>
+                    <div class="voyage-test-author">
+                        <div class="voyage-test-av">TM</div>
+                        <div>
+                            <div class="voyage-test-name">Thomas M.</div>
+                            <div class="voyage-test-trip">Japon · Avril 2024</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="voyage-test-card">
+                    <div class="voyage-stars">★★★★★</div>
+                    <p>« Le riad à Marrakech était un bijou caché. Jamais je n'aurais trouvé cela seule. VoyageÉlite m'a ouvert les portes d'un Maroc secret. »</p>
+                    <div class="voyage-test-author">
+                        <div class="voyage-test-av">LB</div>
+                        <div>
+                            <div class="voyage-test-name">Lucie B.</div>
+                            <div class="voyage-test-trip">Marrakech · Mars 2024</div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- NEWSLETTER -->
+    <section class="voyage-newsletter">
+        <div>
+            <div class="voyage-section-tag">Restez Informé</div>
+            <h2 class="voyage-h2">Les meilleures<br>offres en avant-première</h2>
+            <p>Destinations secrètes, offres exclusives et inspirations voyage.</p>
+        </div>
+        <div class="voyage-nl-form">
+            <input type="email" class="voyage-nl-input" placeholder="votre@email.com" id="newsletterEmail" />
+            <button class="voyage-nl-submit" id="newsletterSubmit">S'inscrire</button>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="voyage-footer">
+        <div class="voyage-footer-logo">Voyage<span>Élite</span></div>
+        <div class="voyage-footer-links">
+            <a href="#">Mentions Légales</a>
+            <a href="#">Confidentialité</a>
+            <a href="#">Contact</a>
+            <a href="#">Presse</a>
+        </div>
+        <div class="footer-copy">© {{ "now"|date("Y") }} VoyageÉlite. Tous droits réservés.</div>
+    </footer>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Chat functionality
+        const responses = [
+            "Excellente question ! Pour un budget de 3 000 € par personne, je vous recommande le Hôtel Canaves Oia Epitome à Santorin — une vue à couper le souffle — puis le Monastero Santa Rosa sur la côte amalfitaine. Voulez-vous que je prépare l'itinéraire complet ?",
+            "Absolument ! J'ai trouvé des vols directs Paris–Athènes et Naples–Paris avec vos dates. Je peux bloquer les options dès maintenant. Préférez-vous Business ou Première Classe ?",
+            "Votre itinéraire est prêt. 5 nuits à Santorin avec excursion en catamaran, puis 5 nuits à Positano avec dîner privé sur terrasse. Je vous envoie le dossier complet par email. Avez-vous des restrictions alimentaires ?",
+            "Je réserve immédiatement ! Votre voyage romantique Santorin–Amalfi est confirmé. Vous recevrez tous les détails d'ici quelques minutes. Y a-t-il autre chose que je puisse faire pour vous ?"
+        ];
+        let rIdx = 0;
+
+        function addMessage(text, isUser) {
+            const msgs = document.getElementById('chatMessages');
+            if (!msgs) return;
+            const div = document.createElement('div');
+            div.className = 'voyage-msg' + (isUser ? ' user' : '');
+            const av = document.createElement('div');
+            av.className = 'voyage-msg-avatar' + (isUser ? ' user-av' : '');
+            av.textContent = isUser ? 'V' : 'E';
+            const bubble = document.createElement('div');
+            bubble.className = 'voyage-msg-bubble ' + (isUser ? 'user' : 'agent');
+            bubble.textContent = text;
+            div.appendChild(av);
+            div.appendChild(bubble);
+            msgs.appendChild(div);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        const sendBtn = document.getElementById('chatSend');
+        const chatInput = document.getElementById('chatInput');
+        
+        if (sendBtn && chatInput) {
+            sendBtn.addEventListener('click', function() {
+                const text = chatInput.value.trim();
+                if (!text) return;
+                addMessage(text, true);
+                chatInput.value = '';
+                
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'voyage-msg';
+                typingDiv.id = 'typingMsg';
+                const typingAv = document.createElement('div');
+                typingAv.className = 'voyage-msg-avatar';
+                typingAv.textContent = 'E';
+                const typingBubble = document.createElement('div');
+                typingBubble.className = 'voyage-msg-bubble agent voyage-typing';
+                typingBubble.innerHTML = '<span></span><span></span><span></span>';
+                typingDiv.appendChild(typingAv);
+                typingDiv.appendChild(typingBubble);
+                document.getElementById('chatMessages').appendChild(typingDiv);
+                document.getElementById('chatMessages').scrollTop = 99999;
+                
+                setTimeout(() => {
+                    const typingEl = document.getElementById('typingMsg');
+                    if (typingEl) typingEl.remove();
+                    const resp = responses[rIdx % responses.length];
+                    rIdx++;
+                    addMessage(resp, false);
+                }, 1600);
+            });
+            
+            chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') sendBtn.click();
+            });
+        }
+        
+        // Newsletter subscription
+        const newsletterSubmit = document.getElementById('newsletterSubmit');
+        if (newsletterSubmit) {
+            newsletterSubmit.addEventListener('click', function() {
+                const email = document.getElementById('newsletterEmail').value;
+                if (email && email.includes('@')) {
+                    alert('Merci pour votre inscription ! Vous recevrez nos meilleures offres.');
+                    document.getElementById('newsletterEmail').value = '';
+                } else {
+                    alert('Veuillez entrer une adresse email valide.');
+                }
+            });
+        }
+    </script>
+{% endblock %}

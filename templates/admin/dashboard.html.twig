@@ -1,0 +1,476 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard Administrateur - SmartTrip{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+            background: #f8f9fa;
+        }
+        
+        .admin-sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .admin-sidebar .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .admin-sidebar .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .admin-sidebar .sidebar-header p {
+            margin: 5px 0 0;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .admin-sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            transition: all 0.3s;
+            border-radius: 0;
+        }
+        
+        .admin-sidebar .nav-link:hover,
+        .admin-sidebar .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .admin-sidebar .nav-link i {
+            width: 25px;
+            margin-right: 10px;
+        }
+        
+        .admin-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+        }
+        
+        .top-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            border-left: 4px solid;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .stat-card .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .stat-card .stat-icon {
+            font-size: 2rem;
+            float: right;
+            opacity: 0.3;
+        }
+        
+        .stat-card.primary { border-left-color: #007bff; }
+        .stat-card.success { border-left-color: #28a745; }
+        .stat-card.warning { border-left-color: #ffc107; }
+        .stat-card.danger { border-left-color: #dc3545; }
+        .stat-card.info { border-left-color: #17a2b8; }
+        
+        .table-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .badge-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-pending { background: #ffc107; color: #333; }
+        .badge-approved { background: #28a745; color: white; }
+        .badge-rejected { background: #dc3545; color: white; }
+        .badge-confirmed { background: #28a745; color: white; }
+        .badge-cancelled { background: #dc3545; color: white; }
+        .badge-completed { background: #17a2b8; color: white; }
+        
+        .note-moyenne {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ffc107;
+        }
+        
+        .stars {
+            color: #ffc107;
+            font-size: 1.2rem;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .quick-action-btn {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: white;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s;
+            border: 1px solid #e9ecef;
+        }
+        
+        .quick-action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            color: #007bff;
+        }
+        
+        .quick-action-btn i {
+            font-size: 1.5rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                margin-left: -280px;
+            }
+            .admin-sidebar.active {
+                margin-left: 0;
+            }
+            .admin-content {
+                margin-left: 0;
+            }
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+        
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1100;
+            background: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="admin-wrapper">
+    {# Sidebar #}
+    <div class="admin-sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>✈️ SmartTrip</h3>
+            <p>Administration</p>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="{{ path('admin_dashboard') }}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a class="nav-link" href="{{ path('admin_avis') }}">
+                <i class="fas fa-star"></i> Gérer les Avis
+            </a>
+            <a class="nav-link" href="{{ path('admin_reservations') }}">
+                <i class="fas fa-calendar-check"></i> Gérer les Réservations
+            </a>
+            <a class="nav-link" href="{{ path('admin_statistiques') }}">
+                <i class="fas fa-chart-line"></i> Statistiques
+            </a>
+            <a class="nav-link" href="{{ path('admin_boarding_passes') }}">
+                <i class="fas fa-qrcode"></i> Billets électroniques
+            </a>
+            <hr style="background: rgba(255,255,255,0.1); margin: 10px 0;">
+            <a class="nav-link" href="{{ path('app_logout') }}">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
+        </nav>
+    </div>
+    
+    {# Main content #}
+    <div class="admin-content">
+        <div class="top-bar">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-tachometer-alt"></i> Tableau de bord</h4>
+                <div class="d-flex align-items-center gap-3">
+                    <span><i class="fas fa-user"></i> {{ app.user.email|default('Admin') }}</span>
+                    <div class="bg-primary rounded-circle text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                        {{ app.user.email|default('A')|first|upper }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {# Stats Cards #}
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card primary">
+                    <div class="stat-icon"><i class="fas fa-star"></i></div>
+                    <div class="stat-value">{{ avisStats.total|default(0) }}</div>
+                    <div class="stat-label">Total des avis</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card warning">
+                    <div class="stat-icon"><i class="fas fa-clock"></i></div>
+                    <div class="stat-value">{{ avisStats.pending|default(0) }}</div>
+                    <div class="stat-label">Avis en attente</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card success">
+                    <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                    <div class="stat-value">{{ reservationStats.confirmed|default(0) }}</div>
+                    <div class="stat-label">Réservations confirmées</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card info">
+                    <div class="stat-icon"><i class="fas fa-euro-sign"></i></div>
+                    <div class="stat-value">{{ reservationStats.total_revenue|default(0)|number_format(0, ',', ' ') }} €</div>
+                    <div class="stat-label">Chiffre d'affaires</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stat-card success">
+                    <div class="stat-icon"><i class="fas fa-thumbs-up"></i></div>
+                    <div class="stat-value">{{ avisStats.approved|default(0) }}</div>
+                    <div class="stat-label">Avis approuvés</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card danger">
+                    <div class="stat-icon"><i class="fas fa-thumbs-down"></i></div>
+                    <div class="stat-value">{{ avisStats.rejected|default(0) }}</div>
+                    <div class="stat-label">Avis rejetés</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card warning">
+                    <div class="stat-icon"><i class="fas fa-calendar"></i></div>
+                    <div class="stat-value">{{ reservationStats.pending|default(0) }}</div>
+                    <div class="stat-label">Réservations en attente</div>
+                </div>
+            </div>
+        </div>
+        
+        {# Note moyenne #}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="table-card text-center">
+                    <h4>Note moyenne des avis</h4>
+                    <div class="note-moyenne">{{ avisStats.average_note|default(0)|number_format(1) }} / 5</div>
+                    <div class="stars">
+                        {% set note = avisStats.average_note|default(0) %}
+                        {% for i in 1..5 %}
+                            {% if i <= note %}
+                                <i class="fas fa-star"></i>
+                            {% elseif i - 0.5 <= note %}
+                                <i class="fas fa-star-half-alt"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {# Quick Actions #}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="table-card">
+                    <h5><i class="fas fa-bolt"></i> Actions rapides</h5>
+                    <div class="quick-actions">
+                        <a href="{{ path('admin_avis') }}?status=pending" class="quick-action-btn">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Approuver des avis</span>
+                        </a>
+                        <a href="{{ path('admin_reservations') }}?status=pending" class="quick-action-btn">
+                            <i class="fas fa-ticket-alt"></i>
+                            <span>Confirmer réservations</span>
+                        </a>
+                        <a href="{{ path('admin_boarding_passes') }}" class="quick-action-btn">
+                            <i class="fas fa-qrcode"></i>
+                            <span>Générer billets</span>
+                        </a>
+                        <a href="{{ path('admin_statistiques') }}" class="quick-action-btn">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Voir statistiques</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {# Derniers avis et réservations #}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="table-card">
+                    <h5><i class="fas fa-star"></i> Derniers avis</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Note</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for avis in latestAvis|default([]) %}
+                                    <tr>
+                                        <td>{{ avis.nomClient|slice(0, 20) }}</td>
+                                        <td>{{ avis.note }}/5</td>
+                                        <td>{{ avis.dateAvis|date('d/m/Y') }}</td>
+                                        <td>
+                                            {% if avis.isApproved %}
+                                                <span class="badge-status badge-approved">Approuvé</span>
+                                            {% elseif avis.isPending %}
+                                                <span class="badge-status badge-pending">En attente</span>
+                                            {% else %}
+                                                <span class="badge-status badge-rejected">Rejeté</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('admin_avis_approve', {'id': avis.id}) }}" class="btn btn-sm btn-success" title="Approuver">
+                                                <i class="fas fa-check"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">Aucun avis</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end mt-3">
+                        <a href="{{ path('admin_avis') }}" class="btn btn-sm btn-primary">Voir tous les avis <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="table-card">
+                    <h5><i class="fas fa-calendar-check"></i> Dernières réservations</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Destination</th>
+                                    <th>Date</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reservation in latestReservations|default([]) %}
+                                    <tr>
+                                        <td>{{ reservation.nomClient|slice(0, 15) }}</td>
+                                        <td>{{ reservation.destination|slice(0, 15) }}</td>
+                                        <td>{{ reservation.reservationDate|date('d/m/Y') }}</td>
+                                        <td>
+                                            {% if reservation.isConfirmed %}
+                                                <span class="badge-status badge-confirmed">Confirmé</span>
+                                            {% elseif reservation.isPending %}
+                                                <span class="badge-status badge-pending">En attente</span>
+                                            {% elseif reservation.isCancelled %}
+                                                <span class="badge-status badge-cancelled">Annulé</span>
+                                            {% else %}
+                                                <span class="badge-status badge-completed">Terminé</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ path('admin_reservations') }}?status={{ reservation.status }}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center">Aucune réservation</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-end mt-3">
+                        <a href="{{ path('admin_reservations') }}" class="btn btn-sm btn-primary">Voir toutes les réservations <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button class="sidebar-toggle" id="sidebarToggle">
+    <i class="fas fa-bars"></i>
+</button>
+
+<script>
+    // Toggle sidebar on mobile
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+        });
+    }
+</script>
+{% endblock %}

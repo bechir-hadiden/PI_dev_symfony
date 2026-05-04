@@ -30,7 +30,6 @@
     padding: 3rem 3.5rem;
     display: flex; justify-content: space-between; align-items: flex-end;
 }
-.hero-info-left {}
 .hero-breadcrumb {
     font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase;
     color: rgba(245,240,232,0.5); margin-bottom: 0.6rem;
@@ -54,9 +53,7 @@
 }
 
 /* Slider controls */
-.slider-controls {
-    display: flex; gap: 0.5rem; align-items: center;
-}
+.slider-controls { display: flex; gap: 0.5rem; align-items: center; }
 .sl-btn {
     width: 40px; height: 40px; background: rgba(245,240,232,0.12);
     border: 0.5px solid rgba(201,168,76,0.4); cursor: pointer;
@@ -65,9 +62,7 @@
     backdrop-filter: blur(8px);
 }
 .sl-btn:hover { background: var(--gold); color: var(--ink); border-color: var(--gold); }
-.sl-dots {
-    display: flex; gap: 0.5rem; align-items: center; padding: 0 0.5rem;
-}
+.sl-dots { display: flex; gap: 0.5rem; align-items: center; padding: 0 0.5rem; }
 .sl-dot {
     width: 6px; height: 6px; border-radius: 50%;
     background: rgba(245,240,232,0.3); cursor: pointer; transition: all 0.3s;
@@ -77,14 +72,12 @@
 /* Thumbnails */
 .thumbs-strip {
     display: flex; gap: 0.5rem; padding: 1rem 3.5rem;
-    background: var(--ink); overflow-x: auto;
-    scrollbar-width: none;
+    background: var(--ink); overflow-x: auto; scrollbar-width: none;
 }
 .thumbs-strip::-webkit-scrollbar { display:none; }
 .thumb {
     width: 80px; height: 56px; flex-shrink: 0; cursor: pointer;
-    border: 1.5px solid transparent; transition: border-color 0.25s;
-    overflow: hidden;
+    border: 1.5px solid transparent; transition: border-color 0.25s; overflow: hidden;
 }
 .thumb.active { border-color: var(--gold); }
 .thumb img { width:100%; height:100%; object-fit:cover; opacity:0.65; transition:opacity 0.2s; }
@@ -97,7 +90,6 @@
     gap: 4rem; padding: 5rem 3.5rem;
     align-items: start;
 }
-.dest-main {}
 .desc-label {
     font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
     color: var(--gold); display: flex; align-items: center; gap: 0.7rem;
@@ -105,19 +97,14 @@
 }
 .desc-label::before { content:''; display:block; width:28px; height:0.5px; background:var(--gold); }
 .dest-desc-text {
-    font-size: 0.96rem; line-height: 1.9; color: var(--muted);
-    max-width: 600px;
+    font-size: 0.96rem; line-height: 1.9; color: var(--muted); max-width: 600px;
 }
 
 /* Video */
 .video-wrap {
-    margin-top: 3rem; position: relative; padding-bottom: 56.25%;
-    height: 0; overflow: hidden;
+    margin-top: 3rem; position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;
 }
-.video-wrap iframe {
-    position: absolute; inset: 0; width: 100%; height: 100%;
-    border: none;
-}
+.video-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: none; }
 .video-label {
     font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
     color: var(--gold); display: flex; align-items: center; gap: 0.7rem;
@@ -132,15 +119,25 @@
     margin: 3.5rem 0 1.5rem;
 }
 .related-label::before { content:''; display:block; width:28px; height:0.5px; background:var(--gold); }
+
+/* ── CARTE VOYAGE AMÉLIORÉE ── */
 .voyage-card-mini {
-    background: var(--sand); border: 0.5px solid rgba(201,168,76,0.2);
-    padding: 1.4rem; margin-bottom: 1px; text-decoration: none;
-    display: block; transition: background 0.25s;
+    background: var(--sand);
+    border: 0.5px solid rgba(201,168,76,0.2);
+    padding: 1.4rem 1.4rem 1.4rem 1.4rem;
+    margin-bottom: 1px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    transition: background 0.25s;
+    text-decoration: none;
 }
 .voyage-card-mini:hover { background: var(--ink); }
-.voyage-card-mini:hover .vcm-dest { color: var(--white); }
+.voyage-card-mini:hover .vcm-dest  { color: var(--white); }
 .voyage-card-mini:hover .vcm-detail { color: rgba(245,240,232,0.5); }
-.voyage-card-mini:hover .vcm-price { color: var(--gold); }
+.voyage-card-mini:hover .vcm-price  { color: var(--gold); }
+.vcm-left { flex: 1; min-width: 0; }
 .vcm-dest {
     font-family: 'Playfair Display', serif;
     font-size: 1.1rem; font-weight: 300; color: var(--ink);
@@ -153,47 +150,186 @@
 .vcm-price {
     font-size: 1rem; font-weight: 600; color: var(--ink);
     margin-top: 0.6rem; transition: color 0.25s;
+    white-space: nowrap;
+}
+.vcm-right {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+.btn-reserver {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 1.1rem;
+    background: var(--gold);
+    color: var(--ink);
+    border: none;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+}
+.btn-reserver:hover {
+    background: var(--ink);
+    color: var(--gold);
+    box-shadow: 0 4px 16px rgba(201,168,76,0.25);
+    transform: translateY(-1px);
+}
+.voyage-card-mini:hover .btn-reserver {
+    background: rgba(201,168,76,0.15);
+    color: var(--gold);
+    border: 0.5px solid rgba(201,168,76,0.4);
+}
+.voyage-card-mini:hover .btn-reserver:hover {
+    background: var(--gold);
+    color: var(--ink);
 }
 
 /* Sidebar */
-.dest-sidebar {}
 .qr-card {
-    background: var(--white);
-    border: 0.5px solid rgba(201,168,76,0.25);
+    background: var(--white); border: 0.5px solid rgba(201,168,76,0.25);
     padding: 2rem; text-align: center; margin-bottom: 1.5px;
 }
 .qr-card img { width: 140px; height: 140px; display: block; margin: 0 auto 1rem; }
-.qr-label {
-    font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase;
-    color: var(--muted);
-}
-.info-card {
-    background: var(--sand);
-    border: 0.5px solid rgba(201,168,76,0.2);
-    padding: 2rem;
-}
+.qr-label { font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.info-card { background: var(--sand); border: 0.5px solid rgba(201,168,76,0.2); padding: 2rem; }
 .info-row {
-    display: flex; justify-content: space-between;
-    align-items: center; padding: 0.75rem 0;
-    border-bottom: 0.5px solid rgba(201,168,76,0.15);
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0.75rem 0; border-bottom: 0.5px solid rgba(201,168,76,0.15);
 }
 .info-row:last-child { border-bottom: none; }
-.info-key {
-    font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--muted); font-weight: 500;
-}
-.info-val {
-    font-size: 0.84rem; font-weight: 600; color: var(--ink);
-    text-align: right;
-}
-.cta-card {
-    background: var(--ink); padding: 2rem; margin-top: 1.5px; text-align: center;
-}
-.cta-card p {
-    font-size: 0.8rem; color: rgba(245,240,232,0.55);
-    line-height: 1.7; margin-bottom: 1.2rem;
-}
+.info-key { font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.info-val { font-size: 0.84rem; font-weight: 600; color: var(--ink); text-align: right; }
+.cta-card { background: var(--ink); padding: 2rem; margin-top: 1.5px; text-align: center; }
+.cta-card p { font-size: 0.8rem; color: rgba(245,240,232,0.55); line-height: 1.7; margin-bottom: 1.2rem; }
 .cta-card .btn-primary { display: block; text-align: center; }
+
+/* ── MODALE ── */
+@keyframes modalIn {
+    from { opacity:0; transform:translateY(20px) scale(0.97); }
+    to   { opacity:1; transform:translateY(0)     scale(1);    }
+}
+#reservationModal {
+    display: none; position: fixed; inset: 0; z-index: 9999;
+    align-items: center; justify-content: center; padding: 1rem;
+}
+#reservationModal.open { display: flex; }
+.modal-overlay {
+    position: absolute; inset: 0;
+    background: rgba(13,27,42,0.88);
+    backdrop-filter: blur(5px);
+    cursor: pointer;
+}
+.modal-panel {
+    position: relative;
+    background: var(--ink);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 4px;
+    width: 100%; max-width: 520px;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+    animation: modalIn .3s ease;
+}
+.modal-head {
+    padding: 1.8rem 2rem 1.2rem;
+    border-bottom: 1px solid rgba(201,168,76,0.12);
+    display: flex; justify-content: space-between; align-items: flex-start;
+}
+.modal-head-meta { font-size:.68rem; color:var(--gold); text-transform:uppercase; letter-spacing:.15em; margin-bottom:.3rem; font-weight:600; }
+.modal-head-title { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--white); font-weight:400; line-height:1.2; }
+.modal-head-price { font-size:.82rem; color:rgba(255,255,255,0.4); margin-top:.3rem; }
+.modal-close-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.55); width:36px; height:36px; border-radius:50%;
+    cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; transition: background .2s, color .2s;
+}
+.modal-close-btn:hover { background:rgba(201,168,76,0.15); color:var(--gold); }
+.modal-body { padding: 1.8rem 2rem; }
+
+/* Résumé voyage */
+.voyage-summary {
+    background: rgba(201,168,76,0.06);
+    border: 1px solid rgba(201,168,76,0.15);
+    padding: 1rem 1.2rem; margin-bottom: 1.6rem;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap:.75rem; text-align:center;
+}
+.vs-col { }
+.vs-col + .vs-col { border-left: 1px solid rgba(201,168,76,0.15); }
+.vs-key { font-size:.62rem; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:.08em; margin-bottom:.25rem; }
+.vs-val { font-size:.82rem; color:var(--white); font-weight:600; }
+.vs-val.gold { color:var(--gold); }
+
+/* Champs */
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:.9rem; margin-bottom:.9rem; }
+.form-group { margin-bottom:.9rem; }
+.form-group:last-of-type { margin-bottom:0; }
+.form-label {
+    font-size:.72rem; color:rgba(255,255,255,0.5); text-transform:uppercase;
+    letter-spacing:.06em; margin-bottom:.4rem; display:block; font-weight:600;
+}
+.form-input, .form-select, .form-textarea {
+    width:100%; padding:.75rem 1rem;
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(201,168,76,0.2);
+    color:var(--white);
+    font-family:'Plus Jakarta Sans',sans-serif; font-size:.85rem;
+    outline:none; box-sizing:border-box; transition:border-color .2s;
+    border-radius:0;
+}
+.form-input::placeholder, .form-textarea::placeholder { color:rgba(255,255,255,0.22); }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color:var(--gold); }
+.form-select { appearance:none; cursor:pointer; }
+.form-textarea { resize:vertical; }
+
+/* Total */
+.total-box {
+    background:rgba(201,168,76,0.08); border:1px solid rgba(201,168,76,0.2);
+    padding:1rem 1.2rem; margin:1.2rem 0;
+    display:flex; justify-content:space-between; align-items:center;
+}
+.total-label { font-size:.82rem; color:rgba(255,255,255,0.5); }
+.total-val { font-family:'Playfair Display',serif; font-size:1.3rem; color:var(--gold); font-weight:700; }
+
+/* Erreur / succès */
+.form-error {
+    display:none; background:rgba(220,53,69,0.12); border:1px solid rgba(220,53,69,0.3);
+    padding:.75rem 1rem; margin-bottom:1rem; font-size:.82rem; color:#ff8080;
+}
+.form-error.show { display:block; }
+.btn-submit {
+    width:100%; background:linear-gradient(135deg,var(--gold),#e2c27d);
+    color:var(--ink); border:none; cursor:pointer; padding:1rem;
+    font-weight:700; font-size:.95rem; font-family:inherit;
+    display:flex; align-items:center; justify-content:center; gap:.5rem;
+    transition:transform .2s, box-shadow .2s;
+}
+.btn-submit:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(201,168,76,0.35); }
+
+/* Succès */
+.success-screen {
+    display:none; text-align:center; padding:2.5rem 1rem;
+}
+.success-screen.show { display:block; }
+.success-icon {
+    width:72px; height:72px; margin:0 auto 1.4rem;
+    background:rgba(201,168,76,0.12); border:2px solid var(--gold);
+    border-radius:50%; display:flex; align-items:center; justify-content:center;
+}
+.success-icon i { color:var(--gold); font-size:1.8rem; }
+.success-screen h3 { font-family:'Playfair Display',serif; font-size:1.4rem; color:var(--white); font-weight:400; margin-bottom:.6rem; }
+.success-screen p { font-size:.85rem; color:rgba(255,255,255,0.5); line-height:1.7; margin-bottom:1.6rem; }
+.btn-close-success {
+    background:rgba(201,168,76,0.12); border:1px solid rgba(201,168,76,0.3);
+    color:var(--gold); padding:.75rem 2rem; cursor:pointer;
+    font-family:inherit; font-size:.85rem; font-weight:600; transition:background .2s;
+}
+.btn-close-success:hover { background:rgba(201,168,76,0.22); }
 {% endblock %}
 
 {% block body %}
@@ -279,19 +415,41 @@
             </div>
         {% endif %}
 
-        {# Voyages liés #}
+        {# ── VOYAGES LIÉS ── #}
         {% if destination.voyages is not empty %}
             <div class="related-label">Voyages disponibles ({{ destination.voyages|length }})</div>
+
             {% for voyage in destination.voyages %}
-                <a href="{{ path('client_voyage_show', {id: voyage.id}) }}" class="voyage-card-mini">
-                    <div class="vcm-dest">{{ voyage.destination }}</div>
-                    <div class="vcm-detail">
-                        {{ voyage.dateDebut|date('d M Y') }} → {{ voyage.dateFin|date('d M Y') }}
-                        &nbsp;·&nbsp; {{ voyage.dureeJours }} jours
-                        {% if voyage.paysDepart %}&nbsp;·&nbsp; Départ : {{ voyage.paysDepart }}{% endif %}
+                <div class="voyage-card-mini">
+
+                    {# Partie gauche : infos cliquables vers la page voyage #}
+                    <a href="{{ path('client_voyage_show', {id: voyage.id}) }}" class="vcm-left" style="text-decoration:none;">
+                        <div class="vcm-dest">{{ voyage.destination }}</div>
+                        <div class="vcm-detail">
+                            {{ voyage.dateDebut|date('d M Y') }} → {{ voyage.dateFin|date('d M Y') }}
+                            &nbsp;·&nbsp; {{ voyage.dureeJours }} jours
+                            {% if voyage.paysDepart %}&nbsp;·&nbsp; Départ : {{ voyage.paysDepart }}{% endif %}
+                        </div>
+                        <div class="vcm-price">{{ voyage.prix|number_format(0, ',', ' ') }} TND</div>
+                    </a>
+
+                    {# Partie droite : bouton Réserver #}
+                    <div class="vcm-right">
+                        <button class="btn-reserver"
+                                onclick="openModal({
+                                    id:        '{{ voyage.id }}',
+                                    dest:      '{{ voyage.destination|e('js') }}',
+                                    depart:    '{{ voyage.dateDebut|date('d/m/Y') }}',
+                                    retour:    '{{ voyage.dateFin|date('d/m/Y') }}',
+                                    duree:     '{{ voyage.dureeJours }}',
+                                    prix:      {{ voyage.prix ?? 0 }},
+                                    paysDepart:'{{ voyage.paysDepart|e('js') }}'
+                                })">
+                            <i class="fas fa-plane"></i> Réserver
+                        </button>
                     </div>
-                    <div class="vcm-price">{{ voyage.prix|number_format(0, ',', ' ') }} TND</div>
-                </a>
+
+                </div>
             {% endfor %}
         {% endif %}
 
@@ -350,16 +508,141 @@
     </aside>
 </div>
 
+
+{# ══════════════════════════════════════════════════════
+   MODALE DE RÉSERVATION (unique, rechargée dynamiquement)
+══════════════════════════════════════════════════════ #}
+<div id="reservationModal">
+
+    <div class="modal-overlay" onclick="closeModal()"></div>
+
+    <div class="modal-panel">
+
+        {# En-tête #}
+        <div class="modal-head">
+            <div>
+                <div class="modal-head-meta"><i class="fas fa-plane" style="margin-right:.4rem;"></i>Réservation</div>
+                <div class="modal-head-title" id="mTitle">—</div>
+                <div class="modal-head-price" id="mPrixHead"></div>
+            </div>
+            <button class="modal-close-btn" onclick="closeModal()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+
+            {# Résumé voyage #}
+            <div class="voyage-summary">
+                <div class="vs-col">
+                    <div class="vs-key">Départ</div>
+                    <div class="vs-val" id="mDepart">—</div>
+                </div>
+                <div class="vs-col">
+                    <div class="vs-key">Durée</div>
+                    <div class="vs-val gold" id="mDuree">—</div>
+                </div>
+                <div class="vs-col">
+                    <div class="vs-key">Retour</div>
+                    <div class="vs-val" id="mRetour">—</div>
+                </div>
+            </div>
+
+            {# Formulaire #}
+            <div id="formWrap">
+
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Prénom *</label>
+                        <input id="rPrenom" type="text" class="form-input" placeholder="Votre prénom">
+                    </div>
+                    <div>
+                        <label class="form-label">Nom *</label>
+                        <input id="rNom" type="text" class="form-input" placeholder="Votre nom">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Email *</label>
+                    <input id="rEmail" type="email" class="form-input" placeholder="votre@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Téléphone *</label>
+                    <input id="rTel" type="tel" class="form-input" placeholder="+216 XX XXX XXX">
+                </div>
+
+                <div class="form-row">
+                    <div>
+                        <label class="form-label">Nb. de personnes</label>
+                        <select id="rPersonnes" class="form-select" onchange="updateTotal()">
+                            <option value="1">1 personne</option>
+                            <option value="2">2 personnes</option>
+                            <option value="3">3 personnes</option>
+                            <option value="4">4 personnes</option>
+                            <option value="5">5 personnes</option>
+                            <option value="6">6+ personnes</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Type de chambre</label>
+                        <select id="rChambre" class="form-select">
+                            <option value="simple">Chambre simple</option>
+                            <option value="double">Chambre double</option>
+                            <option value="suite">Suite</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top:.9rem;">
+                    <label class="form-label">Message / Demande spéciale</label>
+                    <textarea id="rMessage" class="form-textarea" rows="3"
+                              placeholder="Régime alimentaire, besoins spéciaux..."></textarea>
+                </div>
+
+                {# Total #}
+                <div class="total-box" id="totalBox" style="display:none;">
+                    <span class="total-label">Total estimé</span>
+                    <span class="total-val" id="totalPrice">—</span>
+                </div>
+
+                {# Erreur #}
+                <div class="form-error" id="rError">
+                    <i class="fas fa-exclamation-triangle" style="margin-right:.4rem;"></i>
+                    <span id="rErrorMsg">Veuillez remplir tous les champs obligatoires.</span>
+                </div>
+
+                <button class="btn-submit" onclick="submitReservation()">
+                    <i class="fas fa-paper-plane"></i> Confirmer la réservation
+                </button>
+
+            </div>{# /formWrap #}
+
+            {# Succès #}
+            <div class="success-screen" id="successScreen">
+                <div class="success-icon"><i class="fas fa-check"></i></div>
+                <h3>Demande envoyée !</h3>
+                <p>
+                    Votre demande de réservation pour <strong id="successDest" style="color:var(--white);"></strong>
+                    a bien été reçue.<br>Notre équipe vous contactera dans les plus brefs délais.
+                </p>
+                <button class="btn-close-success" onclick="closeModal()">Fermer</button>
+            </div>
+
+        </div>{# /modal-body #}
+    </div>{# /modal-panel #}
+</div>{# /reservationModal #}
+
 {% endblock %}
 
 {% block javascripts %}
 <script>
-(function() {
-    const slides  = document.querySelectorAll('#heroSlider .slide');
-    const dots    = document.querySelectorAll('#slDots .sl-dot');
-    const thumbs  = document.querySelectorAll('#thumbsStrip .thumb');
-    let current = 0;
-    let timer;
+/* ── Slider ── */
+(function () {
+    const slides = document.querySelectorAll('#heroSlider .slide');
+    const dots   = document.querySelectorAll('#slDots .sl-dot');
+    const thumbs = document.querySelectorAll('#thumbsStrip .thumb');
+    let current = 0, timer;
 
     function goTo(idx) {
         slides[current]?.classList.remove('active');
@@ -369,20 +652,94 @@
         slides[current]?.classList.add('active');
         dots[current]?.classList.add('active');
         thumbs[current]?.classList.add('active');
-        thumbs[current]?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        thumbs[current]?.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' });
     }
-
-    function startAuto() {
-        clearInterval(timer);
-        timer = setInterval(() => goTo(current + 1), 4500);
-    }
+    function startAuto() { clearInterval(timer); timer = setInterval(() => goTo(current + 1), 4500); }
 
     document.getElementById('slNext')?.addEventListener('click', () => { goTo(current + 1); startAuto(); });
     document.getElementById('slPrev')?.addEventListener('click', () => { goTo(current - 1); startAuto(); });
-    dots.forEach(d => d.addEventListener('click', () => { goTo(+d.dataset.idx); startAuto(); }));
-    thumbs.forEach(t => t.addEventListener('click', () => { goTo(+t.dataset.idx); startAuto(); }));
-
+    dots.forEach(d  => d.addEventListener('click',  () => { goTo(+d.dataset.idx);  startAuto(); }));
+    thumbs.forEach(t => t.addEventListener('click', () => { goTo(+t.dataset.idx);  startAuto(); }));
     if (slides.length > 1) startAuto();
 })();
+
+/* ── Modale de réservation ── */
+let currentPrix = 0;
+
+function openModal(voyage) {
+    currentPrix = voyage.prix || 0;
+
+    // Remplir l'en-tête
+    document.getElementById('mTitle').textContent    = voyage.dest;
+    document.getElementById('mDepart').textContent   = voyage.depart;
+    document.getElementById('mRetour').textContent   = voyage.retour;
+    document.getElementById('mDuree').textContent    = voyage.duree + 'j';
+    document.getElementById('mPrixHead').textContent = currentPrix
+        ? currentPrix.toLocaleString('fr-TN') + ' TND / personne'
+        : '';
+
+    // Total
+    const totalBox = document.getElementById('totalBox');
+    if (currentPrix) {
+        totalBox.style.display = 'flex';
+        updateTotal();
+    } else {
+        totalBox.style.display = 'none';
+    }
+
+    // Réinitialiser le formulaire
+    ['rPrenom','rNom','rEmail','rTel','rMessage'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('rPersonnes').value = '1';
+    document.getElementById('rChambre').value   = 'double';
+    document.getElementById('rError').classList.remove('show');
+    document.getElementById('formWrap').style.display    = 'block';
+    document.getElementById('successScreen').classList.remove('show');
+
+    // Ouvrir
+    document.getElementById('reservationModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+    document.getElementById('reservationModal').classList.remove('open');
+    document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function updateTotal() {
+    if (!currentPrix) return;
+    const nb    = parseInt(document.getElementById('rPersonnes').value) || 1;
+    const total = (currentPrix * nb).toLocaleString('fr-TN');
+    document.getElementById('totalPrice').textContent = total + ' TND';
+}
+
+function submitReservation() {
+    const prenom = document.getElementById('rPrenom').value.trim();
+    const nom    = document.getElementById('rNom').value.trim();
+    const email  = document.getElementById('rEmail').value.trim();
+    const tel    = document.getElementById('rTel').value.trim();
+    const errEl  = document.getElementById('rError');
+    const errMsg = document.getElementById('rErrorMsg');
+
+    if (!prenom || !nom || !email || !tel) {
+        errMsg.textContent = 'Veuillez remplir tous les champs obligatoires (prénom, nom, email, téléphone).';
+        errEl.classList.add('show');
+        return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        errMsg.textContent = 'Veuillez entrer une adresse email valide.';
+        errEl.classList.add('show');
+        return;
+    }
+    errEl.classList.remove('show');
+
+    // TODO : fetch('/api/reservation', { method:'POST', body: JSON.stringify({...}) })
+
+    // Afficher le succès
+    document.getElementById('successDest').textContent       = document.getElementById('mTitle').textContent;
+    document.getElementById('formWrap').style.display        = 'none';
+    document.getElementById('successScreen').classList.add('show');
+}
 </script>
 {% endblock %}

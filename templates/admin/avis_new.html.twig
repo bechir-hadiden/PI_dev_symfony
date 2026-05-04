@@ -1,0 +1,171 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Nouvel avis - Administration{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .admin-sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .admin-sidebar .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .admin-sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            transition: all 0.3s;
+        }
+        
+        .admin-sidebar .nav-link:hover,
+        .admin-sidebar .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .admin-sidebar .nav-link i {
+            width: 25px;
+            margin-right: 10px;
+        }
+        
+        .admin-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+        }
+        
+        .top-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .form-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .form-label {
+            font-weight: 600;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="admin-wrapper">
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+        <div class="sidebar-header">
+            <h3>✈️ SmartTrip</h3>
+            <p>Administration</p>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{{ path('admin_dashboard') }}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a class="nav-link active" href="{{ path('admin_avis') }}">
+                <i class="fas fa-star"></i> Gérer les Avis
+            </a>
+            <a class="nav-link" href="{{ path('admin_reservations') }}">
+                <i class="fas fa-calendar-check"></i> Gérer les Réservations
+            </a>
+            <a class="nav-link" href="{{ path('admin_statistiques') }}">
+                <i class="fas fa-chart-line"></i> Statistiques
+            </a>
+            <a class="nav-link" href="{{ path('admin_boarding_passes') }}">
+                <i class="fas fa-qrcode"></i> Billets électroniques
+            </a>
+            <hr style="background: rgba(255,255,255,0.1); margin: 10px 0;">
+            <a class="nav-link" href="{{ path('app_logout') }}">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main content -->
+    <div class="admin-content">
+        <div class="top-bar">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4><i class="fas fa-plus-circle"></i> Nouvel avis</h4>
+                <a href="{{ path('admin_avis') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour
+                </a>
+            </div>
+        </div>
+        
+        <div class="form-card">
+            {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.nomClient, 'Nom du client', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.nomClient, {'attr': {'class': 'form-control', 'placeholder': 'Nom complet'}}) }}
+                        {{ form_errors(form.nomClient) }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.email, 'Email', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.email, {'attr': {'class': 'form-control', 'placeholder': 'email@exemple.com'}}) }}
+                        {{ form_errors(form.email) }}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.note, 'Note', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.note, {'attr': {'class': 'form-select'}}) }}
+                        {{ form_errors(form.note) }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        {{ form_label(form.voyageId, 'ID du voyage', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.voyageId, {'attr': {'class': 'form-control', 'placeholder': '1, 2, 3...'}}) }}
+                        {{ form_errors(form.voyageId) }}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        {{ form_label(form.destination, 'Destination', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.destination, {'attr': {'class': 'form-control', 'placeholder': 'Paris, New York, Tokyo...'}}) }}
+                        {{ form_errors(form.destination) }}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        {{ form_label(form.commentaire, 'Commentaire', {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.commentaire, {'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Partagez votre expérience...'}}) }}
+                        {{ form_errors(form.commentaire) }}
+                    </div>
+                </div>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Les avis ajoutés par l'administrateur sont automatiquement approuvés.
+                </div>
+                
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Créer l'avis
+                </button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

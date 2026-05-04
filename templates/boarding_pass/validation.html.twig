@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>✈️ Carte d'embarquement - {{ reservation.flightNumber }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Container principal */
+        .boarding-card {
+            max-width: 450px;
+            width: 100%;
+            background: white;
+            border-radius: 40px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: slideUp 0.6s ease-out;
+            transition: transform 0.3s ease;
+        }
+
+        .boarding-card:hover {
+            transform: translateY(-5px);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Header avec effet de vague */
+        .card-header {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 30px 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.1); opacity: 0.3; }
+        }
+
+        .airline-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 50px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+        }
+
+        .flight-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 10px 0;
+            letter-spacing: 2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .status-badge {
+            display: inline-block;
+            background: #10b981;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Section voyageur */
+        .passenger-section {
+            padding: 25px;
+            background: white;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+        }
+
+        .passenger-section::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 20px;
+            right: 20px;
+            height: 20px;
+            background: radial-gradient(ellipse at center, rgba(0,0,0,0.05) 0%, transparent 70%);
+        }
+
+        .section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .passenger-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .passenger-email {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        /* Timeline du vol */
+        .flight-timeline {
+            padding: 25px;
+            background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .timeline-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .timeline-container::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #667eea);
+            transform: translateY(-50%);
+            border-radius: 2px;
+        }
+
+        .timeline-point {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+
+        .timeline-time {
+            font-weight: 800;
+            color: #667eea;
+            font-size: 22px;
+            letter-spacing: 1px;
+        }
+
+        .timeline-city {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-top: 5px;
+        }
+
+        .timeline-airport {
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .flight-icon {
+            font-size: 28px;
+            animation: fly 2s ease-in-out infinite;
+        }
+
+        @keyframes fly {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(5px); }
+        }
+
+        /* Grille d'informations */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            padding: 25px;
+            background: white;
+        }
+
+        .info-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .info-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .info-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            color: #94a3b8;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .info-value {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e293b;
+        }
+
+        .info-sub {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 5px;
+        }
+
+        /* QR Code */
+        .qr-container {
+            padding: 35px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+        }
+
+        .qr-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(45deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 2px, transparent 2px, transparent 8px);
+        }
+
+        .qr-wrapper {
+            display: inline-block;
+            background: white;
+            padding: 20px;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .qr-wrapper:hover {
+            transform: scale(1.08);
+        }
+
+        .qr-code {
+            width: 180px;
+            height: 180px;
+            display: block;
+        }
+
+        .qr-text {
+            margin-top: 20px;
+            font-size: 13px;
+            color: white;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Footer */
+        .card-footer {
+            padding: 25px;
+            background: #1e293b;
+            color: white;
+        }
+
+        .footer-info {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+
+        .footer-item {
+            text-align: center;
+            flex: 1;
+            padding: 10px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .footer-item:hover {
+            background: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+
+        .footer-icon {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .footer-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            opacity: 0.7;
+            letter-spacing: 1px;
+        }
+
+        .footer-value {
+            font-size: 14px;
+            font-weight: 700;
+            margin-top: 5px;
+        }
+
+        .boarding-message {
+            text-align: center;
+            font-size: 12px;
+            opacity: 0.9;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 15px;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+
+        /* Animation de scan */
+        @keyframes scan {
+            0% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(102, 126, 234, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
+            }
+        }
+
+        .scan-animation {
+            animation: scan 2s infinite;
+        }
+
+        /* Badge premium */
+        .premium-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255,215,0,0.9);
+            color: #1e293b;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .timeline-time {
+                font-size: 18px;
+            }
+            .timeline-city {
+                font-size: 13px;
+            }
+            .info-value {
+                font-size: 18px;
+            }
+            .flight-number {
+                font-size: 24px;
+            }
+            .qr-code {
+                width: 150px;
+                height: 150px;
+            }
+            .info-grid {
+                gap: 12px;
+                padding: 20px;
+            }
+            .info-item {
+                padding: 10px;
+            }
+        }
+
+        /* Impression */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .boarding-card {
+                box-shadow: none;
+                max-width: 100%;
+            }
+            .card-footer {
+                background: #1e293b;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .qr-container {
+                background: #f8fafc;
+            }
+            .qr-text {
+                color: #1e293b;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="boarding-card">
+        <!-- Header -->
+        <div class="card-header">
+            <div class="airline-badge">
+                <span>✈️</span>
+                <span>{{ reservation.airline }}</span>
+            </div>
+            <div class="flight-number">Vol {{ reservation.flightNumber }}</div>
+            <div class="status-badge">
+                ✓ Réservation confirmée
+            </div>
+            <div class="premium-badge">
+                🌟 PRIORITY
+            </div>
+        </div>
+
+        <!-- Passenger Info -->
+        <div class="passenger-section">
+            <div class="section-title">PASSAGER</div>
+            <div class="passenger-name">{{ reservation.nomClient|upper }}</div>
+            <div class="passenger-email">{{ reservation.email }}</div>
+        </div>
+
+        <!-- Flight Timeline -->
+        <div class="flight-timeline">
+            <div class="timeline-container">
+                <div class="timeline-point">
+                    <div class="timeline-time">{{ reservation.departureTime|date('H:i') }}</div>
+                    <div class="timeline-city">{{ reservation.departureAirport }}</div>
+                    <div class="timeline-airport">Départ</div>
+                </div>
+                <div class="flight-icon">✈️</div>
+                <div class="timeline-point">
+                    <div class="timeline-time">{{ reservation.arrivalTime|date('H:i') }}</div>
+                    <div class="timeline-city">{{ reservation.arrivalAirport }}</div>
+                    <div class="timeline-airport">Arrivée</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">📅 DATE</div>
+                <div class="info-value">{{ reservation.departureTime|date('d/m/Y') }}</div>
+                <div class="info-sub">{{ reservation.departureTime|date('l')|capitalize }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">💺 SIÈGE</div>
+                <div class="info-value">{{ reservation.seatNumber ?? 'A définir' }}</div>
+                <div class="info-sub">Fenêtre</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">🚪 PORTE</div>
+                <div class="info-value">A12</div>
+                <div class="info-sub">Enregistrement</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">🎫 CLASSE</div>
+                <div class="info-value">Economy</div>
+                <div class="info-sub">Bagage: 20kg</div>
+            </div>
+        </div>
+
+        <!-- QR Code -->
+        <div class="qr-container">
+            <div class="qr-wrapper scan-animation">
+                {% if reservation.boardingPassFile %}
+                    <img src="{{ asset('uploads/boarding_passes/' ~ reservation.boardingPassFile) }}" 
+                         alt="QR Code" 
+                         class="qr-code">
+                {% else %}
+                    <div style="width: 180px; height: 180px; background: #e2e8f0; display: flex; align-items: center; justify-content: center; border-radius: 15px;">
+                        <span style="color: #64748b;">QR Code</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="qr-text">
+                📱 Présentez ce code à l'embarquement
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer">
+            <div class="footer-info">
+                <div class="footer-item">
+                    <div class="footer-icon">⏰</div>
+                    <div class="footer-label">Embarquement</div>
+                    <div class="footer-value">{{ reservation.departureTime|date_modify('-45 minutes')|date('H:i') }}</div>
+                </div>
+                <div class="footer-item">
+                    <div class="footer-icon">🛄</div>
+                    <div class="footer-label">Bagage cabine</div>
+                    <div class="footer-value">10kg max</div>
+                </div>
+                <div class="footer-item">
+                    <div class="footer-icon">🆔</div>
+                    <div class="footer-label">Pièce d'identité</div>
+                    <div class="footer-value">Obligatoire</div>
+                </div>
+            </div>
+            <div class="boarding-message">
+                ✈️ Bon voyage ! Présentez-vous 2h avant le départ
+            </div>
+        </div>
+    </div>
+</body>
+</html>

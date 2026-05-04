@@ -1,0 +1,2242 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}VoyageÉlite — Avis voyageurs{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --ink:      #0d0d0d;
+            --sand:     #f0e8d8;
+            --cream:    #faf6ef;
+            --gold:     #b8963e;
+            --gold-lt:  #d4b06a;
+            --muted:    #6b6560;
+            --white:    #ffffff;
+            --chat-bg:  #1a1714;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            overflow-x: hidden;
+        }
+
+        /* NAVIGATION */
+        .voyage-nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.4rem 3.5rem;
+            background: rgba(250, 246, 239, 0.88);
+            backdrop-filter: blur(12px);
+            border-bottom: 0.5px solid rgba(184,150,62,0.25);
+        }
+        .voyage-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.6rem; font-weight: 300; letter-spacing: 0.12em;
+            color: var(--ink); text-decoration: none;
+        }
+        .voyage-logo span { color: var(--gold); font-style: italic; }
+        .voyage-nav-links { display: flex; gap: 2.4rem; list-style: none; }
+        .voyage-nav-links a {
+            font-size: 0.78rem; font-weight: 400; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--muted);
+            text-decoration: none; transition: color 0.2s;
+        }
+        .voyage-nav-links a:hover { color: var(--gold); }
+        .voyage-nav-cta {
+            font-size: 0.78rem; font-weight: 500; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--ink);
+            border: 0.5px solid var(--gold); padding: 0.55rem 1.4rem;
+            text-decoration: none; transition: all 0.25s;
+        }
+        .voyage-nav-cta:hover { background: var(--gold); color: var(--white); }
+
+        /* HERO */
+        .voyage-hero {
+            min-height: 100vh;
+            display: grid; grid-template-columns: 1fr 1fr;
+            padding-top: 5rem;
+        }
+        .voyage-hero-left {
+            display: flex; flex-direction: column; justify-content: center;
+            padding: 5rem 3.5rem 5rem 3.5rem;
+        }
+        .voyage-hero-tag {
+            font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase;
+            color: var(--gold); margin-bottom: 1.6rem;
+            display: flex; align-items: center; gap: 0.7rem;
+        }
+        .voyage-hero-tag::before {
+            content: ''; display: block; width: 32px; height: 0.5px;
+            background: var(--gold);
+        }
+        .voyage-hero h1 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(3rem, 5vw, 5rem);
+            font-weight: 300; line-height: 1.08;
+            letter-spacing: -0.01em;
+            margin-bottom: 1.6rem;
+        }
+        .voyage-hero h1 em { font-style: italic; color: var(--gold); }
+        .voyage-hero-desc {
+            font-size: 0.92rem; line-height: 1.8; color: var(--muted);
+            max-width: 380px; margin-bottom: 2.8rem;
+        }
+        .hero-actions { display: flex; gap: 1.2rem; align-items: center; }
+        .voyage-btn-primary {
+            background: var(--ink); color: var(--white);
+            padding: 0.9rem 2rem; font-size: 0.8rem;
+            letter-spacing: 0.1em; text-transform: uppercase; font-weight: 500;
+            text-decoration: none; transition: all 0.25s;
+            border: none; cursor: pointer;
+            display: inline-block;
+        }
+        .voyage-btn-primary:hover { background: var(--gold); color: var(--ink); }
+        .voyage-btn-ghost {
+            font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase;
+            font-weight: 400; color: var(--muted); text-decoration: none;
+            display: flex; align-items: center; gap: 0.5rem;
+            transition: color 0.2s;
+        }
+        .voyage-btn-ghost:hover { color: var(--ink); }
+        .voyage-btn-ghost .arrow {
+            display: inline-block; transition: transform 0.2s;
+        }
+        .voyage-btn-ghost:hover .arrow { transform: translateX(4px); }
+
+        .voyage-hero-right {
+            position: relative; overflow: hidden;
+            background: var(--ink);
+        }
+        .voyage-hero-overlay {
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, transparent 50%, rgba(13,13,13,0.4) 100%);
+        }
+        .voyage-hero-badge {
+            position: absolute; bottom: 2.5rem; right: 2.5rem;
+            background: rgba(250,246,239,0.12);
+            backdrop-filter: blur(16px);
+            border: 0.5px solid rgba(184,150,62,0.5);
+            padding: 1.2rem 1.8rem; text-align: right;
+        }
+        .voyage-hero-badge .num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 2.4rem; font-weight: 300; color: var(--white);
+            line-height: 1;
+        }
+        .voyage-hero-badge .label {
+            font-size: 0.68rem; letter-spacing: 0.18em;
+            text-transform: uppercase; color: var(--gold-lt);
+        }
+
+        /* TICKER */
+        .voyage-ticker-wrap {
+            background: var(--gold); overflow: hidden;
+            padding: 0.7rem 0;
+        }
+        .voyage-ticker {
+            display: flex; gap: 0;
+            animation: ticker 28s linear infinite;
+            white-space: nowrap;
+        }
+        .voyage-ticker span {
+            font-size: 0.72rem; letter-spacing: 0.2em;
+            text-transform: uppercase; color: var(--ink);
+            padding: 0 2rem;
+        }
+        .ticker-dot {
+            color: rgba(0,0,0,0.35); user-select: none;
+        }
+        @keyframes ticker {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* SECTION TAG */
+        .voyage-section-tag {
+            font-size: 0.72rem; letter-spacing: 0.2em;
+            text-transform: uppercase; color: var(--gold);
+            display: flex; align-items: center; gap: 0.7rem;
+            margin-bottom: 1rem;
+        }
+        .voyage-section-tag::before {
+            content: ''; display: block; width: 28px; height: 0.5px;
+            background: var(--gold);
+        }
+        .voyage-h2 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: clamp(2rem, 3.5vw, 3rem);
+            font-weight: 300; line-height: 1.15;
+        }
+
+        /* DESTINATIONS */
+        .voyage-destinations {
+            padding: 7rem 3.5rem;
+        }
+        .voyage-dest-header {
+            display: flex; justify-content: space-between;
+            align-items: flex-end; margin-bottom: 3.5rem;
+        }
+        .voyage-dest-header h2 { max-width: 360px; }
+        .voyage-dest-header p {
+            font-size: 0.88rem; color: var(--muted);
+            line-height: 1.75; max-width: 280px; text-align: right;
+        }
+        .voyage-dest-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 1px;
+            background: rgba(184,150,62,0.2);
+        }
+        .voyage-dest-card {
+            position: relative; overflow: hidden;
+            cursor: pointer; background: var(--ink);
+        }
+        .voyage-dest-card:first-child {
+            grid-row: 1 / 3;
+            min-height: 580px;
+        }
+        .voyage-dest-card:not(:first-child) { min-height: 280px; }
+        .voyage-dest-card img {
+            width: 100%; height: 100%; object-fit: cover;
+            opacity: 0.72; transition: opacity 0.5s, transform 0.6s;
+            display: block;
+        }
+        .voyage-dest-card:hover img { opacity: 0.55; transform: scale(1.04); }
+        .voyage-dest-info {
+            position: absolute; bottom: 0; left: 0; right: 0;
+            padding: 1.8rem;
+            background: linear-gradient(to top, rgba(13,13,13,0.85) 0%, transparent 100%);
+        }
+        .voyage-dest-info h3 {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem; font-weight: 300; color: var(--white);
+            letter-spacing: 0.04em;
+        }
+        .voyage-dest-card:first-child .voyage-dest-info h3 { font-size: 2.2rem; }
+        .voyage-dest-info p {
+            font-size: 0.72rem; letter-spacing: 0.16em;
+            text-transform: uppercase; color: var(--gold-lt);
+            margin-top: 0.3rem;
+        }
+        .voyage-dest-arrow {
+            position: absolute; top: 1.4rem; right: 1.4rem;
+            width: 36px; height: 36px;
+            border: 0.5px solid rgba(184,150,62,0.6);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--gold-lt); font-size: 1rem;
+            opacity: 0; transform: translateY(-6px);
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .voyage-dest-card:hover .voyage-dest-arrow { opacity: 1; transform: translateY(0); }
+
+        /* SECTION AVIS */
+        .voyage-avis-section {
+            padding: 7rem 3.5rem;
+            background: var(--sand);
+        }
+        .voyage-avis-container {
+            display: grid;
+            grid-template-columns: 1fr 1.8fr;
+            gap: 3rem;
+        }
+        
+        /* Formulaire avis */
+        .voyage-avis-form {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 100px;
+        }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted);
+            margin-bottom: 0.5rem;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: 0.5px solid rgba(184,150,62,0.3);
+            background: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--gold);
+        }
+        
+        /* Messages d'erreur personnalisés */
+        .error-message {
+            color: #dc3545;
+            font-size: 0.7rem;
+            margin-top: 0.3rem;
+            display: none;
+        }
+        .error-message.show {
+            display: block;
+        }
+        .form-group.error input, .form-group.error select, .form-group.error textarea {
+            border-color: #dc3545;
+        }
+        
+        .rating-stars {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .rating-star {
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #ddd;
+            transition: color 0.2s;
+        }
+        .rating-star.active { color: var(--gold); }
+        .rating-star:hover { color: var(--gold-lt); }
+        
+        .mic-button-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .mic-btn {
+            background: none;
+            border: 0.5px solid rgba(184,150,62,0.3);
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+        }
+        .mic-btn:hover { background: var(--gold); color: var(--white); }
+        .mic-btn.listening { background: #dc3545; color: white; animation: pulse 1s infinite; }
+        .listening-indicator { font-size: 0.7rem; color: var(--muted); margin-top: 0.3rem; display: none; }
+        
+        .btn-submit {
+            background: var(--ink);
+            color: var(--white);
+            padding: 0.9rem 2rem;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover { background: var(--gold); color: var(--ink); }
+        
+        /* Filtres */
+        .voyage-filters {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .voyage-filters select {
+            padding: 0.6rem 1rem;
+            border: 0.5px solid rgba(184,150,62,0.3);
+            background: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.8rem;
+        }
+        
+        /* Recherche vocale */
+        .voice-search-container {
+            background: var(--white);
+            padding: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+            border: 0.5px solid rgba(184,150,62,0.2);
+        }
+        .voice-search-input {
+            flex: 1;
+            padding: 0.7rem 1rem;
+            border: none;
+            outline: none;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .voice-search-btn {
+            background: var(--gold);
+            border: none;
+            padding: 0.7rem 1.2rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .voice-search-btn:hover { background: var(--gold-lt); }
+        .voice-search-btn.listening { background: #dc3545; animation: pulse 1s infinite; }
+        .voice-commands {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .voice-command-chip {
+            background: rgba(184,150,62,0.1);
+            padding: 0.3rem 0.8rem;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .voice-command-chip:hover { background: var(--gold); color: var(--white); }
+        
+        /* Cartes avis */
+        .voyage-avis-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .avis-card {
+            background: var(--white);
+            padding: 1.5rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .avis-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .avis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        .avis-author {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .avis-avatar {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--gold), var(--gold-lt));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--ink);
+            border-radius: 50%;
+        }
+        .avis-author-info h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.2rem;
+        }
+        .avis-author-info small {
+            font-size: 0.7rem;
+            color: var(--muted);
+        }
+        .avis-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .avis-actions button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.3rem;
+            transition: opacity 0.2s;
+        }
+        .btn-edit { color: var(--gold); }
+        .btn-delete { color: #dc3545; }
+        
+        /* Bouton Signaler */
+        .btn-report {
+            background: none;
+            border: 0.5px solid rgba(184,150,62,0.3);
+            padding: 0.3rem 0.8rem;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .btn-report:hover {
+            background: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        
+        .avis-stars {
+            margin-bottom: 1rem;
+        }
+        .avis-stars i {
+            color: var(--gold);
+            margin-right: 2px;
+        }
+        .avis-stars i.far { color: #ddd; }
+        .avis-commentaire {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--ink);
+            margin-bottom: 1rem;
+        }
+        
+        /* DESTINATION WRAPPER avec bouton voir */
+        .avis-destination-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.8rem;
+            margin-bottom: 1rem;
+        }
+        .avis-destination-info {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.8rem;
+            background: rgba(184,150,62,0.1);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex: 1;
+        }
+        .avis-destination-info:hover {
+            background: rgba(184,150,62,0.2);
+        }
+        .weather-badge {
+            background: var(--white);
+            padding: 2px 8px;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-left: 0.5rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .btn-view-destination {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 1rem;
+            background: var(--gold);
+            color: var(--ink);
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .btn-view-destination:hover {
+            background: var(--ink);
+            color: var(--white);
+            transform: translateY(-1px);
+        }
+        .btn-view-destination i {
+            font-size: 0.7rem;
+        }
+        
+        /* Photos */
+        .photos-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            overflow-x: auto;
+        }
+        .photo-thumb {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border-radius: 8px;
+        }
+        .photo-thumb:hover { transform: scale(1.05); }
+        
+        /* Traduction */
+        .translate-buttons {
+            display: flex;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        .translate-btn {
+            background: none;
+            border: 0.5px solid rgba(184,150,62,0.3);
+            padding: 0.3rem 0.7rem;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .translate-btn:hover {
+            background: var(--gold);
+            color: var(--white);
+            border-color: var(--gold);
+        }
+        .translation-result {
+            background: rgba(184,150,62,0.1);
+            padding: 0.8rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            display: none;
+        }
+        
+        /* Commentaires */
+        .comments-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 0.5px solid rgba(184,150,62,0.2);
+        }
+        .toggle-comments {
+            background: none;
+            border: none;
+            color: var(--gold);
+            font-size: 0.75rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        .comments-list {
+            margin-top: 1rem;
+            display: none;
+        }
+        .comment-item {
+            background: rgba(184,150,62,0.05);
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+        .comment-author {
+            font-weight: 600;
+            font-size: 0.75rem;
+            margin-bottom: 0.3rem;
+        }
+        .comment-text {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+        .comment-date {
+            font-size: 0.65rem;
+            color: var(--muted);
+        }
+        .comment-input-group {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.8rem;
+        }
+        .comment-input {
+            flex: 1;
+            padding: 0.5rem;
+            border: 0.5px solid rgba(184,150,62,0.3);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.8rem;
+        }
+        .comment-submit {
+            background: var(--gold);
+            border: none;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+        
+        /* Modals */
+        .weather-modal, .photo-modal, .signalement-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1060;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .weather-modal-content, .signalement-modal-content {
+            background: var(--white);
+            width: 500px;
+            max-width: 90%;
+            overflow: hidden;
+        }
+        .weather-modal-header, .signalement-modal-header {
+            background: var(--ink);
+            color: var(--white);
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .weather-modal-close, .photo-modal-close, .signalement-modal-close {
+            background: none;
+            border: none;
+            color: var(--white);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .weather-modal-body, .signalement-modal-body { padding: 1.5rem; text-align: center; }
+        .weather-temp { font-size: 3rem; font-weight: 300; }
+        .photo-modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+        .modal-image {
+            max-width: 100%;
+            max-height: 80vh;
+            border-radius: 8px;
+        }
+        .modal-caption {
+            color: white;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        /* Signalement motifs */
+        .signalement-motifs {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin: 1rem 0;
+            text-align: left;
+        }
+        .motif-option {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: background 0.2s;
+        }
+        .motif-option:hover {
+            background: rgba(184,150,62,0.1);
+        }
+        .motif-option span i {
+            width: 20px;
+            color: var(--gold);
+        }
+        .btn-report-submit {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            width: 100%;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn-report-submit:hover {
+            background: #c82333;
+        }
+
+        /* AGENT SECTION */
+        .voyage-agent-section {
+            padding: 7rem 3.5rem;
+            background: var(--sand);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5rem;
+            align-items: center;
+        }
+        .agent-left .voyage-section-tag { margin-bottom: 1rem; }
+        .agent-left .voyage-h2 { margin-bottom: 1.2rem; }
+        .agent-left p {
+            font-size: 0.9rem; color: var(--muted);
+            line-height: 1.8; margin-bottom: 2rem;
+        }
+        .voyage-features { display: flex; flex-direction: column; gap: 1rem; }
+        .voyage-feature {
+            display: flex; gap: 1rem; align-items: flex-start;
+        }
+        .voyage-feature-icon {
+            width: 36px; height: 36px; flex-shrink: 0;
+            border: 0.5px solid var(--gold);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--gold); font-size: 0.9rem;
+        }
+        .voyage-feature-text h4 {
+            font-size: 0.82rem; font-weight: 500; letter-spacing: 0.06em;
+            text-transform: uppercase; margin-bottom: 0.2rem;
+        }
+        .voyage-feature-text p { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+
+        /* CHAT WIDGET */
+        .voyage-chat-widget {
+            background: var(--chat-bg);
+            border: 0.5px solid rgba(184,150,62,0.3);
+            overflow: hidden;
+        }
+        .voyage-chat-header {
+            padding: 1rem 1.4rem;
+            border-bottom: 0.5px solid rgba(184,150,62,0.2);
+            display: flex; align-items: center; gap: 0.8rem;
+        }
+        .voyage-chat-avatar {
+            width: 36px; height: 36px;
+            background: var(--gold);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem; color: var(--ink);
+            border-radius: 50%;
+        }
+        .voyage-chat-name {
+            font-size: 0.82rem; font-weight: 500; color: rgba(250,246,239,0.9);
+            letter-spacing: 0.05em;
+        }
+        .voyage-chat-status {
+            font-size: 0.7rem; color: rgba(184,150,62,0.8);
+            display: flex; align-items: center; gap: 0.35rem;
+        }
+        .voyage-status-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: #4caf6b; display: inline-block;
+        }
+        .chat-header-actions { margin-left: auto; display: flex; gap: 8px; }
+        .chat-header-actions span {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: rgba(255,255,255,0.15); display: block;
+        }
+
+        .voyage-chat-messages {
+            padding: 1.4rem; display: flex; flex-direction: column;
+            gap: 1rem; min-height: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .voyage-msg { display: flex; gap: 0.7rem; align-items: flex-end; }
+        .voyage-msg.user { flex-direction: row-reverse; }
+        .voyage-msg-bubble {
+            padding: 0.75rem 1rem;
+            font-size: 0.82rem; line-height: 1.6;
+            max-width: 78%;
+        }
+        .voyage-msg-bubble.agent {
+            background: rgba(255,255,255,0.06);
+            color: rgba(250,246,239,0.85);
+            border: 0.5px solid rgba(184,150,62,0.18);
+        }
+        .voyage-msg-bubble.user {
+            background: var(--gold);
+            color: var(--ink);
+        }
+        .voyage-msg-avatar {
+            width: 28px; height: 28px; flex-shrink: 0;
+            background: var(--gold);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem; color: var(--ink); font-weight: 500;
+            border-radius: 50%;
+        }
+        .voyage-msg-avatar.user-av {
+            background: rgba(255,255,255,0.12); color: rgba(250,246,239,0.7);
+        }
+        .voyage-typing { display: flex; gap: 4px; align-items: center; padding: 0.75rem 1rem; }
+        .voyage-typing span {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: rgba(184,150,62,0.6);
+            animation: blink 1.2s infinite;
+        }
+        @keyframes blink {
+            0%, 80%, 100% { opacity: 0.3; transform: scale(1); }
+            40%  { opacity: 1; transform: scale(1.15); }
+        }
+        .voyage-chat-input-row {
+            padding: 0.9rem 1.4rem;
+            border-top: 0.5px solid rgba(184,150,62,0.2);
+            display: flex; align-items: center; gap: 0.8rem;
+        }
+        .voyage-chat-input {
+            flex: 1; background: rgba(255,255,255,0.05);
+            border: 0.5px solid rgba(184,150,62,0.25); outline: none;
+            padding: 0.65rem 0.9rem; color: rgba(250,246,239,0.8);
+            font-family: 'DM Sans', sans-serif; font-size: 0.8rem;
+        }
+        .voyage-chat-input::placeholder { color: rgba(240,232,216,0.3); }
+        .voyage-chat-send {
+            width: 36px; height: 36px; background: var(--gold);
+            border: none; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.85rem; color: var(--ink); flex-shrink: 0;
+            transition: background 0.2s;
+        }
+        .voyage-chat-send:hover { background: var(--gold-lt); }
+
+        /* EXPERIENCE STRIP */
+        .voyage-experience {
+            padding: 7rem 3.5rem;
+            display: grid; grid-template-columns: repeat(4,1fr); gap: 1px;
+            background: rgba(184,150,62,0.2);
+        }
+        .voyage-exp-card {
+            background: var(--cream); padding: 2.5rem 2rem;
+            transition: background 0.3s;
+        }
+        .voyage-exp-card:hover { background: var(--ink); }
+        .voyage-exp-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 3rem; font-weight: 300; color: var(--gold);
+            line-height: 1;
+        }
+        .voyage-exp-card h3 {
+            font-size: 0.85rem; font-weight: 500; letter-spacing: 0.08em;
+            text-transform: uppercase; margin: 0.8rem 0 0.5rem;
+            color: var(--ink); transition: color 0.3s;
+        }
+        .voyage-exp-card:hover h3 { color: var(--white); }
+        .voyage-exp-card p {
+            font-size: 0.82rem; color: var(--muted); line-height: 1.7;
+            transition: color 0.3s;
+        }
+        .voyage-exp-card:hover p { color: rgba(240,232,216,0.55); }
+
+        /* NEWSLETTER */
+        .voyage-newsletter {
+            padding: 5rem 3.5rem;
+            border-top: 0.5px solid rgba(184,150,62,0.25);
+            display: flex; align-items: center; justify-content: space-between;
+            gap: 3rem;
+        }
+        .voyage-newsletter h2 { max-width: 360px; }
+        .voyage-newsletter p { font-size: 0.88rem; color: var(--muted); margin-top: 0.6rem; }
+        .voyage-nl-form { display: flex; gap: 0; }
+        .voyage-nl-input {
+            padding: 0.85rem 1.2rem; border: 0.5px solid rgba(184,150,62,0.4);
+            background: var(--white); font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem; outline: none; width: 280px;
+            color: var(--ink);
+        }
+        .voyage-nl-input::placeholder { color: #aaa; }
+        .voyage-nl-submit {
+            padding: 0.85rem 1.6rem; background: var(--gold);
+            border: none; cursor: pointer; font-size: 0.78rem;
+            font-weight: 500; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--ink);
+            font-family: 'DM Sans', sans-serif; transition: background 0.2s;
+        }
+        .voyage-nl-submit:hover { background: var(--ink); color: var(--white); }
+
+        /* FOOTER */
+        .voyage-footer {
+            background: var(--ink); padding: 3.5rem;
+            display: flex; justify-content: space-between; align-items: center;
+            border-top: 0.5px solid rgba(184,150,62,0.2);
+        }
+        .voyage-footer-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.4rem; font-weight: 300; letter-spacing: 0.1em;
+            color: var(--white);
+        }
+        .voyage-footer-logo span { color: var(--gold); font-style: italic; }
+        .voyage-footer-links { display: flex; gap: 2rem; }
+        .voyage-footer-links a {
+            font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase;
+            color: rgba(240,232,216,0.45); text-decoration: none;
+            transition: color 0.2s;
+        }
+        .voyage-footer-links a:hover { color: var(--gold); }
+        .footer-copy {
+            font-size: 0.7rem; color: rgba(240,232,216,0.3);
+            letter-spacing: 0.06em;
+        }
+
+        /* ANIMATIONS */
+        .fade-up {
+            opacity: 0; transform: translateY(28px);
+            animation: fadeUp 0.9s cubic-bezier(0.22,1,0.36,1) forwards;
+        }
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        /* Placeholder images */
+        .ph-santorini { background: linear-gradient(155deg,#1a3c5e 0%,#2a5f8a 40%,#d4a05a 100%); }
+        .ph-maldives  { background: linear-gradient(155deg,#0e4a4a 0%,#1a8080 50%,#b8e0e0 100%); }
+        .ph-tokyo     { background: linear-gradient(155deg,#2d1a3e 0%,#6b3fa0 50%,#e87b8b 100%); }
+        .ph-marrakech { background: linear-gradient(155deg,#5a2200 0%,#c45a1a 50%,#f0c080 100%); }
+        .ph-paris     { background: linear-gradient(155deg,#1a1a2e 0%,#3a3a6e 50%,#b0b0d8 100%); }
+
+        /* Highlight pour recherche */
+        mark.highlight {
+            background-color: #ffeb3b;
+            padding: 0 2px;
+            border-radius: 3px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .voyage-nav { padding: 1rem 1.5rem; }
+            .voyage-hero { grid-template-columns: 1fr; }
+            .voyage-agent-section { grid-template-columns: 1fr; }
+            .voyage-dest-grid { grid-template-columns: 1fr; }
+            .voyage-avis-container { grid-template-columns: 1fr; }
+            .voyage-experience { grid-template-columns: repeat(2,1fr); }
+            .voyage-newsletter { flex-direction: column; text-align: center; }
+            .voyage-footer { flex-direction: column; gap: 1.5rem; text-align: center; }
+        }
+        @media (max-width: 768px) {
+            .voyage-nav-links { display: none; }
+            .voyage-hero-left { padding: 3rem 1.5rem; }
+            .voyage-destinations, .voyage-agent-section, .voyage-avis-section, .voyage-experience, .voyage-newsletter { padding: 3rem 1.5rem; }
+        }
+        @media (max-width: 480px) {
+            .avis-destination-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .btn-view-destination {
+                justify-content: center;
+            }
+            .signalement-modal-content {
+                width: 95%;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    {# --- BLOC NOTIFICATIONS FLASH --- #}
+    <div class="voyage-notifications" style="position: fixed; top: 110px; right: 30px; z-index: 10000; width: 350px;">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert shadow-lg fade show" role="alert" 
+                     style="background: var(--chat-bg); color: var(--cream); border: 0.5px solid var(--gold); border-radius: 0; margin-bottom: 15px; padding: 1.2rem; position: relative; backdrop-filter: blur(10px);">
+                    
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        <div style="color: var(--gold); font-size: 1.2rem;">
+                            {% if label == 'success' %}
+                                <i class="fas fa-check-circle"></i>
+                            {% else %}
+                                <i class="fas fa-hourglass-half"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <strong style="display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.15em; color: var(--gold); margin-bottom: 4px;">
+                                {{ label == 'success' ? 'Confirmation' : 'Information' }}
+                            </strong>
+                            <p style="margin: 0; font-size: 0.85rem; line-height: 1.4; color: rgba(250, 246, 239, 0.9);">
+                                {{ message }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close" 
+                            style="position: absolute; top: 10px; right: 10px; font-size: 0.6rem; opacity: 0.5; border: none; background: none; color: white; cursor: pointer;">
+                        ✕
+                    </button>
+                </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+    {# --- FIN DU BLOC NOTIFICATIONS --- #}
+<div class="voyage-container">
+    <!-- NAVIGATION -->
+    <nav class="voyage-nav">
+        <a href="{{ path('app_home') }}" class="voyage-logo">Voyage<span>Élite</span></a>
+        <ul class="voyage-nav-links">
+            <li><a href="#destinations">Destinations</a></li>
+            <li><a href="#avis">Avis</a></li>
+            <li><a href="#agent">Expériences</a></li>
+            <li><a href="#agent">Sur Mesure</a></li>
+        </ul>
+        {% if app.user and 'ROLE_ADMIN' in app.user.roles %}
+            <a href="{{ path('admin_dashboard') }}" class="voyage-nav-cta">Administration</a>
+        {% else %}
+            <a href="#agent" class="voyage-nav-cta">Consulter l'Agent</a>
+        {% endif %}
+    </nav>
+
+    <!-- HERO -->
+    <section class="voyage-hero">
+        <div class="voyage-hero-left">
+            <div class="voyage-hero-tag fade-up">Agence de Voyage Exclusive</div>
+            <h1 class="fade-up">L'Art du<br><em>Voyage</em><br>Parfait.</h1>
+            <p class="voyage-hero-desc fade-up">Des itinéraires sur mesure conçus pour les voyageurs exigeants. Chaque détail, chaque moment — orchestré avec soin par notre agent expert.</p>
+            <div class="hero-actions fade-up">
+                <a href="#agent" class="voyage-btn-primary">Planifier mon Voyage</a>
+                <a href="#destinations" class="voyage-btn-ghost">
+                    Nos Destinations <span class="arrow">→</span>
+                </a>
+            </div>
+        </div>
+        <div class="voyage-hero-right">
+            <div class="ph-santorini" style="width:100%;height:100%;"></div>
+            <div class="voyage-hero-overlay"></div>
+            <div class="voyage-hero-badge">
+                <div class="num">{{ stats.total|default(avisList|length) }}+</div>
+                <div class="label">Avis clients</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TICKER -->
+    <div class="voyage-ticker-wrap">
+        <div class="voyage-ticker">
+            {% for i in 0..1 %}
+                <span>Santorini</span><span class="ticker-dot">✦</span>
+                <span>Maldives</span><span class="ticker-dot">✦</span>
+                <span>Tokyo</span><span class="ticker-dot">✦</span>
+                <span>Marrakech</span><span class="ticker-dot">✦</span>
+                <span>Patagonie</span><span class="ticker-dot">✦</span>
+                <span>Kyoto</span><span class="ticker-dot">✦</span>
+                <span>Amalfi</span><span class="ticker-dot">✦</span>
+                <span>Bali</span><span class="ticker-dot">✦</span>
+                <span>Islande</span><span class="ticker-dot">✦</span>
+                <span>Dubai</span><span class="ticker-dot">✦</span>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- DESTINATIONS -->
+    <section class="voyage-destinations" id="destinations">
+        <div class="voyage-dest-header">
+            <div>
+                <div class="voyage-section-tag">Sélection du Moment</div>
+                <h2 class="voyage-h2">Destinations<br><em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold)">incontournables</em></h2>
+            </div>
+            <p>Chaque destination choisie pour son caractère unique, ses expériences authentiques et son raffinement exceptionnel.</p>
+        </div>
+        <div class="voyage-dest-grid">
+            <div class="voyage-dest-card">
+                <div class="ph-santorini" style="width:100%;height:100%;"></div>
+                <div class="voyage-dest-arrow">↗</div>
+                <div class="voyage-dest-info">
+                    <h3>Santorin</h3>
+                    <p>Grèce · Séjour 7 nuits</p>
+                </div>
+            </div>
+            <div class="voyage-dest-card">
+                <div class="ph-maldives" style="width:100%;height:100%;"></div>
+                <div class="voyage-dest-arrow">↗</div>
+                <div class="voyage-dest-info">
+                    <h3>Maldives</h3>
+                    <p>Asie · Sur-l'eau</p>
+                </div>
+            </div>
+            <div class="voyage-dest-card">
+                <div class="ph-tokyo" style="width:100%;height:100%;"></div>
+                <div class="voyage-dest-arrow">↗</div>
+                <div class="voyage-dest-info">
+                    <h3>Tokyo</h3>
+                    <p>Japon · Immersion</p>
+                </div>
+            </div>
+            <div class="voyage-dest-card">
+                <div class="ph-marrakech" style="width:100%;height:100%;"></div>
+                <div class="voyage-dest-arrow">↗</div>
+                <div class="voyage-dest-info">
+                    <h3>Marrakech</h3>
+                    <p>Maroc · Riad Privé</p>
+                </div>
+            </div>
+            <div class="voyage-dest-card">
+                <div class="ph-paris" style="width:100%;height:100%;"></div>
+                <div class="voyage-dest-arrow">↗</div>
+                <div class="voyage-dest-info">
+                    <h3>Paris</h3>
+                    <p>France · Art de Vivre</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION AVIS -->
+    <section class="voyage-avis-section" id="avis">
+        <div class="voyage-section-tag">Partagez votre expérience</div>
+        <h2 class="voyage-h2" style="margin-bottom: 2rem;">Ce que nos<br><em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold)">voyageurs</em> disent</h2>
+        
+        <div class="voyage-avis-container">
+            <!-- Formulaire d'ajout d'avis -->
+            <div class="voyage-avis-form">
+                <h3 style="font-size: 1.2rem; margin-bottom: 1.5rem;">Donnez votre avis</h3>
+                {{ form_start(form, {'attr': {'id': 'newAvisForm'}}) }}
+                    <div class="form-group" id="form-group-nom">
+                        <label>Votre nom <span style="color: #dc3545;">*</span></label>
+                        {{ form_widget(form.nomClient, {'attr': {'class': '', 'placeholder': 'Jean Dupont', 'id': 'avisNom'}}) }}
+                        <div class="error-message" id="error-nom">Veuillez entrer votre nom (minimum 2 caractères)</div>
+                    </div>
+                    <div class="form-group" id="form-group-email">
+                        <label>Email <span style="color: #dc3545;">*</span></label>
+                        {{ form_widget(form.email, {'attr': {'class': '', 'placeholder': 'jean@example.com', 'id': 'avisEmail'}}) }}
+                        <div class="error-message" id="error-email">Veuillez entrer une adresse email valide</div>
+                    </div>
+                    <div class="form-group" id="form-group-note">
+                        <label>Note <span style="color: #dc3545;">*</span></label>
+                        <div class="rating-stars" id="ratingStars">
+                            {% for i in 1..5 %}
+                                <i class="fas fa-star rating-star" data-value="{{ i }}"></i>
+                            {% endfor %}
+                        </div>
+                        <input type="hidden" id="avisNote" name="note" value="5">
+                        <div class="error-message" id="error-note">Veuillez sélectionner une note</div>
+                    </div>
+                    <div class="form-group" id="form-group-destination">
+                        <label>Destination <span style="color: #dc3545;">*</span></label>
+                        {{ form_widget(form.destination, {'attr': {'class': '', 'id': 'destination-input', 'placeholder': 'Santorin, Maldives, ...'}}) }}
+                        <div class="error-message" id="error-destination">Veuillez entrer une destination</div>
+                    </div>
+                    <div class="form-group" id="form-group-commentaire">
+                        <label>Commentaire <span style="color: #dc3545;">*</span></label>
+                        {{ form_widget(form.commentaire, {'attr': {'class': '', 'rows': 4, 'id': 'commentaire-input', 'placeholder': 'Votre expérience...'}}) }}
+                        <div class="error-message" id="error-commentaire">Veuillez entrer un commentaire (minimum 10 caractères)</div>
+                        <div class="mic-button-group">
+                            <button type="button" id="micBtn" class="mic-btn"><i class="fas fa-microphone"></i> Dicter mon avis</button>
+                            <button type="button" id="stopMicBtn" class="mic-btn" style="display: none;"><i class="fas fa-stop"></i> Arrêter</button>
+                        </div>
+                        <div id="listeningIndicator" class="listening-indicator"><i class="fas fa-circle text-danger" style="font-size: 8px;"></i> Écoute en cours...</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Numéro de voyage</label>
+                        {{ form_widget(form.voyageId, {'attr': {'class': '', 'placeholder': 'Voyage #'}}) }}
+                    </div>
+                    <button type="submit" class="btn-submit">Publier mon avis</button>
+                {{ form_end(form) }}
+            </div>
+            
+            <!-- Liste des avis -->
+            <div>
+                <!-- Recherche vocale -->
+                <div class="voice-search-container">
+                    <input type="text" id="voiceSearchInput" class="voice-search-input" placeholder="🔍 Rechercher par voix ou texte...">
+                    <button id="voiceSearchBtn" class="voice-search-btn">
+                        <i class="fas fa-microphone"></i> Dicter
+                    </button>
+                </div>
+                <div class="voice-commands">
+                    <span class="voice-command-chip" data-command="recherche bon">🔊 "recherche bon"</span>
+                    <span class="voice-command-chip" data-command="recherche super">🔊 "recherche super"</span>
+                    <span class="voice-command-chip" data-command="recherche 5 étoiles">🔊 "recherche 5 étoiles"</span>
+                    <span class="voice-command-chip" data-command="afficher tout">🔊 "afficher tout"</span>
+                    <span class="voice-command-chip" data-command="meilleurs avis">🔊 "meilleurs avis"</span>
+                    <span class="voice-command-chip" data-command="avis positifs">🔊 "avis positifs"</span>
+                </div>
+                <div id="voiceSearchResult" class="small text-muted mt-2" style="display: none;"></div>
+                
+                <!-- Filtres -->
+                <div class="voyage-filters">
+                    <select id="filterNote">
+                        <option value="0">📊 Toutes les notes</option>
+                        <option value="5">⭐⭐⭐⭐⭐ 5 étoiles</option>
+                        <option value="4">⭐⭐⭐⭐ 4 étoiles</option>
+                        <option value="3">⭐⭐⭐ 3 étoiles</option>
+                        <option value="2">⭐⭐ 2 étoiles</option>
+                        <option value="1">⭐ 1 étoile</option>
+                    </select>
+                    <select id="sortBy">
+                        <option value="date">🕐 Plus récents</option>
+                        <option value="note">⭐ Mieux notés</option>
+                    </select>
+                </div>
+                
+                <!-- Liste des avis -->
+                <div class="voyage-avis-list" id="avisContainer">
+                    {% for avis in avisList %}
+                    <div class="avis-card" data-id="{{ avis.id }}" data-note="{{ avis.note }}" data-date="{{ avis.dateAvis.timestamp }}" data-commentaire="{{ avis.commentaire|lower }}" data-nom="{{ avis.nomClient|lower }}">
+                        <div class="avis-header">
+                            <div class="avis-author">
+                                <div class="avis-avatar">{{ avis.nomClient|slice(0, 1)|upper }}</div>
+                                <div class="avis-author-info">
+                                    <h4>{{ avis.nomClient }}</h4>
+                                    <small><i class="far fa-calendar-alt"></i> {{ avis.dateAvis|date('d/m/Y') }} • Voyage #{{ avis.voyageId }}</small>
+                                </div>
+                            </div>
+                            <div class="avis-actions">
+                                {% if app.user and 'ROLE_ADMIN' in app.user.roles %}
+                                <button class="btn-edit" onclick="editAvis({{ avis.id }})"><i class="fas fa-edit"></i></button>
+                                <button class="btn-delete" onclick="deleteAvis({{ avis.id }})"><i class="fas fa-trash"></i></button>
+                                {% endif %}
+                                <button class="btn-report" onclick="showSignalementModal({{ avis.id }})" title="Signaler cet avis">
+                                    <i class="fas fa-flag"></i> Signaler
+                                </button>
+                            </div>
+                        </div>
+                        <div class="avis-stars">
+                            {% for i in 1..5 %}
+                                {% if i <= avis.note %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <span style="margin-left: 0.5rem; font-size: 0.8rem;">{{ avis.note }}/5</span>
+                        </div>
+                        <div class="avis-commentaire">{{ avis.commentaire }}</div>
+                        
+                        <!-- DESTINATION AVEC METEO ET BOUTON VOIR -->
+                        {% if avis.destination %}
+                        <div class="avis-destination-wrapper">
+                            <div class="avis-destination-info" onclick="showWeatherModal({{ avis.id }})">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>{{ avis.destination|slice(0, 45) }}{% if avis.destination|length > 45 %}...{% endif %}</span>
+                                {% if avis.weatherData %}
+                                <span class="weather-badge"><i class="fas {{ avis.weatherData.icon }}"></i> {{ avis.weatherData.temperature }}°C</span>
+                                {% endif %}
+                            </div>
+                       <a href="{{ path('client_destination_index') }}?q={{ avis.destination|url_encode }}" 
+   class="btn-view-destination"
+   target="_blank">
+    <i class="fas fa-globe"></i> Voir destination
+</a>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Photos -->
+                        {% if avis.photos and avis.photos|length %}
+                        <div class="photos-container">
+                            {% for photo in avis.photos|slice(0, 4) %}
+                            <img src="{{ photo.thumb }}" alt="{{ photo.description }}" class="photo-thumb" onclick="showPhotoModal('{{ photo.url }}', '{{ photo.description }}', '{{ photo.photographer }}')">
+                            {% endfor %}
+                            {% if avis.photos|length > 4 %}
+                            <div class="d-flex align-items-center justify-content-center bg-light rounded-3" style="width: 60px; height: 60px;">
+                                <small class="text-muted">+{{ avis.photos|length - 4 }}</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Traduction -->
+                        <div class="translate-buttons">
+                            <button class="translate-btn" data-id="{{ avis.id }}" data-lang="fr">🇫🇷 Français</button>
+                            <button class="translate-btn" data-id="{{ avis.id }}" data-lang="en">🇬🇧 English</button>
+                            <button class="translate-btn" data-id="{{ avis.id }}" data-lang="es">🇪🇸 Español</button>
+                            <button class="translate-btn" data-id="{{ avis.id }}" data-lang="ar">🇸🇦 العربية</button>
+                            <button class="translate-btn" data-id="{{ avis.id }}" data-lang="de">🇩🇪 Deutsch</button>
+                            <button class="translate-btn" data-id="{{ avis.id }}" data-lang="it">🇮🇹 Italiano</button>
+                        </div>
+                        <div id="translation-{{ avis.id }}" class="translation-result"></div>
+                        
+                        <!-- Commentaires -->
+                        <div class="comments-section">
+                            <button class="toggle-comments" onclick="toggleComments({{ avis.id }})">
+                                <i class="far fa-comment"></i> Commentaires (<span id="comment-count-{{ avis.id }}">{{ avis.commentaires|length }}</span>)
+                                <i class="fas fa-chevron-down ms-1 small" id="chevron-{{ avis.id }}"></i>
+                            </button>
+                            <div id="comments-{{ avis.id }}" class="comments-list">
+                                {% for comment in avis.commentaires|sort((a, b) => b.date <=> a.date) %}
+                                <div class="comment-item">
+                                    <div class="comment-author">{{ comment.auteur }}</div>
+                                    <div class="comment-text">{{ comment.texte }}</div>
+                                    <div class="comment-date">{{ comment.date|date('d/m H:i') }}</div>
+                                </div>
+                                {% endfor %}
+                                <div class="comment-input-group">
+                                    <input type="text" id="comment-input-{{ avis.id }}" class="comment-input" placeholder="Ajouter un commentaire...">
+                                    <button class="comment-submit" onclick="addComment({{ avis.id }})"><i class="fas fa-paper-plane"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Modal météo -->
+                    <div id="weatherModal{{ avis.id }}" class="weather-modal" style="display: none;">
+                        <div class="weather-modal-content">
+                            <div class="weather-modal-header">
+                                <span><i class="fas fa-map-marker-alt me-2"></i>{{ avis.destination|slice(0, 50) }}</span>
+                                <button class="weather-modal-close" onclick="closeWeatherModal({{ avis.id }})">&times;</button>
+                            </div>
+                            <div class="weather-modal-body">
+                                {% if avis.weatherData %}
+                                <div class="text-center">
+                                    <i class="fas {{ avis.weatherData.icon }} fa-4x mb-2"></i>
+                                    <div class="weather-temp">{{ avis.weatherData.temperature }}°C</div>
+                                    <p>{{ avis.weatherData.description|capitalize }}</p>
+                                </div>
+                                <div class="row text-center g-3 mt-2">
+                                    <div class="col-6"><div class="bg-light rounded p-2"><i class="fas fa-wind"></i><div class="fw-bold">{{ avis.weatherData.windspeed }} km/h</div><small>Vent</small></div></div>
+                                    <div class="col-6"><div class="bg-light rounded p-2"><i class="fas fa-tint"></i><div class="fw-bold">{{ avis.weatherData.humidity ?? 'N/A' }}%</div><small>Humidité</small></div></div>
+                                </div>
+                                {% else %}
+                                <p>Météo non disponible pour cette destination</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div style="text-align: center; padding: 3rem;">
+                        <i class="fas fa-inbox fa-3x" style="color: var(--muted); margin-bottom: 1rem;"></i>
+                        <p>Aucun avis pour le moment. Soyez le premier à partager votre expérience !</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- AGENT SECTION -->
+    <section class="voyage-agent-section" id="agent">
+        <div class="agent-left">
+            <div class="voyage-section-tag">Votre Conseiller</div>
+            <h2 class="voyage-h2">Un agent<br><em style="font-family:'Cormorant Garamond',serif;font-style:italic;color:var(--gold)">intelligent</em><br>à votre service</h2>
+            <p>Notre agent IA de voyage comprend vos désirs les plus subtils. Décrivez votre voyage idéal — il crée l'itinéraire parfait, réserve les meilleurs hôtels et anticipe chaque besoin.</p>
+            <div class="voyage-features">
+                <div class="voyage-feature">
+                    <div class="voyage-feature-icon">✦</div>
+                    <div class="voyage-feature-text">
+                        <h4>Itinéraires Sur Mesure</h4>
+                        <p>Conçus en quelques secondes selon vos préférences et votre budget.</p>
+                    </div>
+                </div>
+                <div class="voyage-feature">
+                    <div class="voyage-feature-icon">◈</div>
+                    <div class="voyage-feature-text">
+                        <h4>Disponible 24/7</h4>
+                        <p>Votre conseiller personnel répond à toute heure, de partout dans le monde.</p>
+                    </div>
+                </div>
+                <div class="voyage-feature">
+                    <div class="voyage-feature-icon">◇</div>
+                    <div class="voyage-feature-text">
+                        <h4>Accès Exclusif</h4>
+                        <p>Hôtels privés, tables d'exception et expériences hors des sentiers battus.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHAT WIDGET -->
+        <div class="voyage-chat-widget">
+            <div class="voyage-chat-header">
+                <div class="voyage-chat-avatar">E</div>
+                <div>
+                    <div class="voyage-chat-name">Élise — Conseillère VoyageÉlite</div>
+                    <div class="voyage-chat-status"><span class="voyage-status-dot"></span> En ligne maintenant</div>
+                </div>
+                <div class="chat-header-actions">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+            <div class="voyage-chat-messages" id="chatMessages">
+                <div class="voyage-msg">
+                    <div class="voyage-msg-avatar">E</div>
+                    <div class="voyage-msg-bubble agent">Bonjour ! Je suis Élise, votre conseillère de voyage exclusive. Où rêvez-vous de partir ?</div>
+                </div>
+            </div>
+            <div class="voyage-chat-input-row">
+                <input type="text" class="voyage-chat-input" id="chatInput" placeholder="Écrivez votre message…" />
+                <button class="voyage-chat-send" id="chatSend">→</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- EXPERIENCE STRIP -->
+    <section class="voyage-experience">
+        <div class="voyage-exp-card">
+            <div class="voyage-exp-num">240+</div>
+            <h3>Destinations</h3>
+            <p>Des îles privées aux capitales culturelles — le monde à votre portée.</p>
+        </div>
+        <div class="voyage-exp-card">
+            <div class="voyage-exp-num">18</div>
+            <h3>Ans d'Excellence</h3>
+            <p>Une décennie et demie au service des voyageurs les plus exigeants.</p>
+        </div>
+        <div class="voyage-exp-card">
+            <div class="voyage-exp-num">{{ stats.average_note|default(4.9) }}</div>
+            <h3>Note Moyenne</h3>
+            <p>Évalué par plus de {{ stats.total|default(avisList|length) }} clients.</p>
+        </div>
+        <div class="voyage-exp-card">
+            <div class="voyage-exp-num">100%</div>
+            <h3>Sur Mesure</h3>
+            <p>Aucun voyage n'est identique. Chaque itinéraire est unique comme vous.</p>
+        </div>
+    </section>
+
+    <!-- NEWSLETTER -->
+    <section class="voyage-newsletter">
+        <div>
+            <div class="voyage-section-tag">Restez Informé</div>
+            <h2 class="voyage-h2">Les meilleures<br>offres en avant-première</h2>
+            <p>Destinations secrètes, offres exclusives et inspirations voyage.</p>
+        </div>
+        <div class="voyage-nl-form">
+            <input type="email" class="voyage-nl-input" placeholder="votre@email.com" id="newsletterEmail" />
+            <button class="voyage-nl-submit" id="newsletterSubmit">S'inscrire</button>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="voyage-footer">
+        <div class="voyage-footer-logo">Voyage<span>Élite</span></div>
+        <div class="voyage-footer-links">
+            <a href="#">Mentions Légales</a>
+            <a href="#">Confidentialité</a>
+            <a href="#">Contact</a>
+            <a href="#">Presse</a>
+        </div>
+        <div class="footer-copy">© {{ "now"|date("Y") }} VoyageÉlite. Tous droits réservés.</div>
+    </footer>
+</div>
+
+<!-- MODAL SIGNALEMENT -->
+<div id="signalementModal" class="signalement-modal" style="display: none;">
+    <div class="signalement-modal-content">
+        <div class="signalement-modal-header">
+            <h3><i class="fas fa-flag"></i> Signaler un avis</h3>
+            <button class="signalement-modal-close" onclick="closeSignalementModal()">&times;</button>
+        </div>
+        <div class="signalement-modal-body">
+            <p>Pour quel motif souhaitez-vous signaler cet avis ?</p>
+            <form id="signalementForm">
+                <input type="hidden" id="signalementAvisId">
+                <div class="signalement-motifs">
+                    <label class="motif-option">
+                        <input type="radio" name="motif" value="spam" required>
+                        <span><i class="fas fa-ban"></i> Spam ou publicité</span>
+                    </label>
+                    <label class="motif-option">
+                        <input type="radio" name="motif" value="inapproprie">
+                        <span><i class="fas fa-exclamation-triangle"></i> Contenu inapproprié</span>
+                    </label>
+                    <label class="motif-option">
+                        <input type="radio" name="motif" value="faux">
+                        <span><i class="fas fa-fake"></i> Information fausse ou trompeuse</span>
+                    </label>
+                    <label class="motif-option">
+                        <input type="radio" name="motif" value="injureux">
+                        <span><i class="fas fa-comment-slash"></i> Propos injurieux ou discriminatoires</span>
+                    </label>
+                    <label class="motif-option">
+                        <input type="radio" name="motif" value="harcelement">
+                        <span><i class="fas fa-user-slash"></i> Harcèlement</span>
+                    </label>
+                    <label class="motif-option">
+                        <input type="radio" name="motif" value="violation">
+                        <span><i class="fas fa-copyright"></i> Violation des droits d'auteur</span>
+                    </label>
+                    <label class="motif-option">
+                        <input type="radio" name="motif" value="autre">
+                        <span><i class="fas fa-question"></i> Autre motif</span>
+                    </label>
+                </div>
+                <div class="form-group" style="text-align: left;">
+                    <label>Description (optionnelle)</label>
+                    <textarea id="signalementDescription" class="form-group" rows="3" placeholder="Décrivez précisément le problème..." style="width: 100%; padding: 0.8rem; border: 0.5px solid rgba(184,150,62,0.3); font-family: inherit;"></textarea>
+                </div>
+                <button type="submit" class="btn-report-submit">
+                    <i class="fas fa-paper-plane"></i> Envoyer le signalement
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal photo -->
+<div id="photoModal" class="photo-modal" style="display: none;">
+    <div class="photo-modal-content">
+        <button class="photo-modal-close" onclick="closePhotoModal()">&times;</button>
+        <img id="modalImage" class="modal-image" src="">
+        <div class="modal-caption">
+            <p id="modalCaption"></p>
+            <small id="modalCredit"></small>
+        </div>
+    </div>
+</div>
+
+<!-- Modal modification -->
+<div class="modal fade" id="editModal" tabindex="-1" style="display: none;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white py-2">
+                <h6 class="modal-title">Modifier l'avis</h6>
+                <button type="button" class="btn-close btn-close-white btn-sm" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-3">
+                <form id="editForm">
+                    <input type="hidden" id="editId">
+                    <div class="form-group"><input type="text" class="form-control" id="editNom" placeholder="Nom"></div>
+                    <div class="form-group"><input type="email" class="form-control" id="editEmail" placeholder="Email"></div>
+                    <div class="form-group">
+                        <select class="form-control" id="editNote">
+                            <option value="5">⭐⭐⭐⭐⭐ 5 étoiles</option>
+                            <option value="4">⭐⭐⭐⭐ 4 étoiles</option>
+                            <option value="3">⭐⭐⭐ 3 étoiles</option>
+                            <option value="2">⭐⭐ 2 étoiles</option>
+                            <option value="1">⭐ 1 étoile</option>
+                        </select>
+                    </div>
+                    <div class="form-group"><input type="text" class="form-control" id="editVoyageId" placeholder="Voyage #"></div>
+                    <div class="form-group"><textarea class="form-control" id="editCommentaire" rows="3" placeholder="Commentaire"></textarea></div>
+                    <div class="form-group"><input type="text" class="form-control" id="editDestination" placeholder="Destination"></div>
+                </form>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-sm btn-primary" onclick="saveEdit()">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        let currentRating = 5;
+        let editModal;
+        let voiceRecognition = null;
+        let micRecognition = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const stars = document.querySelectorAll('.rating-star');
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    currentRating = parseInt(this.dataset.value);
+                    document.getElementById('avisNote').value = currentRating;
+                    stars.forEach((s, i) => {
+                        if (i < currentRating) s.classList.add('active');
+                        else s.classList.remove('active');
+                    });
+                    // Remove error on rating
+                    document.getElementById('form-group-note')?.classList.remove('error');
+                    document.getElementById('error-note')?.classList.remove('show');
+                });
+            });
+            if (stars.length > 0) stars[4]?.classList.add('active');
+            
+            const filterNote = document.getElementById('filterNote');
+            const sortBy = document.getElementById('sortBy');
+            if (filterNote) filterNote.addEventListener('change', filterAvis);
+            if (sortBy) sortBy.addEventListener('change', sortAvis);
+            
+            if (typeof bootstrap !== 'undefined') {
+                const editModalEl = document.getElementById('editModal');
+                if (editModalEl) editModal = new bootstrap.Modal(editModalEl);
+            }
+            
+            initVoiceSearch();
+            initMicDictation();
+            initTranslation();
+            initFormValidation();
+        });
+        
+        // ========== CONTRÔLE DE SAISIE POUR LE FORMULAIRE ==========
+        function initFormValidation() {
+            const form = document.getElementById('newAvisForm');
+            if (!form) return;
+            
+            const nomInput = document.getElementById('avisNom');
+            const emailInput = document.getElementById('avisEmail');
+            const destinationInput = document.getElementById('destination-input');
+            const commentaireInput = document.getElementById('commentaire-input');
+            
+            // Validation en temps réel
+            if (nomInput) {
+                nomInput.addEventListener('input', function() {
+                    validateField(this, document.getElementById('form-group-nom'), document.getElementById('error-nom'), 
+                        () => this.value.trim().length >= 2, 'Veuillez entrer votre nom (minimum 2 caractères)');
+                });
+            }
+            
+            if (emailInput) {
+                emailInput.addEventListener('input', function() {
+                    const emailRegex = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
+                    validateField(this, document.getElementById('form-group-email'), document.getElementById('error-email'), 
+                        () => emailRegex.test(this.value.trim()), 'Veuillez entrer une adresse email valide');
+                });
+            }
+            
+            if (destinationInput) {
+                destinationInput.addEventListener('input', function() {
+                    validateField(this, document.getElementById('form-group-destination'), document.getElementById('error-destination'), 
+                        () => this.value.trim().length >= 2, 'Veuillez entrer une destination');
+                });
+            }
+            
+            if (commentaireInput) {
+                commentaireInput.addEventListener('input', function() {
+                    validateField(this, document.getElementById('form-group-commentaire'), document.getElementById('error-commentaire'), 
+                        () => this.value.trim().length >= 10, 'Veuillez entrer un commentaire (minimum 10 caractères)');
+                });
+            }
+            
+            // Soumission du formulaire
+            form.addEventListener('submit', function(e) {
+                let isValid = true;
+                
+                // Validation nom
+                if (nomInput && !validateField(nomInput, document.getElementById('form-group-nom'), document.getElementById('error-nom'), 
+                    () => nomInput.value.trim().length >= 2, 'Veuillez entrer votre nom (minimum 2 caractères)')) {
+                    isValid = false;
+                }
+                
+                // Validation email
+                const emailRegex = /^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/;
+                if (emailInput && !validateField(emailInput, document.getElementById('form-group-email'), document.getElementById('error-email'), 
+                    () => emailRegex.test(emailInput.value.trim()), 'Veuillez entrer une adresse email valide')) {
+                    isValid = false;
+                }
+                
+                // Validation destination
+                if (destinationInput && !validateField(destinationInput, document.getElementById('form-group-destination'), document.getElementById('error-destination'), 
+                    () => destinationInput.value.trim().length >= 2, 'Veuillez entrer une destination')) {
+                    isValid = false;
+                }
+                
+                // Validation commentaire
+                if (commentaireInput && !validateField(commentaireInput, document.getElementById('form-group-commentaire'), document.getElementById('error-commentaire'), 
+                    () => commentaireInput.value.trim().length >= 10, 'Veuillez entrer un commentaire (minimum 10 caractères)')) {
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    // Scroll to first error
+                    const firstError = document.querySelector('.form-group.error');
+                    if (firstError) {
+                        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }
+            });
+        }
+        
+        function validateField(input, group, errorMsg, validationFn, errorText) {
+            if (!input || !group || !errorMsg) return true;
+            const isValid = validationFn();
+            if (!isValid) {
+                group.classList.add('error');
+                errorMsg.textContent = errorText;
+                errorMsg.classList.add('show');
+            } else {
+                group.classList.remove('error');
+                errorMsg.classList.remove('show');
+            }
+            return isValid;
+        }
+        
+        function filterAvis() {
+            const note = document.getElementById('filterNote').value;
+            document.querySelectorAll('.avis-card').forEach(card => {
+                card.style.display = (note == 0 || card.dataset.note == note) ? '' : 'none';
+            });
+        }
+        
+        function sortAvis() {
+            const sortBy = document.getElementById('sortBy').value;
+            const container = document.getElementById('avisContainer');
+            const cards = Array.from(document.querySelectorAll('.avis-card'));
+            cards.sort((a, b) => {
+                if (sortBy === 'date') {
+                    return parseInt(b.dataset.date) - parseInt(a.dataset.date);
+                } else {
+                    return parseInt(b.dataset.note) - parseInt(a.dataset.note);
+                }
+            });
+            cards.forEach(card => container.appendChild(card));
+        }
+        
+        function toggleComments(id) {
+            const div = document.getElementById(`comments-${id}`);
+            const chevron = document.getElementById(`chevron-${id}`);
+            if (!div) return;
+            if (div.style.display === 'none' || !div.style.display) {
+                div.style.display = 'block';
+                if (chevron) {
+                    chevron.classList.remove('fa-chevron-down');
+                    chevron.classList.add('fa-chevron-up');
+                }
+            } else {
+                div.style.display = 'none';
+                if (chevron) {
+                    chevron.classList.remove('fa-chevron-up');
+                    chevron.classList.add('fa-chevron-down');
+                }
+            }
+        }
+        
+        function addComment(id) {
+            const input = document.getElementById(`comment-input-${id}`);
+            if (!input || !input.value.trim()) return;
+            fetch(`/avis/commentaire/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ auteur: 'Visiteur', texte: input.value })
+            }).then(() => location.reload());
+        }
+        
+        function editAvis(id) {
+            fetch(`/avis/modifier/${id}`).then(r => r.json()).then(avis => {
+                document.getElementById('editId').value = avis.id;
+                document.getElementById('editNom').value = avis.nomClient;
+                document.getElementById('editEmail').value = avis.email;
+                document.getElementById('editNote').value = avis.note;
+                document.getElementById('editVoyageId').value = avis.voyageId;
+                document.getElementById('editCommentaire').value = avis.commentaire;
+                document.getElementById('editDestination').value = avis.destination || '';
+                if (editModal) editModal.show();
+            });
+        }
+        
+        function saveEdit() {
+            const id = document.getElementById('editId').value;
+            const data = {
+                nomClient: document.getElementById('editNom').value,
+                email: document.getElementById('editEmail').value,
+                note: document.getElementById('editNote').value,
+                voyageId: document.getElementById('editVoyageId').value,
+                commentaire: document.getElementById('editCommentaire').value,
+                destination: document.getElementById('editDestination').value
+            };
+            fetch(`/avis/modifier/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            }).then(() => location.reload());
+        }
+        
+        function deleteAvis(id) {
+            if (confirm('Supprimer cet avis ?')) {
+                fetch(`/avis/supprimer/${id}`, { method: 'POST' }).then(() => location.reload());
+            }
+        }
+        
+        function showWeatherModal(id) {
+            const modal = document.getElementById(`weatherModal${id}`);
+            if (modal) modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeWeatherModal(id) {
+            const modal = document.getElementById(`weatherModal${id}`);
+            if (modal) modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        function showPhotoModal(url, caption, photographer) {
+            document.getElementById('modalImage').src = url;
+            document.getElementById('modalCaption').innerHTML = caption || '';
+            document.getElementById('modalCredit').innerHTML = `📸 Photo par ${photographer || 'inconnu'}`;
+            document.getElementById('photoModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closePhotoModal() {
+            document.getElementById('photoModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+        
+        // ========== SIGNALEMENT ==========
+        function showSignalementModal(avisId) {
+            document.getElementById('signalementAvisId').value = avisId;
+            document.getElementById('signalementModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeSignalementModal() {
+            document.getElementById('signalementModal').style.display = 'none';
+            document.getElementById('signalementForm').reset();
+            document.body.style.overflow = 'auto';
+        }
+        
+        document.getElementById('signalementForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const avisId = document.getElementById('signalementAvisId').value;
+            const motif = document.querySelector('input[name="motif"]:checked')?.value;
+            const description = document.getElementById('signalementDescription').value;
+            
+            if (!motif) {
+                alert('Veuillez sélectionner un motif');
+                return;
+            }
+            
+            const submitBtn = this.querySelector('.btn-report-submit');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+            
+            try {
+                const response = await fetch(`/avis/${avisId}/signaler`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ motif, description })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('✅ Signalement envoyé ! Notre équipe va vérifier cet avis.');
+                    closeSignalementModal();
+                } else {
+                    alert('❌ Erreur: ' + (data.error || 'Impossible d\'envoyer le signalement'));
+                }
+            } catch (error) {
+                alert('❌ Erreur de connexion');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer le signalement';
+            }
+        });
+        
+        document.getElementById('signalementModal')?.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeSignalementModal();
+            }
+        });
+        
+        function initVoiceSearch() {
+            const voiceSearchBtn = document.getElementById('voiceSearchBtn');
+            const voiceSearchInput = document.getElementById('voiceSearchInput');
+            const voiceSearchResult = document.getElementById('voiceSearchResult');
+            
+            if (!voiceSearchBtn) return;
+            if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                voiceSearchBtn.disabled = true;
+                return;
+            }
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            let recognition = null;
+            
+            voiceSearchBtn.addEventListener('click', function() {
+                if (recognition) {
+                    recognition.stop();
+                    recognition = null;
+                    voiceSearchBtn.innerHTML = '<i class="fas fa-microphone"></i> Dicter';
+                    voiceSearchBtn.classList.remove('listening');
+                    return;
+                }
+                
+                recognition = new SpeechRecognition();
+                recognition.lang = 'fr-FR';
+                recognition.interimResults = false;
+                
+                recognition.onstart = function() {
+                    voiceSearchBtn.innerHTML = '<i class="fas fa-stop"></i> Arrêter';
+                    voiceSearchBtn.classList.add('listening');
+                    if (voiceSearchResult) {
+                        voiceSearchResult.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Écoute en cours...';
+                        voiceSearchResult.style.display = 'block';
+                    }
+                };
+                
+                recognition.onresult = function(event) {
+                    const transcript = event.results[0][0].transcript;
+                    if (voiceSearchInput) voiceSearchInput.value = transcript;
+                    processVoiceCommand(transcript, voiceSearchResult, voiceSearchInput);
+                };
+                
+                recognition.onerror = function() {
+                    if (voiceSearchResult) {
+                        voiceSearchResult.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Erreur de reconnaissance';
+                    }
+                    voiceSearchBtn.innerHTML = '<i class="fas fa-microphone"></i> Dicter';
+                    voiceSearchBtn.classList.remove('listening');
+                };
+                
+                recognition.onend = function() {
+                    recognition = null;
+                    voiceSearchBtn.innerHTML = '<i class="fas fa-microphone"></i> Dicter';
+                    voiceSearchBtn.classList.remove('listening');
+                };
+                
+                recognition.start();
+            });
+            
+            if (voiceSearchInput) {
+                voiceSearchInput.addEventListener('input', function() {
+                    if (this.value) processVoiceCommand(this.value, voiceSearchResult, voiceSearchInput);
+                    else if (voiceSearchResult) voiceSearchResult.style.display = 'none';
+                });
+            }
+            
+            document.querySelectorAll('.voice-command-chip').forEach(chip => {
+                chip.addEventListener('click', function() {
+                    const command = this.dataset.command;
+                    if (voiceSearchInput) voiceSearchInput.value = command;
+                    processVoiceCommand(command, voiceSearchResult, voiceSearchInput);
+                });
+            });
+        }
+        
+        function processVoiceCommand(query, resultDiv, inputField) {
+            const lowerQuery = query.toLowerCase();
+            
+            if (lowerQuery.includes('afficher tout') || lowerQuery.includes('tout afficher')) {
+                if (document.getElementById('filterNote')) document.getElementById('filterNote').value = '0';
+                filterAvis();
+                if (resultDiv) {
+                    resultDiv.innerHTML = '<i class="fas fa-check-circle"></i> ✅ Tous les avis sont affichés';
+                    resultDiv.style.display = 'block';
+                }
+                if (inputField) inputField.value = '';
+                setTimeout(() => { if (resultDiv) resultDiv.style.display = 'none'; }, 3000);
+                return;
+            }
+            
+            if (lowerQuery.includes('meilleurs avis') || lowerQuery.includes('top avis')) {
+                if (document.getElementById('filterNote')) document.getElementById('filterNote').value = '4';
+                filterAvis();
+                if (resultDiv) {
+                    resultDiv.innerHTML = '<i class="fas fa-star"></i> ⭐ Affichage des meilleurs avis';
+                    resultDiv.style.display = 'block';
+                }
+                setTimeout(() => { if (resultDiv) resultDiv.style.display = 'none'; }, 3000);
+                return;
+            }
+            
+            let searchTerm = '';
+            if (lowerQuery.startsWith('recherche')) {
+                searchTerm = lowerQuery.replace('recherche', '').trim();
+            } else if (lowerQuery.startsWith('cherche')) {
+                searchTerm = lowerQuery.replace('cherche', '').trim();
+            } else {
+                searchTerm = lowerQuery;
+            }
+            
+            const noteMatch = searchTerm.match(/(\d)\s*étoiles?/);
+            if (noteMatch && document.getElementById('filterNote')) {
+                document.getElementById('filterNote').value = noteMatch[1];
+                filterAvis();
+                if (resultDiv) {
+                    resultDiv.innerHTML = `<i class="fas fa-star"></i> ⭐ Affichage des avis ${noteMatch[1]} étoiles`;
+                    resultDiv.style.display = 'block';
+                }
+                setTimeout(() => { if (resultDiv) resultDiv.style.display = 'none'; }, 3000);
+                return;
+            }
+            
+            if (searchTerm) {
+                filterAvisByText(searchTerm);
+                if (resultDiv) {
+                    resultDiv.innerHTML = `<i class="fas fa-search"></i> 🔍 Recherche : "${searchTerm}"`;
+                    resultDiv.style.display = 'block';
+                }
+                highlightSearchTerm(searchTerm);
+                setTimeout(() => { if (resultDiv) resultDiv.style.display = 'none'; }, 5000);
+            }
+        }
+        
+        function filterAvisByText(searchText) {
+            const cards = document.querySelectorAll('.avis-card');
+            const searchLower = searchText.toLowerCase();
+            let found = false;
+            cards.forEach(card => {
+                const comment = card.dataset.commentaire;
+                const nom = card.dataset.nom;
+                if (comment && (comment.includes(searchLower) || (nom && nom.includes(searchLower)))) {
+                    card.style.display = '';
+                    found = true;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            if (!found && document.getElementById('filterNote')) {
+                document.getElementById('filterNote').value = '0';
+                filterAvis();
+            }
+        }
+        
+        function highlightSearchTerm(term) {
+            removeHighlights();
+            const cards = document.querySelectorAll('.avis-card');
+            const regex = new RegExp(`(${term})`, 'gi');
+            cards.forEach(card => {
+                const commentElement = card.querySelector('.avis-commentaire');
+                if (commentElement && commentElement.innerText.toLowerCase().includes(term.toLowerCase())) {
+                    commentElement.innerHTML = commentElement.innerText.replace(regex, '<mark class="highlight">$1</mark>');
+                }
+            });
+        }
+        
+        function removeHighlights() {
+            document.querySelectorAll('.avis-commentaire mark').forEach(mark => {
+                const parent = mark.parentNode;
+                parent.innerHTML = parent.innerText;
+            });
+        }
+        
+        function initMicDictation() {
+            const micBtn = document.getElementById('micBtn');
+            const stopMicBtn = document.getElementById('stopMicBtn');
+            const listeningIndicator = document.getElementById('listeningIndicator');
+            const commentaireInput = document.getElementById('commentaire-input');
+            
+            if (!micBtn || !('webkitSpeechRecognition' in window)) return;
+            
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            micBtn.addEventListener('click', function() {
+                if (micRecognition) {
+                    micRecognition.stop();
+                    return;
+                }
+                
+                micRecognition = new SpeechRecognition();
+                micRecognition.lang = 'fr-FR';
+                micRecognition.interimResults = true;
+                micRecognition.continuous = true;
+                
+                micRecognition.onstart = function() {
+                    micBtn.style.display = 'none';
+                    if (stopMicBtn) stopMicBtn.style.display = 'inline-flex';
+                    if (listeningIndicator) listeningIndicator.style.display = 'block';
+                    if (commentaireInput) commentaireInput.classList.add('listening');
+                };
+                
+                micRecognition.onresult = function(event) {
+                    let finalTranscript = '';
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
+                        if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+                    }
+                    if (finalTranscript && commentaireInput) {
+                        let currentText = commentaireInput.value;
+                        if (currentText && !currentText.endsWith(' ') && !currentText.endsWith('\n')) currentText += ' ';
+                        commentaireInput.value = currentText + finalTranscript;
+                        // Trigger validation
+                        const event = new Event('input');
+                        commentaireInput.dispatchEvent(event);
+                    }
+                };
+                
+                micRecognition.onerror = function() { resetMic(); };
+                micRecognition.onend = function() { resetMic(); };
+                
+                micRecognition.start();
+            });
+            
+            if (stopMicBtn) {
+                stopMicBtn.addEventListener('click', function() { if (micRecognition) micRecognition.stop(); });
+            }
+            
+            function resetMic() {
+                if (micBtn) micBtn.style.display = 'inline-flex';
+                if (stopMicBtn) stopMicBtn.style.display = 'none';
+                if (listeningIndicator) listeningIndicator.style.display = 'none';
+                if (commentaireInput) commentaireInput.classList.remove('listening');
+                micRecognition = null;
+            }
+        }
+        
+        function initTranslation() {
+            document.querySelectorAll('.translate-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const avisId = this.dataset.id;
+                    const targetLang = this.dataset.lang;
+                    const translationDiv = document.getElementById(`translation-${avisId}`);
+                    const commentElement = this.closest('.avis-card')?.querySelector('.avis-commentaire');
+                    let originalText = commentElement?.innerText;
+                    
+                    if (!originalText || !translationDiv) return;
+                    
+                    originalText = originalText.replace(/<mark class="highlight">|<\/mark>/g, '');
+                    
+                    translationDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Traduction en cours...';
+                    translationDiv.style.display = 'block';
+                    
+                    fetch(`/avis/translate/${avisId}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ lang: targetLang })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.translated) {
+                            translationDiv.innerHTML = data.translated;
+                        } else {
+                            translationDiv.innerHTML = '❌ Traduction non disponible';
+                        }
+                    })
+                    .catch(() => {
+                        translationDiv.innerHTML = '❌ Erreur de traduction';
+                    });
+                });
+            });
+        }
+        
+        const responses = [
+            "Excellente question ! Pour un budget de 3 000 € par personne, je vous recommande Santorin puis Amalfi. Voulez-vous que je prépare l'itinéraire complet ?",
+            "Absolument ! J'ai trouvé des vols directs pour vos dates. Préférez-vous Business ou Première Classe ?",
+            "Votre itinéraire est prêt. Je vous envoie le dossier complet par email.",
+            "Je réserve immédiatement ! Votre voyage est confirmé. Y a-t-il autre chose ?"
+        ];
+        let rIdx = 0;
+        
+        function addChatMessage(text, isUser) {
+            const msgs = document.getElementById('chatMessages');
+            if (!msgs) return;
+            const div = document.createElement('div');
+            div.className = 'voyage-msg' + (isUser ? ' user' : '');
+            const av = document.createElement('div');
+            av.className = 'voyage-msg-avatar' + (isUser ? ' user-av' : '');
+            av.textContent = isUser ? 'V' : 'E';
+            const bubble = document.createElement('div');
+            bubble.className = 'voyage-msg-bubble ' + (isUser ? 'user' : 'agent');
+            bubble.textContent = text;
+            div.appendChild(av);
+            div.appendChild(bubble);
+            msgs.appendChild(div);
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+        
+        const sendBtn = document.getElementById('chatSend');
+        const chatInput = document.getElementById('chatInput');
+        
+        if (sendBtn && chatInput) {
+            sendBtn.addEventListener('click', function() {
+                const text = chatInput.value.trim();
+                if (!text) return;
+                addChatMessage(text, true);
+                chatInput.value = '';
+                
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'voyage-msg';
+                typingDiv.id = 'typingMsg';
+                const typingAv = document.createElement('div');
+                typingAv.className = 'voyage-msg-avatar';
+                typingAv.textContent = 'E';
+                const typingBubble = document.createElement('div');
+                typingBubble.className = 'voyage-msg-bubble agent voyage-typing';
+                typingBubble.innerHTML = '<span></span><span></span><span></span>';
+                typingDiv.appendChild(typingAv);
+                typingDiv.appendChild(typingBubble);
+                document.getElementById('chatMessages').appendChild(typingDiv);
+                document.getElementById('chatMessages').scrollTop = 99999;
+                
+                setTimeout(() => {
+                    const typingEl = document.getElementById('typingMsg');
+                    if (typingEl) typingEl.remove();
+                    const resp = responses[rIdx % responses.length];
+                    rIdx++;
+                    addChatMessage(resp, false);
+                }, 1600);
+            });
+            
+            chatInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') sendBtn.click();
+            });
+        }
+        
+        const newsletterSubmit = document.getElementById('newsletterSubmit');
+        if (newsletterSubmit) {
+            newsletterSubmit.addEventListener('click', function() {
+                const email = document.getElementById('newsletterEmail').value;
+                if (email && email.includes('@')) {
+                    alert('Merci pour votre inscription ! Vous recevrez nos meilleures offres.');
+                    document.getElementById('newsletterEmail').value = '';
+                } else {
+                    alert('Veuillez entrer une adresse email valide.');
+                }
+            });
+        }
+    </script>
+{% endblock %}

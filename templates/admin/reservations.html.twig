@@ -1,0 +1,244 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des réservations - Administration{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .admin-sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .admin-sidebar .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .admin-sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            transition: all 0.3s;
+        }
+        
+        .admin-sidebar .nav-link:hover,
+        .admin-sidebar .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .admin-sidebar .nav-link i {
+            width: 25px;
+            margin-right: 10px;
+        }
+        
+        .admin-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+        }
+        
+        .top-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .badge-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-pending { background: #ffc107; color: #333; }
+        .badge-confirmed { background: #28a745; color: white; }
+        .badge-cancelled { background: #dc3545; color: white; }
+        .badge-completed { background: #17a2b8; color: white; }
+        
+        .filter-buttons .btn {
+            margin-right: 5px;
+        }
+        
+        .table-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn-sm {
+            margin: 0 2px;
+        }
+        
+        .modal-dialog {
+            max-width: 500px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="admin-wrapper">
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+        <div class="sidebar-header">
+            <h3>✈️ Admin Panel</h3>
+            <p>Gestion Avis & Réservations</p>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{{ path('admin_dashboard') }}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a class="nav-link" href="{{ path('admin_avis') }}">
+                <i class="fas fa-star"></i> Gérer les Avis
+            </a>
+            <a class="nav-link active" href="{{ path('admin_reservations') }}">
+                <i class="fas fa-calendar-check"></i> Gérer les Réservations
+            </a>
+            <a class="nav-link" href="{{ path('admin_statistiques') }}">
+                <i class="fas fa-chart-line"></i> Statistiques
+            </a>
+            <hr style="background: rgba(255,255,255,0.1); margin: 10px 0;">
+            <a class="nav-link" href="{{ path('app_logout') }}">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main content -->
+    <div class="admin-content">
+        <div class="top-bar">
+            <h4><i class="fas fa-calendar-check"></i> Gestion des réservations</h4>
+        </div>
+        
+        <!-- Filtres -->
+        <div class="filter-buttons mb-3">
+            <a href="{{ path('admin_reservations', {'status': 'pending'}) }}" class="btn btn-warning {% if currentStatus == 'pending' %}active{% endif %}">
+                En attente <span class="badge bg-dark">{{ counts.pending }}</span>
+            </a>
+            <a href="{{ path('admin_reservations', {'status': 'confirmed'}) }}" class="btn btn-success {% if currentStatus == 'confirmed' %}active{% endif %}">
+                Confirmées <span class="badge bg-dark">{{ counts.confirmed }}</span>
+            </a>
+            <a href="{{ path('admin_reservations', {'status': 'cancelled'}) }}" class="btn btn-danger {% if currentStatus == 'cancelled' %}active{% endif %}">
+                Annulées <span class="badge bg-dark">{{ counts.cancelled }}</span>
+            </a>
+            <a href="{{ path('admin_reservations', {'status': 'completed'}) }}" class="btn btn-info {% if currentStatus == 'completed' %}active{% endif %}">
+                Terminées <span class="badge bg-dark">{{ counts.completed }}</span>
+            </a>
+        </div>
+        
+        <!-- Liste des réservations -->
+        <div class="table-card">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Client</th>
+                            <th>Email</th>
+                            <th>Destination</th>
+                            <th>Vol</th>
+                            <th>Départ</th>
+                            <th>Prix</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reservation in reservations %}
+                            <tr>
+                                <td>{{ reservation.id }}</td>
+                                <td>{{ reservation.nomClient }}</td>
+                                <td>{{ reservation.email }}</td>
+                                <td>{{ reservation.destination }}</td>
+                                <td>{{ reservation.flightNumber }}</td>
+                                <td>{{ reservation.departureTime|date('d/m/Y H:i') }}</td>
+                                <td>{{ reservation.totalPrice|number_format(2) }} €</td>
+                                <td>
+                                    {% if reservation.isPending %}
+                                        <span class="badge-status badge-pending">En attente</span>
+                                    {% elseif reservation.isConfirmed %}
+                                        <span class="badge-status badge-confirmed">Confirmée</span>
+                                    {% elseif reservation.isCancelled %}
+                                        <span class="badge-status badge-cancelled">Annulée</span>
+                                    {% elseif reservation.isCompleted %}
+                                        <span class="badge-status badge-completed">Terminée</span>
+                                    {% endif %}
+                                 </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        {% if reservation.isPending %}
+                                            <a href="{{ path('admin_reservation_confirm', {'id': reservation.id}) }}" class="btn btn-success" onclick="return confirm('Confirmer cette réservation ?')">
+                                                <i class="fas fa-check"></i> Confirmer
+                                            </a>
+                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#cancelModal{{ reservation.id }}">
+                                                <i class="fas fa-times"></i> Annuler
+                                            </button>
+                                        {% endif %}
+                                        
+                                        {% if reservation.isConfirmed %}
+                                            <a href="{{ path('admin_reservation_generate_boarding_pass', {'id': reservation.id}) }}" class="btn btn-info" title="Générer le billet">
+                                                <i class="fas fa-qrcode"></i>
+                                            </a>
+                                            <a href="{{ path('admin_reservation_send_boarding_pass', {'id': reservation.id}) }}" class="btn btn-primary" title="Envoyer par email">
+                                                <i class="fas fa-envelope"></i>
+                                            </a>
+                                            <a href="{{ path('admin_reservation_complete', {'id': reservation.id}) }}" class="btn btn-secondary" title="Marquer comme terminée">
+                                                <i class="fas fa-flag-checkered"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                 </td>
+                            </tr>
+                            
+                            <!-- Modal d'annulation -->
+                            <div class="modal fade" id="cancelModal{{ reservation.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <form method="post" action="{{ path('admin_reservation_cancel', {'id': reservation.id}) }}">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Annuler la réservation</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Voulez-vous vraiment annuler la réservation de <strong>{{ reservation.nomClient }}</strong> ?</p>
+                                                <div class="mb-3">
+                                                    <label class="form-label">Raison de l'annulation</label>
+                                                    <textarea name="reason" class="form-control" rows="3" placeholder="Motif de l'annulation..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                                                <button type="submit" class="btn btn-danger">Confirmer l'annulation</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <tr>
+                                <td colspan="9" class="text-center">Aucune réservation trouvée</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

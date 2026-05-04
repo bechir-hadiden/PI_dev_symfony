@@ -1,0 +1,399 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistiques - Administration{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        .admin-sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        .admin-sidebar .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .admin-sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            transition: all 0.3s;
+        }
+        
+        .admin-sidebar .nav-link:hover,
+        .admin-sidebar .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .admin-sidebar .nav-link i {
+            width: 25px;
+            margin-right: 10px;
+        }
+        
+        .admin-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+        }
+        
+        .top-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .stat-card .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .stat-card .stat-icon {
+            font-size: 2rem;
+            float: right;
+            opacity: 0.3;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .progress {
+            height: 25px;
+            border-radius: 10px;
+        }
+        
+        .stars {
+            color: #ffc107;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="admin-wrapper">
+    <!-- Sidebar -->
+    <div class="admin-sidebar">
+        <div class="sidebar-header">
+            <h3>✈️ Admin Panel</h3>
+            <p>Gestion Avis & Réservations</p>
+        </div>
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{{ path('admin_dashboard') }}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a class="nav-link" href="{{ path('admin_avis') }}">
+                <i class="fas fa-star"></i> Gérer les Avis
+            </a>
+            <a class="nav-link" href="{{ path('admin_reservations') }}">
+                <i class="fas fa-calendar-check"></i> Gérer les Réservations
+            </a>
+            <a class="nav-link active" href="{{ path('admin_statistiques') }}">
+                <i class="fas fa-chart-line"></i> Statistiques
+            </a>
+            <hr style="background: rgba(255,255,255,0.1); margin: 10px 0;">
+            <a class="nav-link" href="{{ path('app_logout') }}">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main content -->
+    <div class="admin-content">
+        <div class="top-bar">
+            <h4><i class="fas fa-chart-line"></i> Statistiques</h4>
+        </div>
+        
+        <!-- Cartes de statistiques -->
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-star"></i></div>
+                    <div class="stat-value">{{ avisStats.total }}</div>
+                    <div class="stat-label">Total avis</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="stat-value">{{ avisStats.average_note|number_format(1) }}/5</div>
+                    <div class="stat-label">Note moyenne</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-ticket-alt"></i></div>
+                    <div class="stat-value">{{ reservationStats.total }}</div>
+                    <div class="stat-label">Total réservations</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-euro-sign"></i></div>
+                    <div class="stat-value">{{ reservationStats.total_revenue|number_format(0, ',', ' ') }} €</div>
+                    <div class="stat-label">Chiffre d'affaires</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Distribution des notes -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-bar"></i> Distribution des notes</h5>
+                    <canvas id="notesChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+            
+            <!-- Top destinations -->
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5><i class="fas fa-map-marker-alt"></i> Destinations populaires</h5>
+                    <canvas id="destinationsChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chiffre d'affaires mensuel -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-line"></i> Chiffre d'affaires mensuel</h5>
+                    <canvas id="revenueChart" width="800" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statut des avis -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-pie"></i> Statut des avis</h5>
+                    <canvas id="avisStatusChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+            
+            <!-- Statut des réservations -->
+            <div class="col-md-6">
+                <div class="chart-container">
+                    <h5><i class="fas fa-chart-pie"></i> Statut des réservations</h5>
+                    <canvas id="reservationStatusChart" width="400" height="300"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Détail des notes -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="chart-container">
+                    <h5><i class="fas fa-star"></i> Détail des notes</h5>
+                    {% for note in 1..5 %}
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span>
+                                    {% for i in 1..note %}
+                                        <i class="fas fa-star stars"></i>
+                                    {% endfor %}
+                                    {% for i in note+1..5 %}
+                                        <i class="far fa-star stars"></i>
+                                    {% endfor %}
+                                </span>
+                                <span>{{ avisStats.notes_distribution[note]|default(0) }} avis</span>
+                            </div>
+                            <div class="progress">
+                                {% set total = avisStats.total > 0 ? avisStats.total : 1 %}
+                                {% set percentage = (avisStats.notes_distribution[note]|default(0) / total) * 100 %}
+                                <div class="progress-bar bg-warning" style="width: {{ percentage }}%">
+                                    {{ percentage|number_format(1) }}%
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Graphique des notes
+    const notesCtx = document.getElementById('notesChart').getContext('2d');
+    new Chart(notesCtx, {
+        type: 'bar',
+        data: {
+            labels: ['1 étoile', '2 étoiles', '3 étoiles', '4 étoiles', '5 étoiles'],
+            datasets: [{
+                label: 'Nombre d\'avis',
+                data: [
+                    {{ avisStats.notes_distribution[1]|default(0) }},
+                    {{ avisStats.notes_distribution[2]|default(0) }},
+                    {{ avisStats.notes_distribution[3]|default(0) }},
+                    {{ avisStats.notes_distribution[4]|default(0) }},
+                    {{ avisStats.notes_distribution[5]|default(0) }}
+                ],
+                backgroundColor: '#ffc107',
+                borderColor: '#ff9800',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+    
+    // Graphique des destinations
+    const destinationsCtx = document.getElementById('destinationsChart').getContext('2d');
+    new Chart(destinationsCtx, {
+        type: 'bar',
+        data: {
+            labels: [
+                {% for dest in reservationStats.top_destinations %}
+                    '{{ dest.destination }}',
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Nombre de réservations',
+                data: [
+                    {% for dest in reservationStats.top_destinations %}
+                        {{ dest.count }},
+                    {% endfor %}
+                ],
+                backgroundColor: '#28a745',
+                borderColor: '#1e7e34',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            indexAxis: 'y'
+        }
+    });
+    
+    // Graphique du chiffre d'affaires
+    const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(revenueCtx, {
+        type: 'line',
+        data: {
+            labels: [
+                {% for month in reservationStats.monthly_revenue|reverse %}
+                    '{{ month.month }}',
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Chiffre d\'affaires (€)',
+                data: [
+                    {% for month in reservationStats.monthly_revenue|reverse %}
+                        {{ month.revenue }},
+                    {% endfor %}
+                ],
+                backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                borderColor: '#667eea',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.raw + ' €';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Graphique statut avis
+    const avisStatusCtx = document.getElementById('avisStatusChart').getContext('2d');
+    new Chart(avisStatusCtx, {
+        type: 'pie',
+        data: {
+            labels: ['En attente', 'Approuvés', 'Rejetés'],
+            datasets: [{
+                data: [
+                    {{ avisStats.by_status.pending }},
+                    {{ avisStats.by_status.approved }},
+                    {{ avisStats.by_status.rejected }}
+                ],
+                backgroundColor: ['#ffc107', '#28a745', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+    
+    // Graphique statut réservations
+    const reservationStatusCtx = document.getElementById('reservationStatusChart').getContext('2d');
+    new Chart(reservationStatusCtx, {
+        type: 'pie',
+        data: {
+            labels: ['En attente', 'Confirmées', 'Annulées', 'Terminées'],
+            datasets: [{
+                data: [
+                    {{ reservationStats.by_status.pending }},
+                    {{ reservationStats.by_status.confirmed }},
+                    {{ reservationStats.by_status.cancelled }},
+                    {{ reservationStats.by_status.completed }}
+                ],
+                backgroundColor: ['#ffc107', '#28a745', '#dc3545', '#17a2b8']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    });
+</script>
+{% endblock %}

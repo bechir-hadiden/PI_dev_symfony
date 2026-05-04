@@ -1,0 +1,384 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des avis - Administration{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .admin-wrapper {
+            display: flex;
+            min-height: 100vh;
+            background-color: #f8f9fa;
+        }
+        
+        .admin-sidebar {
+            width: 280px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+        
+        .admin-sidebar .sidebar-header {
+            padding: 25px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .admin-sidebar .sidebar-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        
+        .admin-sidebar .sidebar-header p {
+            margin: 5px 0 0;
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+        
+        .admin-sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            transition: all 0.3s;
+            border-radius: 0;
+            margin: 2px 0;
+        }
+        
+        .admin-sidebar .nav-link:hover,
+        .admin-sidebar .nav-link.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .admin-sidebar .nav-link i {
+            width: 25px;
+            margin-right: 10px;
+        }
+        
+        .admin-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 20px;
+        }
+        
+        .top-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .filter-buttons .btn {
+            margin-right: 5px;
+            border-radius: 20px;
+        }
+        
+        .filter-buttons .btn.active {
+            background: #0d6efd;
+            color: white;
+        }
+        
+        .table-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .badge-status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-pending { background: #ffc107; color: #333; }
+        .badge-approved { background: #28a745; color: white; }
+        .badge-rejected { background: #dc3545; color: white; }
+        
+        .table th {
+            background: #f8f9fa;
+        }
+        
+        .btn-group-sm .btn {
+            margin: 0 2px;
+        }
+        
+        .comment-preview {
+            max-width: 250px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        @media (max-width: 768px) {
+            .admin-sidebar {
+                margin-left: -280px;
+            }
+            .admin-sidebar.active {
+                margin-left: 0;
+            }
+            .admin-content {
+                margin-left: 0;
+            }
+            .sidebar-toggle {
+                display: block;
+            }
+        }
+        
+        .sidebar-toggle {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1100;
+            background: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .stars {
+            color: #ffc107;
+            font-size: 0.85rem;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="admin-wrapper">
+    <!-- Sidebar -->
+    <div class="admin-sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>✈️ SmartTrip</h3>
+            <p>Administration</p>
+        </div>
+        
+        <nav class="nav flex-column">
+            <a class="nav-link" href="{{ path('admin_dashboard') }}">
+                <i class="fas fa-tachometer-alt"></i> Dashboard
+            </a>
+            <a class="nav-link active" href="{{ path('admin_avis') }}">
+                <i class="fas fa-star"></i> Gérer les Avis
+            </a>
+            <a class="nav-link" href="{{ path('admin_reservations') }}">
+                <i class="fas fa-calendar-check"></i> Gérer les Réservations
+            </a>
+            <a class="nav-link" href="{{ path('admin_statistiques') }}">
+                <i class="fas fa-chart-line"></i> Statistiques
+            </a>
+            <a class="nav-link" href="{{ path('admin_boarding_passes') }}">
+                <i class="fas fa-qrcode"></i> Billets électroniques
+            </a>
+            <hr style="background: rgba(255,255,255,0.1); margin: 10px 0;">
+            <a class="nav-link" href="{{ path('app_logout') }}">
+                <i class="fas fa-sign-out-alt"></i> Déconnexion
+            </a>
+        </nav>
+    </div>
+    
+    <!-- Main content -->
+    <div class="admin-content">
+        <div class="top-bar">
+            <div class="d-flex justify-content-between align-items-center">
+                <h4 class="mb-0"><i class="fas fa-star text-warning"></i> Gestion des avis</h4>
+                <a href="{{ path('admin_avis_new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nouvel avis
+                </a>
+            </div>
+        </div>
+        
+        <!-- Filtres -->
+        <div class="filter-buttons mb-3">
+            <a href="{{ path('admin_avis', {'status': 'pending'}) }}" class="btn btn-outline-warning {% if currentStatus == 'pending' %}active{% endif %}">
+                <i class="fas fa-clock"></i> En attente 
+                <span class="badge bg-dark">{{ counts.pending }}</span>
+            </a>
+            <a href="{{ path('admin_avis', {'status': 'approved'}) }}" class="btn btn-outline-success {% if currentStatus == 'approved' %}active{% endif %}">
+                <i class="fas fa-check-circle"></i> Approuvés 
+                <span class="badge bg-dark">{{ counts.approved }}</span>
+            </a>
+            <a href="{{ path('admin_avis', {'status': 'rejected'}) }}" class="btn btn-outline-danger {% if currentStatus == 'rejected' %}active{% endif %}">
+                <i class="fas fa-times-circle"></i> Rejetés 
+                <span class="badge bg-dark">{{ counts.rejected }}</span>
+            </a>
+        </div>
+        
+        <!-- Liste des avis -->
+        <div class="table-card">
+            <div class="table-responsive">
+                <form method="post" action="{{ path('admin_avis_bulk') }}" id="bulkForm">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="30">
+                                    <input type="checkbox" id="selectAll">
+                                </th>
+                                <th>ID</th>
+                                <th>Client</th>
+                                <th>Note</th>
+                                <th>Commentaire</th>
+                                <th>Destination</th>
+                                <th>Date</th>
+                                <th>Statut</th>
+                                <th width="120">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for avi in avis %}
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" name="avis_ids[]" value="{{ avi.id }}" class="avis-checkbox">
+                                    </td>
+                                    <td>{{ avi.id }}</td>
+                                    <td>
+                                        <strong>{{ avi.nomClient }}</strong><br>
+                                        <small class="text-muted">{{ avi.email }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="stars">
+                                            {% for i in 1..avi.note %}
+                                                <i class="fas fa-star"></i>
+                                            {% endfor %}
+                                            {% for i in avi.note+1..5 %}
+                                                <i class="far fa-star"></i>
+                                            {% endfor %}
+                                            <span class="ms-1 small">({{ avi.note }}/5)</span>
+                                        </div>
+                                    </td>
+                                    <td class="comment-preview" title="{{ avi.commentaire }}">
+                                        {{ avi.commentaire|slice(0, 60) }}{% if avi.commentaire|length > 60 %}...{% endif %}
+                                    </td>
+                                    <td>{{ avi.destination|default('-') }}</td>
+                                    <td>{{ avi.dateAvis|date('d/m/Y H:i') }}</td>
+                                    <td>
+                                        {% if avi.isPending %}
+                                            <span class="badge-status badge-pending">
+                                                <i class="fas fa-clock"></i> En attente
+                                            </span>
+                                        {% elseif avi.isApproved %}
+                                            <span class="badge-status badge-approved">
+                                                <i class="fas fa-check-circle"></i> Approuvé
+                                            </span>
+                                        {% else %}
+                                            <span class="badge-status badge-rejected">
+                                                <i class="fas fa-times-circle"></i> Rejeté
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if avi.isPending %}
+                                                <a href="{{ path('admin_avis_approve', {'id': avi.id}) }}" 
+                                                   class="btn btn-success" 
+                                                   title="Approuver"
+                                                   onclick="return confirm('Approuver cet avis ?')">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                                <a href="{{ path('admin_avis_reject', {'id': avi.id}) }}" 
+                                                   class="btn btn-warning" 
+                                                   title="Rejeter"
+                                                   onclick="return confirm('Rejeter cet avis ?')">
+                                                    <i class="fas fa-times"></i>
+                                                </a>
+                                            {% endif %}
+                                            <a href="{{ path('admin_avis_delete', {'id': avi.id}) }}" 
+                                               class="btn btn-danger" 
+                                               title="Supprimer"
+                                               onclick="return confirm('Supprimer définitivement cet avis ?')">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="9" class="text-center py-5">
+                                        <i class="fas fa-inbox fa-3x text-muted mb-2 d-block"></i>
+                                        <p class="text-muted mb-0">Aucun avis trouvé</p>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    
+                    {% if avis|length > 0 %}
+                    <div class="mt-3 d-flex justify-content-between align-items-center">
+                        <div>
+                            <select name="action" class="form-select w-auto d-inline-block" style="width: auto;">
+                                <option value="approve">✅ Approuver</option>
+                                <option value="reject">❌ Rejeter</option>
+                                <option value="delete">🗑️ Supprimer</option>
+                            </select>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-play"></i> Appliquer
+                            </button>
+                        </div>
+                        <div>
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle"></i> {{ avis|length }} avis affiché(s)
+                            </small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button class="sidebar-toggle" id="sidebarToggle">
+    <i class="fas fa-bars"></i>
+</button>
+
+<script>
+    // Sélectionner/déselectionner tous les avis
+    const selectAll = document.getElementById('selectAll');
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            document.querySelectorAll('.avis-checkbox').forEach(cb => cb.checked = this.checked);
+        });
+    }
+    
+    // Toggle sidebar on mobile
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+        });
+    }
+    
+    // Confirmation pour les actions groupées
+    const bulkForm = document.getElementById('bulkForm');
+    if (bulkForm) {
+        bulkForm.addEventListener('submit', function(e) {
+            const action = document.querySelector('select[name="action"]').value;
+            const selected = document.querySelectorAll('.avis-checkbox:checked');
+            if (selected.length === 0) {
+                e.preventDefault();
+                alert('Veuillez sélectionner au moins un avis');
+            } else {
+                let message = '';
+                if (action === 'approve') message = `Approuver ${selected.length} avis ?`;
+                else if (action === 'reject') message = `Rejeter ${selected.length} avis ?`;
+                else if (action === 'delete') message = `Supprimer ${selected.length} avis ? Cette action est irréversible.`;
+                
+                if (!confirm(message)) {
+                    e.preventDefault();
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}
