@@ -1,0 +1,147 @@
+{% extends 'BackOffice/base_admin.html.twig' %}
+
+{% block title %}Statistiques IA – Transport{% endblock %}
+{% block page_title %}Tableau de Bord Analytique (IA){% endblock %}
+
+{% block body %}
+<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Stats Cards -->
+    <div class="card" style="background: linear-gradient(135deg, var(--navy), #1a3a5a); color: white; border: none; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -10%; right: -5%; font-size: 5rem; opacity: 0.1; color: var(--gold);"><i class="fas fa-truck"></i></div>
+        <div class="card-body">
+            <h5 style="color: var(--gold); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 0.5rem;">Flotte Totale</h5>
+            <h2 style="font-size: 2.5rem; font-weight: 800; margin: 0;">{{ analytics.total_vehicles }}</h2>
+            <p style="font-size: 0.85rem; opacity: 0.8; margin-top: 0.5rem;">Véhicules enregistrés</p>
+        </div>
+    </div>
+
+    <div class="card" style="background: #fff; border: 1px solid var(--border); box-shadow: var(--shadow);">
+        <div class="card-body">
+            <h5 style="color: var(--muted); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 0.5rem;">Prix Moyen / Place</h5>
+            <h2 style="font-size: 2.5rem; font-weight: 800; margin: 0; color: var(--navy);">{{ analytics.average_price }} <span style="font-size: 1rem; color: var(--gold);">DT</span></h2>
+            <p style="font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem;">Analyse du marché en temps réel</p>
+        </div>
+    </div>
+
+    <div class="card" style="background: #fff; border: 1px solid var(--border); box-shadow: var(--shadow); border-left: 5px solid var(--gold);">
+        <div class="card-body">
+            <h5 style="color: var(--gold); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px; margin-bottom: 0.5rem;">Performance IA</h5>
+            <h2 style="font-size: 2.5rem; font-weight: 800; margin: 0; color: var(--navy);">Optimisée</h2>
+            <p style="font-size: 0.85rem; color: var(--muted); margin-top: 0.5rem;">{{ analytics.fleet_distribution|length }} catégories analysées</p>
+        </div>
+    </div>
+</div>
+
+<div style="display:grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+    <!-- Main Chart -->
+    <div class="card" style="box-shadow: var(--shadow);">
+        <div class="card-header" style="background: #f8fafc; display: flex; justify-content: space-between; align-items: center;">
+            <h2 style="font-size: 1.1rem; margin: 0;"><i class="fas fa-chart-pie" style="color: var(--gold); margin-right: 0.5rem;"></i> Répartition de la Flotte</h2>
+            <span class="badge" style="background: rgba(201,168,76,0.1); color: var(--gold);">Données Directes</span>
+        </div>
+        <div class="card-body">
+            <canvas id="fleetChart" height="150"></canvas>
+        </div>
+    </div>
+
+    <!-- AI Insights Panel -->
+    <div class="card" style="background: var(--navy); color: white; border: none;">
+        <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h2 style="font-size: 1.1rem; margin: 0; color: var(--gold);"><i class="fas fa-brain" style="margin-right: 0.5rem;"></i> Insights IA SmartTrip</h2>
+        </div>
+        <div class="card-body">
+            <div style="background: rgba(255,255,255,0.05); padding: 1.2rem; border-radius: 12px; margin-bottom: 1.5rem; border-left: 3px solid var(--gold);">
+                <p style="font-size: 0.95rem; line-height: 1.6; font-style: italic; margin: 0;">"{{ analytics.ai_summary }}"</p>
+            </div>
+            
+            <h5 style="font-size: 0.8rem; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1rem;">Recommandations</h5>
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                {% for rec in analytics.recommendations %}
+                    <li style="display: flex; gap: 0.8rem; margin-bottom: 1rem; font-size: 0.85rem; align-items: flex-start;">
+                        <i class="fas fa-lightbulb" style="color: var(--gold); margin-top: 3px;"></i>
+                        <span>{{ rec }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Table Analysis -->
+<div class="card" style="box-shadow: var(--shadow);">
+    <div class="card-header">
+        <h2><i class="fas fa-list-ul" style="color: var(--gold); margin-right: 0.5rem;"></i> Analyse Détaillée par Véhicule</h2>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <table class="table" style="margin: 0;">
+            <thead>
+                <tr>
+                    <th>Véhicule</th>
+                    <th>Type</th>
+                    <th>Capacité</th>
+                    <th>Prix Unit.</th>
+                    <th>Prix Total</th>
+                    <th>Status IA</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transports %}
+                <tr>
+                    <td><strong>{{ t.compagnie }}</strong> <small style="display:block; color: var(--muted);">#{{ t.numero }}</small></td>
+                    <td><span class="badge" style="background: #f1f5f9; color: var(--navy);">{{ t.transportType.nom }}</span></td>
+                    <td>{{ t.capacite }} places</td>
+                    <td>{{ t.prix|number_format(2) }} DT</td>
+                    <td><strong style="color: var(--gold);">{{ (t.prix * t.capacite)|number_format(2) }} DT</strong></td>
+                    <td>
+                        {% if t.prix < analytics.average_price %}
+                            <span class="badge" style="background: #dcfce7; color: #16a34a;"><i class="fas fa-trending-up"></i> Rentable</span>
+                        {% else %}
+                            <span class="badge" style="background: #fef3c7; color: #d97706;"><i class="fas fa-balance-scale"></i> Premium</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('fleetChart').getContext('2d');
+        const data = {{ analytics.fleet_distribution|json_encode|raw }};
+        
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(data),
+                datasets: [{
+                    label: 'Nombre de véhicules',
+                    data: Object.values(data),
+                    backgroundColor: 'rgba(201, 168, 76, 0.6)',
+                    borderColor: 'rgba(201, 168, 76, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    barThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { borderDash: [5, 5] }
+                    },
+                    x: {
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
