@@ -1,49 +1,400 @@
 {% extends 'base_dark.html.twig' %}
 
-{% block title %}Mes Paiements – VoyageElite{% endblock %}
+{% block title %}Mon Historique de Facturation – SmartTrip Elite{% endblock %}
+
+{% block stylesheets %}
+<style>
+    /* GLOBAL VISIBILITY OVERRIDES */
+    body { background: #f5f0e8 !important; }
+    
+    .billing-hero {
+        background: #0d1b2a !important; /* Solid dark navy */
+        padding: 10rem 5% 5rem !important;
+        border-bottom: 4px solid #c9a84c !important;
+        position: relative;
+        overflow: hidden;
+        color: white !important;
+        margin-top: -72px;
+    }
+    .hero-stat-card {
+        background: rgba(13, 27, 42, 0.8) !important;
+        backdrop-filter: blur(15px) !important;
+        border: 2px solid #c9a84c !important;
+        border-radius: 20px;
+        padding: 1.8rem;
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+    .stat-label { font-size: 0.75rem !important; color: #c9a84c !important; font-weight: 800 !important; text-transform: uppercase; }
+    .stat-value { font-size: 1.6rem !important; color: #ffffff !important; font-weight: 800 !important; }
+
+    .ai-nudge-card {
+        background: rgba(201, 168, 76, 0.15) !important;
+        border: 1px solid #c9a84c !important;
+        border-radius: 20px;
+        padding: 1.5rem 2rem;
+        margin-top: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+    }
+
+    .billing-container { padding: 4rem 5%; background: #f8fafc; min-height: 50vh; }
+    .glass-table-card { background: #fff; border-radius: 24px; box-shadow: 0 15px 45px rgba(13,27,42,0.06); border: 1px solid rgba(13,27,42,0.04); overflow: hidden; }
+    .table-header-pro {
+        padding: 2rem;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap; gap: 1rem;
+    }
+    .table-pro { width: 100%; border-collapse: collapse; }
+    .table-pro thead th {
+        text-align: left; padding: 1.2rem 2rem;
+        background: #fafbfd;
+        color: var(--muted);
+        font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+    }
+    .table-pro tbody td { padding: 1.5rem 2rem; border-bottom: 1px solid #f8fafc; vertical-align: middle; }
+    .table-pro tbody tr:last-child td { border-bottom: none; }
+    
+    .amount-cell { font-weight: 800; color: var(--navy); font-size: 1.1rem; }
+    .method-badge {
+        display: inline-flex; align-items: center; gap: 0.4rem;
+        padding: 0.4rem 0.8rem; border-radius: 8px;
+        background: #f1f5f9; color: var(--navy); font-size: 0.75rem; font-weight: 700;
+    }
+    .status-badge {
+        display: inline-block; padding: 0.45rem 1rem; border-radius: 50px;
+        font-size: 0.65rem; font-weight: 800; text-transform: uppercase;
+    }
+    .status-done { background: #dcfce7; color: #15803d; }
+    .status-pending { background: #fffbeb; color: #92400e; }
+    .status-error { background: #fef2f2; color: #991b1b; }
+
+    .btn-pdf {
+        background: var(--navy); color: var(--gold);
+        border: 1px solid rgba(201,168,76,0.3);
+        padding: 0.6rem 1.1rem; border-radius: 10px;
+        font-size: 0.8rem; font-weight: 700;
+        display: inline-flex; align-items: center; gap: 0.5rem;
+        transition: all 0.3s;
+    }
+    .btn-pdf:hover { background: var(--gold); color: var(--navy); transform: translateY(-2px); }
+
+    .search-pill {
+        background: #f8fafc; border: 1px solid #e2e8f0;
+        border-radius: 50px; padding: 0.6rem 1.2rem;
+        display: flex; align-items: center; gap: 0.8rem;
+        width: 100%; max-width: 350px;
+    }
+    .search-pill input { border: none; background: transparent; outline: none; font-size: 0.85rem; flex: 1; color: var(--navy); }
+    .search-pill i { color: var(--gold); }
+
+    .pagination-pro { display: flex; justify-content: center; margin-top: 3rem; gap: 0.5rem; }
+    .page-link-pro {
+        width: 40px; height: 40px;
+        display: flex; align-items: center; justify-content: center;
+        background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;
+        color: var(--navy); font-weight: 700; text-decoration: none; transition: all 0.2s;
+    }
+    .page-link-pro.active, .page-link-pro:hover { background: var(--gold); border-color: var(--gold); color: var(--navy); }
+
+    .empty-state { text-align: center; padding: 5rem 2rem; color: var(--muted); }
+    .empty-state i { font-size: 4rem; color: #e2e8f0; margin-bottom: 1.5rem; }
+</style>
+{% endblock %}
 
 {% block body %}
-<div style="background:var(--navy);padding:7rem 5% 3rem;border-bottom:1px solid rgba(201,168,76,0.15);">
-    <h1 class="section-title light">Mes Paiements</h1>
-    <p style="color:rgba(255,255,255,0.55);">Consultez l'historique de vos transactions.</p>
-</div>
-
-<div style="padding:3rem 5%;background:var(--cream);min-height:60vh;">
-    <!-- Email lookup -->
-    <div style="background:#fff;border:1px solid rgba(13,27,42,0.1);border-radius:14px;padding:1.4rem;margin-bottom:1.8rem;max-width:500px">
-        <form method="GET" style="display:flex;gap:.6rem;align-items:flex-end">
-            <div style="flex:1">
-                <label style="display:block;font-size:.73rem;font-weight:700;color:var(--muted);margin-bottom:.35rem;text-transform:uppercase;">Votre email</label>
-                <input type="email" name="email" value="{{ email }}" placeholder="votre@email.com"
-                    style="width:100%;padding:.6rem .9rem;border:1px solid rgba(13,27,42,0.1);border-radius:8px;font-size:.875rem;outline:none">
-            </div>
-            <button type="submit" class="btn-primary" style="padding:.7rem 1.4rem;">Rechercher</button>
-        </form>
-    </div>
-
-    {% if email and paiements is empty %}
-        <div style="text-align:center;padding:3rem;color:var(--muted)">
-            <p>Aucun paiement trouvé pour <strong>{{ email }}</strong>.</p>
+<div class="billing-hero">
+    <div class="container" style="padding: 0 5%;">
+        <div class="hero-badge fade-in">
+            <i class="fas fa-file-invoice-dollar"></i> Finance & Facturation
         </div>
-    {% elseif email %}
-        <div style="display:flex;flex-direction:column;gap:1rem">
-            {% for p in paiements %}
-                <div style="background:#fff;border:1px solid rgba(13,27,42,0.08);border-radius:14px;padding:1.2rem;display:flex;justify-content:space-between;align-items:center;">
-                    <div>
-                        <div style="font-size:1.1rem;font-weight:700;color:var(--navy)">{{ p.montant|number_format(2, ',', ' ') }} DT</div>
-                        <div style="font-size:.8rem;color:var(--muted)">
-                            {{ p.datePaiement|date('d/m/Y à H:i') }} &nbsp;·&nbsp; {{ p.methodePaiement }}
-                        </div>
+        <h1 class="section-title light fade-in delay-1" style="color: #fff; margin-bottom: 0.5rem; font-size: 3.5rem;">Mon Historique <em>Elite</em></h1>
+        <p class="section-sub light fade-in delay-2" style="color: rgba(255,255,255,0.7); max-width: 600px;">Gérez vos paiements, téléchargez vos factures et suivez vos points de fidélité en temps réel.</p>
+        
+        <div class="geo-badge fade-in delay-2">
+            <i class="fas fa-shield-alt" style="color: var(--gold);"></i> 
+            Session sécurisée via API Géo-IP : <strong>{{ detected_country|default('Inconnu') }}</strong> 
+            <span style="opacity: 0.5; margin-left: 5px;">({{ client_ip }})</span>
+        </div>
+
+        <div class="hero-stats-grid fade-in delay-3">
+            <div class="hero-stat-card">
+                <div class="stat-icon"><i class="fas fa-wallet"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Solde Wallet</span>
+                    <span class="stat-value">{{ wallet_balance|number_format(2, ',', ' ') }} <small style="font-size: 0.8rem; opacity: 0.6;">TND</small></span>
+                </div>
+            </div>
+            <div class="hero-stat-card">
+                <div class="stat-icon"><i class="fas fa-star"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Points Fidélité</span>
+                    <span class="stat-value">{{ loyalty_points }} <small style="font-size: 0.8rem; opacity: 0.6;">PTS</small></span>
+                </div>
+            </div>
+            <div class="hero-stat-card">
+                <div class="stat-icon"><i class="fas fa-receipt"></i></div>
+                <div class="stat-info">
+                    <span class="stat-label">Transactions</span>
+                    <span class="stat-value">{{ paiements.getTotalItemCount() }}</span>
+                </div>
+            </div>
+            <div class="hero-stat-card" style="border-color: var(--gold);">
+                <a href="{{ path('app_user_paiement_export_pdf') }}" class="btn-pdf" style="width: 100%; justify-content: center; height: 100%; background: transparent; border: none; font-size: 1rem;">
+                    <i class="fas fa-download"></i> Télécharger l'historique
+                </a>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2rem;">
+            <!-- SECURITÉ ET AUTO-BLOCKING -->
+            <div style="padding: 1.5rem; border-left: 4px solid #10b981; background: rgba(13, 27, 42, 0.7); backdrop-filter: blur(15px); border-radius: 12px; border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem;">
+                    <div style="width: 40px; height: 40px; background: rgba(16, 185, 129, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #34d399; font-size: 1.2rem;">
+                        <i class="fas fa-shield-check"></i>
                     </div>
-                    <div style="text-align:right">
-                        <span class="badge" style="background:rgba(34,197,94,0.1);color:#15803d;padding:.4rem .8rem;font-weight:700;border-radius:50px;">
-                            {{ p.statutPaiement == 'Payé' ? 'Payé' : 'Terminé' }}
-                        </span>
-                        <div style="font-size:.7rem;color:var(--muted);margin-top:.3rem">Réservation #{{ p.reservation.id }}</div>
+                    <h4 style="color: #fff; margin: 0; font-weight: 800; font-size: 1rem;">Sécurité Proactive</h4>
+                </div>
+                <p style="color: rgba(255,255,255,0.7); font-size: 0.8rem; margin: 0;">
+                    Statut du compte : <strong style="color: #34d399;">Sécurisé</strong><br>
+                    <span style="font-size: 0.7rem; color: rgba(255,255,255,0.5);">Le système Auto-Blocking anti-fraude est actif sur votre session.</span>
+                </p>
+            </div>
+
+            <!-- GEO-IP API -->
+            <div style="padding: 1.5rem; border-left: 4px solid var(--gold); background: rgba(13, 27, 42, 0.7); backdrop-filter: blur(15px); border-radius: 12px; border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem;">
+                    <div style="width: 40px; height: 40px; background: rgba(201, 168, 76, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--gold); font-size: 1.2rem;">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h4 style="color: #fff; margin: 0; font-weight: 800; font-size: 1rem;">Localisation Géo-IP</h4>
+                </div>
+                <p style="color: rgba(255,255,255,0.7); font-size: 0.8rem; margin: 0;">
+                    Connexion : <strong>{{ detected_country|default('Inconnu') }}</strong> ({{ client_ip|default('IP masquée') }})<br>
+                    <span style="font-size: 0.7rem; color: rgba(255,255,255,0.5);">{% if detected_country == 'Tunisie' %}Aucune taxe géographique applicable.{% else %}<span style="color: #f87171;">Frais internationaux de 10% applicables.</span>{% endif %}</span>
+                </p>
+            </div>
+
+            <!-- CURRENCY API AVEC CONVERTISSEUR -->
+            <div style="padding: 1.5rem; border-left: 4px solid #3b82f6; background: rgba(13, 27, 42, 0.7); backdrop-filter: blur(15px); border-radius: 12px; border-top: 1px solid rgba(255,255,255,0.05); border-right: 1px solid rgba(255,255,255,0.05); border-bottom: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div style="width: 40px; height: 40px; background: rgba(59, 130, 246, 0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #60a5fa; font-size: 1.2rem;">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <h4 style="color: #fff; margin: 0; font-weight: 800; font-size: 1rem;">Convertisseur Live</h4>
+                    </div>
+                    <div style="font-size: 0.7rem; color: #60a5fa; font-weight: 700; background: rgba(59, 130, 246, 0.1); padding: 3px 8px; border-radius: 4px;">
+                        1 TND = {{ eur_rate|number_format(3) }} EUR
                     </div>
                 </div>
-            {% endfor %}
+                
+                <!-- Convertisseur Interactif -->
+                <div style="display: flex; gap: 10px; align-items: center; margin-top: 10px;">
+                    <div style="position: relative; flex: 1;">
+                        <input type="number" id="quickCurrencyInput" placeholder="Montant..." style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 8px 12px; color: #fff; font-size: 0.85rem; outline: none; transition: border-color 0.3s;">
+                        <span style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 0.75rem; color: rgba(255,255,255,0.4); font-weight: 700;">TND</span>
+                    </div>
+                    <i class="fas fa-arrow-right" style="color: rgba(255,255,255,0.3); font-size: 0.9rem;"></i>
+                    <div style="flex: 1; background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05)); border: 1px solid rgba(59, 130, 246, 0.2); padding: 8px 12px; border-radius: 8px; font-weight: 800; color: #93c5fd; font-size: 0.9rem; text-align: center; display: flex; align-items: center; justify-content: center; gap: 4px;">
+                        <span id="quickCurrencyResult">0.00</span> <span style="font-size: 0.75rem;">€</span>
+                    </div>
+                </div>
+            </div>
         </div>
-    {% endif %}
+
+        {% if pending_reservations|length > 0 %}
+        <div class="ai-nudge-card fade-in delay-4">
+            <div style="font-size: 2.5rem;"><i class="fas fa-robot" style="color: var(--gold);"></i></div>
+            <div style="flex: 1;">
+                <h4 style="color: #fff; margin-bottom: 5px;">Suggestion de Sarah AI</h4>
+                <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 0;">
+                    J'ai remarqué que vous avez <strong>{{ pending_reservations|length }}</strong> réservation(s) en attente. 
+                    Le prix pourrait augmenter de 15% dans les prochaines 24h. Finalisez votre paiement maintenant pour garantir votre tarif !
+                </p>
+            </div>
+            <a href="{{ path('transport_index') }}" class="btn-gold" style="white-space: nowrap;">Voir mes réservations</a>
+        </div>
+        {% endif %}
+    </div>
 </div>
+
+<div class="billing-container">
+    <div class="glass-table-card fade-in delay-4">
+        <div class="table-header-pro">
+            <h3 class="summary-title" style="margin-bottom: 0;">Dernières Transactions</h3>
+            
+            <form method="GET" class="search-pill">
+                <i class="fas fa-search"></i>
+                <input type="email" name="email" value="{{ email ?? '' }}" placeholder="Rechercher par email...">
+                <button type="submit" style="display:none"></button>
+            </form>
+            
+            <a href="{{ path('app_user_paiement_new') }}" class="btn-gold">
+                <i class="fas fa-plus"></i> Nouveau Paiement
+            </a>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table-pro">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Référence / Objet</th>
+                        <th>Méthode</th>
+                        <th>Montant</th>
+                        <th>Statut</th>
+                        <th>Risque AI</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in paiements %}
+                        <tr>
+                            <td>
+                                <div style="font-weight: 700; color: var(--navy);">{{ p.datePaiement|date('d M Y') }}</div>
+                                <div style="font-size: 0.7rem; color: var(--muted);">{{ p.datePaiement|date('H:i') }}</div>
+                            </td>
+                            <td>
+                                {% if p.subscription %}
+                                    <span class="badge" style="background: rgba(201,168,76,0.1); color: var(--gold); font-size: 0.6rem;">ABONNEMENT</span>
+                                    <div style="font-weight: 600; font-size: 0.85rem;">{{ p.subscription.plan|capitalize }}</div>
+                                {% elseif p.reservationId %}
+                                    <span class="badge" style="background: rgba(13,27,42,0.05); color: var(--navy); font-size: 0.6rem;">RÉSERVATION</span>
+                                    <div style="font-weight: 600; font-size: 0.85rem;">Transport #{{ p.reservationId }}</div>
+                                {% else %}
+                                    <div style="font-weight: 600; font-size: 0.85rem;">Paiement Libre</div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="method-badge">
+                                    {% if p.methodePaiement == 'Stripe' %}
+                                        <i class="fab fa-stripe-s" style="color: #635bff;"></i> Stripe
+                                    {% else %}
+                                        <i class="fas fa-wallet" style="color: var(--gold);"></i> Wallet
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="amount-cell">
+                                {{ p.amount|number_format(2, ',', ' ') }} <small>TND</small>
+                                {% if eur_rate %}
+                                    <span class="currency-tag" title="Taux API : 1 TND = {{ eur_rate }} EUR">
+                                        ≈ {{ (p.amount * eur_rate)|number_format(2, ',', ' ') }} €
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="status-badge 
+                                    {% if p.status == 'Effectué' %}status-done
+                                    {% elseif p.status == 'En attente' %}status-pending
+                                    {% else %}status-error{% endif %}">
+                                    {{ p.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    {% set score = p.scoreRisque|default(0.15) %}
+                                    <div style="width: 45px; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                                        <div style="width: {{ score * 100 }}%; height: 100%; background: {% if score < 0.3 %}#22c55e{% elseif score < 0.7 %}#f59e0b{% else %}#ef4444{% endif %};"></div>
+                                    </div>
+                                    <span style="font-size: 0.65rem; font-weight: 800; color: {% if score < 0.3 %}#16a34a{% elseif score < 0.7 %}#d97706{% else %}#dc2626{% endif %};">
+                                        {{ (score * 100)|number_format(0) }}%
+                                    </span>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <a href="{{ path('app_user_paiement_export_single', {id: p.id}) }}" class="btn-sq" title="Facture PDF">
+                                        <i class="fas fa-file-pdf"></i>
+                                    </a>
+                                    {% if p.status == 'En attente' %}
+                                        <a href="{{ path('app_user_paiement_edit', {id: p.id}) }}" class="btn-sq" title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    {% endif %}
+                                    <form method="post" action="{{ path('app_user_paiement_delete', {'id': p.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce paiement ?');" style="margin: 0;">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ p.id) }}">
+                                        <button type="submit" class="btn-sq" title="Supprimer" style="background: rgba(220, 38, 38, 0.1); color: #dc2626; border: 1px solid rgba(220, 38, 38, 0.2); cursor: pointer;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6">
+                                <div class="empty-state">
+                                    <i class="fas fa-folder-open"></i>
+                                    <h3>Aucune transaction trouvée</h3>
+                                    <p>Vous n'avez pas encore effectué de paiements sur SmartTrip.</p>
+                                    <a href="{{ path('app_user_paiement_new') }}" class="btn-gold mt-4">Commencer maintenant</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="navigation pagination-pro">
+            {{ knp_pagination_render(paiements) }}
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-top: 3rem;">
+            {% if pending_reservations|length > 0 %}
+            <div class="ai-nudge-card fade-in delay-4" style="margin-top: 0;">
+                <div style="font-size: 2.5rem;"><i class="fas fa-robot" style="color: var(--gold);"></i></div>
+                <div style="flex: 1;">
+                    <h4 style="color: #fff; margin-bottom: 5px;">Suggestion de Sarah AI</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem; margin-bottom: 0;">
+                        J'ai remarqué que vous avez <strong>{{ pending_reservations|length }}</strong> réservation(s) en attente. 
+                        Le prix pourrait augmenter de 15% dans les prochaines 24h. Finalisez votre paiement maintenant pour garantir votre tarif !
+                    </p>
+                </div>
+                <a href="{{ path('transport_index') }}" class="btn-gold" style="white-space: nowrap;">Voir mes réservations</a>
+            </div>
+            {% endif %}
+
+            <div class="ai-nudge-card fade-in delay-4" style="margin-top: 0; background: rgba(13, 27, 42, 0.6);">
+                <div style="font-size: 2rem;"><i class="fas fa-lightbulb" style="color: var(--gold);"></i></div>
+                <div style="flex: 1;">
+                    <h4 style="color: #fff; margin-bottom: 5px;">Smart Advisor</h4>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.85rem;">
+                        {% if wallet_balance > 100 %}
+                            Utilisez votre <strong>Wallet</strong> pour vos prochains achats et gagnez 5% de cashback immédiat !
+                        {% else %}
+                            Rechargez votre <strong>Wallet</strong> pour éviter les frais Stripe et accumuler plus de points Elite.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const rate = {{ eur_rate|default(0) }};
+        const inputEl = document.getElementById('quickCurrencyInput');
+        const resultEl = document.getElementById('quickCurrencyResult');
+        
+        if (inputEl && resultEl) {
+            inputEl.addEventListener('input', function() {
+                const val = parseFloat(this.value);
+                if (!isNaN(val) && val > 0) {
+                    resultEl.textContent = (val * rate).toFixed(2);
+                } else {
+                    resultEl.textContent = "0.00";
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

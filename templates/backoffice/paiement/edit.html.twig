@@ -1,311 +1,98 @@
-{% extends 'base_dark.html.twig' %}
+{% extends 'BackOffice/base_admin.html.twig' %}
 
-{% block title %}Modifier Transaction #{{ paiement.id }}{% endblock %}
+{% block title %}Modifier Paiement – Admin{% endblock %}
+{% block page_title %}Mise à jour Transaction #{{ paiement.id }}{% endblock %}
 
 {% block body %}
-<div class="admin-dashboard-wrapper">
-    <!-- PRO HEADER -->
-    <div class="admin-header fade-in">
-        <div class="header-content">
-            <span class="badge-gold-light">Édition Master</span>
-            <h1 class="page-main-title">Modification de la <em>Transaction</em></h1>
-            <nav class="breadcrumb-nav-pro">
-                <a href="{{ path('app_admin_paiement_index') }}"><i class="fa-solid fa-house-chimney-window"></i> Admin</a>
-                <i class="fa-solid fa-chevron-right separator"></i>
-                <a href="{{ path('app_admin_paiement_index') }}">Transactions</a>
-                <i class="fa-solid fa-chevron-right separator"></i>
-                <span class="current">Éditer #{{ paiement.id }}</span>
-            </nav>
-        </div>
-        <div class="header-actions-pro">
-            <a href="{{ path('app_admin_paiement_index') }}" class="btn-action-outline">
-                <i class="fa-solid fa-arrow-left-long"></i> Retour à la liste
-            </a>
-        </div>
+<div class="card">
+    <div class="card-header">
+        <h2><i class="fa-solid fa-edit" style="color:var(--gold);margin-right:.5rem"></i>Modification Financière</h2>
+        <a href="{{ path('app_admin_paiement_index') }}" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Retour
+        </a>
     </div>
-
-    <div class="admin-edit-layout fade-in delay-1">
-        <!-- MAIN FORM COLUMN -->
-        <div class="edit-main-column">
-            <div class="premium-form-card shadow-pro">
-                <div class="card-intro">
-                    <div class="intro-icon"><i class="fa-solid fa-pen-nib"></i></div>
-                    <div class="intro-text">
-                        <h3>Configuration du Paiement</h3>
-                        <p>Ajustez les valeurs financières et le statut de cette transaction.</p>
-                    </div>
+    <div class="card-body">
+        <form method="post" class="voyage-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Utilisateur Bénéficiaire</label>
+                    <input type="text" class="input-pro" value="{{ paiement.user.email }}" disabled>
+                    <input type="hidden" name="user_id" value="{{ paiement.user.id }}">
                 </div>
 
-                <form method="post" class="elite-admin-form">
-                    
-                    <!-- USER / BENEFICIARY (READ ONLY) -->
-                    <div class="form-section-group locked">
-                        <label class="pro-label">Bénéficiaire du Paiement</label>
-                        <div class="pro-input-wrapper readonly">
-                            <i class="fa-solid fa-user-shield"></i>
-                            <input type="text" value="{{ paiement.user.email }}" readonly>
-                            <span class="lock-tag"><i class="fa-solid fa-lock"></i> Verrouillé</span>
-                        </div>
-                        <p class="field-hint">Le compte utilisateur associé ne peut pas être modifié après création.</p>
-                    </div>
-
-                    <div class="pro-form-row">
-                        <!-- AMOUNT -->
-                        <div class="form-section-group">
-                            <label for="amount" class="pro-label">Montant de la Transaction (TND)</label>
-                            <div class="pro-input-wrapper">
-                                <i class="fa-solid fa-money-bill-wave"></i>
-                                <input type="number" step="0.01" name="amount" id="amount" class="pro-input-field val-hero" value="{{ paiement.amount }}" required>
-                            </div>
-                        </div>
-
-                        <!-- METHOD -->
-                        <div class="form-section-group">
-                            <label for="methode_paiement" class="pro-label">Canal de Règlement</label>
-                            <div class="pro-input-wrapper">
-                                <i class="fa-solid fa-credit-card"></i>
-                                <select name="methode_paiement" id="methode_paiement" class="pro-input-field select-custom">
-                                    <option value="Stripe" {{ paiement.methodePaiement == 'Stripe' ? 'selected' : '' }}>Stripe (Carte Bancaire)</option>
-                                    <option value="Wallet" {{ paiement.methodePaiement == 'Wallet' ? 'selected' : '' }}>Wallet VoyageElite</option>
-                                    <option value="Espèces" {{ paiement.methodePaiement == 'Espèces' ? 'selected' : '' }}>Espèces / Autre</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SUBSCRIPTION -->
-                    <div class="form-section-group">
-                        <label for="subscription_id" class="pro-label">Associer à un Abonnement</label>
-                        <div class="pro-input-wrapper">
-                            <i class="fa-solid fa-crown"></i>
-                            <select name="subscription_id" id="subscription_id" class="pro-input-field select-custom">
-                                <option value="">Aucun abonnement lié</option>
-                                {% for sub in subscriptions %}
-                                    <option value="{{ sub.id }}" {{ (paiement.subscription and paiement.subscription.id == sub.id) ? 'selected' : '' }}>
-                                        #{{ sub.id }} - Plan {{ sub.plan|capitalize }} ({{ sub.status }})
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- STATUS -->
-                    <div class="form-section-group status-box">
-                        <label for="status" class="pro-label">État de la Transaction</label>
-                        <div class="pro-input-wrapper">
-                            <i class="fa-solid fa-toggle-on"></i>
-                            <select name="status" id="status" class="pro-input-field select-custom status-select">
-                                <option value="En attente" {{ paiement.status == 'En attente' ? 'selected' : '' }}>🕒 En attente de vérification</option>
-                                <option value="Effectué" {{ paiement.status == 'Effectué' ? 'selected' : '' }}>✅ Paiement validé (Effectué)</option>
-                                <option value="Refusé" {{ paiement.status == 'Refusé' ? 'selected' : '' }}>❌ Transaction rejetée (Refusé)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- BILLING DETAILS SECTION -->
-                    <div class="billing-edit-section mt-5 pt-4 border-top">
-                        <h4 class="pro-label text-navy mb-4"><i class="fa-solid fa-file-invoice me-2"></i>Détails de Facturation</h4>
-                        
-                        <div class="pro-form-row">
-                            <div class="form-section-group">
-                                <label for="nom" class="pro-label">Nom sur Facture</label>
-                                <div class="pro-input-wrapper">
-                                    <i class="fa-solid fa-address-card"></i>
-                                    <input type="text" name="nom" id="nom" class="pro-input-field" value="{{ paiement.nom }}" placeholder="Nom" required>
-                                </div>
-                            </div>
-                            <div class="form-section-group">
-                                <label for="prenom" class="pro-label">Prénom sur Facture</label>
-                                <div class="pro-input-wrapper">
-                                    <i class="fa-solid fa-user-pen"></i>
-                                    <input type="text" name="prenom" id="prenom" class="pro-input-field" value="{{ paiement.prenom }}" placeholder="Prénom" required>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="pro-form-row">
-                            <div class="form-section-group">
-                                <label for="email" class="pro-label">Email de Facturation</label>
-                                <div class="pro-input-wrapper">
-                                    <i class="fa-solid fa-envelope"></i>
-                                    <input type="email" name="email" id="email" class="pro-input-field" value="{{ paiement.email }}" placeholder="email@exemple.com" required>
-                                </div>
-                            </div>
-                            <div class="form-section-group">
-                                <label for="telephone" class="pro-label">Téléphone</label>
-                                <div class="pro-input-wrapper">
-                                    <i class="fa-solid fa-phone"></i>
-                                    <input type="text" name="telephone" id="telephone" class="pro-input-field" value="{{ paiement.telephone }}" placeholder="Numéro" required maxlength="8">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SUBMIT BUTTONS -->
-                    <div class="admin-form-actions">
-                        <button type="submit" class="btn-save-pro">
-                            <i class="fa-solid fa-check-double"></i> Mettre à jour la transaction
-                        </button>
-                        <p class="audit-msg"><i class="fa-solid fa-shield-halved"></i> Audit de sécurité : Votre action est journalisée.</p>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- SIDEBAR INFO (RIGHT) -->
-        <div class="edit-sidebar-column">
-            <div class="info-widget shadow-pro">
-                <h4 class="widget-title">Historique Rapide</h4>
-                <div class="history-item">
-                    <span class="h-label">Date Création</span>
-                    <span class="h-val">{{ paiement.datePaiement|date('d/m/Y H:i') }}</span>
-                </div>
-                <div class="history-item">
-                    <span class="h-label">Cashback Généré</span>
-                    <span class="h-val text-success">+{{ (paiement.amount * 0.05)|number_format(2) }} pts</span>
-                </div>
-                <div class="history-item">
-                    <span class="h-label">Facture liée</span>
-                    <span class="h-val">{{ paiement.facture ? paiement.facture.numeroFacture : 'Non générée' }}</span>
-                </div>
-                <div class="history-divider"></div>
-                <div class="widget-footer">
-                    <i class="fa-solid fa-circle-info"></i> Les modifications de montant impactent le cashback fidélité.
+                <div class="form-group">
+                    <label for="subscription_id">Abonnement lié (optionnel)</label>
+                    <select name="subscription_id" id="subscription_id" class="input-pro">
+                        <option value="">Aucun abonnement</option>
+                        {% for sub in subscriptions %}
+                            <option value="{{ sub.id }}" {% if paiement.subscription and paiement.subscription.id == sub.id %}selected{% endif %}>
+                                #{{ sub.id }} - {{ sub.plan|capitalize }}
+                            </option>
+                        {% endfor %}
+                    </select>
                 </div>
             </div>
-        </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="amount">Montant Transaction (DT)</label>
+                    <input type="number" step="0.01" name="amount" id="amount" class="input-pro" value="{{ paiement.amount }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="methode_paiement">Mode de Règlement</label>
+                    <select name="methode_paiement" id="methode_paiement" class="input-pro" required>
+                        <option value="Stripe" {% if paiement.methodePaiement == 'Stripe' %}selected{% endif %}>💳 Carte Bancaire (Stripe)</option>
+                        <option value="Wallet" {% if paiement.methodePaiement == 'Wallet' %}selected{% endif %}>👛 Portefeuille VoyageElite</option>
+                        <option value="Espèces" {% if paiement.methodePaiement == 'Espèces' %}selected{% endif %}>💵 Règlement Espèces</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="status">Statut de la Transaction</label>
+                <select name="status" id="status" class="input-pro" required>
+                    <option value="En attente" {% if paiement.status == 'En attente' %}selected{% endif %}>🕒 En attente</option>
+                    <option value="Effectué" {% if paiement.status == 'Effectué' %}selected{% endif %}>✅ Effectué</option>
+                    <option value="Refusé" {% if paiement.status == 'Refusé' %}selected{% endif %}>❌ Refusé</option>
+                </select>
+            </div>
+
+            <div style="margin: 2rem 0; padding: 1.5rem; background: #f8fafc; border-radius: 12px; border: 1px solid var(--border);">
+                <h3 style="font-size: .85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem; color: var(--navy);">
+                    <i class="fa-solid fa-file-invoice" style="color:var(--gold); margin-right:.5rem"></i>Détails de Facturation
+                </h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nom">Nom</label>
+                        <input type="text" name="nom" id="nom" class="input-pro" value="{{ paiement.nom }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prenom">Prénom</label>
+                        <input type="text" name="prenom" id="prenom" class="input-pro" value="{{ paiement.prenom }}" required>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="email">Email Facturation</label>
+                        <input type="email" name="email" id="email" class="input-pro" value="{{ paiement.email }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telephone">Téléphone</label>
+                        <input type="text" name="telephone" id="telephone" class="input-pro" value="{{ paiement.telephone }}" required maxlength="8">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-save"></i> Enregistrer les modifications
+                </button>
+                <a href="{{ path('app_admin_paiement_index') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+        </form>
     </div>
 </div>
-
-<style>
-    /* SHARED WITH INDEX */
-    .admin-dashboard-wrapper { padding: 4.5rem 5% 5rem; background: #f8fafc; min-height: 100vh; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3.5rem; }
-    .page-main-title { font-family: 'Playfair Display', serif; font-size: 2.2rem; color: #0f172a; margin-bottom: 0.5rem; }
-    .badge-gold-light { background: rgba(201,168,76,0.1); color: var(--gold); padding: 0.3rem 0.8rem; border-radius: 50px; font-size: 0.65rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 0.8rem; display: inline-block; }
-    
-    .breadcrumb-nav-pro { display: flex; align-items: center; gap: 0.8rem; font-size: 0.75rem; font-weight: 600; color: #64748b; }
-    .breadcrumb-nav-pro a { color: #64748b; text-decoration: none; transition: color 0.3s; }
-    .breadcrumb-nav-pro a:hover { color: var(--gold); }
-    .breadcrumb-nav-pro .separator { font-size: 0.6rem; opacity: 0.3; }
-    .breadcrumb-nav-pro .current { color: var(--gold); }
-
-    .btn-action-outline { border: 1.5px solid #e2e8f0; color: #0f172a; padding: 0.85rem 1.6rem; border-radius: 12px; font-weight: 700; text-decoration: none; display: flex; align-items: center; gap: 0.7rem; background: white; transition: all 0.3s; font-size: 0.85rem; }
-    .btn-action-outline:hover { border-color: var(--gold); color: var(--gold); }
-
-    /* LAYOUT Edit */
-    .admin-edit-layout { display: grid; grid-template-columns: 1fr 320px; gap: 2.5rem; max-width: 1100px; margin: 0 auto; }
-    
-    .premium-form-card { background: white; border-radius: 24px; padding: 3rem; border: 1px solid rgba(0,0,0,0.04); }
-    .shadow-pro { box-shadow: 0 10px 40px rgba(0,0,0,0.03); }
-
-    .card-intro { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid #f1f5f9; }
-    .intro-icon { width: 56px; height: 56px; border-radius: 14px; background: rgba(201,168,76,0.1); color: var(--gold); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
-    .intro-text h3 { font-size: 1.25rem; color: #0f172a; margin-bottom: 0.2rem; }
-    .intro-text p { color: #64748b; font-size: 0.8rem; font-weight: 500; }
-
-    /* FORM GROUPS */
-    .form-section-group { margin-bottom: 2rem; }
-    .pro-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .pro-label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1.2px; font-weight: 800; color: #64748b; margin-bottom: 0.8rem; padding-left: 0.4rem; }
-    
-    .pro-input-wrapper { position: relative; display: flex; align-items: center; }
-    .pro-input-wrapper i { position: absolute; left: 1.2rem; color: var(--gold); font-size: 1rem; }
-    .pro-input-field { width: 100%; border: 1.5px solid #e2e8f0; background: #f8fafc !important; padding: 1rem 1.2rem 1rem 3.4rem; border-radius: 14px; font-weight: 700 !important; color: #010816 !important; outline: none; transition: all 0.3s; font-size: 0.95rem; }
-    .pro-input-field:focus { border-color: var(--gold); background: white; box-shadow: 0 0 0 5px rgba(201,168,76,0.08); }
-    
-    .val-hero { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: #010816 !important; }
-    .select-custom { cursor: pointer; appearance: none; }
-
-    .pro-input-wrapper.readonly { background: #f1f5f9; border-radius: 14px; border: 1.5px solid #e2e8f0; }
-    .pro-input-wrapper.readonly input { background: transparent; border: none; color: #64748b !important; font-weight: 700 !important; cursor: not-allowed; }
-    .lock-tag { position: absolute; right: 1rem; font-size: 0.6rem; color: #94a3b8; text-transform: uppercase; font-weight: 800; background: white; padding: 0.2rem 0.5rem; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-    .field-hint { font-size: 0.7rem; color: #94a3b8; font-weight: 500; margin-top: 0.6rem; padding-left: 0.4rem; }
-
-    .status-select { background-color: #fffbeb; color: #d97706; border-color: #fde68a; }
-
-    .admin-form-actions { margin-top: 3.5rem; text-align: center; }
-    .btn-save-pro { width: 100%; background: var(--text-pro-navy); color: white; border: none; padding: 1.2rem; border-radius: 14px; font-weight: 800; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.8rem; transition: all 0.3s; }
-    .btn-save-pro:hover { background: var(--gold); color: #010816; transform: translateY(-3px); box-shadow: 0 10px 25px rgba(201,168,76,0.3); }
-    .audit-msg { margin-top: 1.2rem; font-size: 0.65rem; color: #94a3b8; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
-
-    /* SIDEBAR WIDGET */
-    .info-widget { background: white; border-radius: 24px; padding: 2rem; border: 1px solid rgba(0,0,0,0.04); position: sticky; top: 6rem; }
-    .widget-title { font-size: 0.9rem; font-weight: 800; color: #0f172a; margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 1px; }
-    .history-item { display: flex; justify-content: space-between; margin-bottom: 0.9rem; }
-    .h-label { font-size: 0.7rem; color: #94a3b8; font-weight: 600; }
-    .h-val { font-size: 0.75rem; font-weight: 700; color: #0f172a; text-align: right; }
-    .history-divider { height: 1px; background: #f1f5f9; margin: 1.5rem 0; }
-    .widget-footer { font-size: 0.62rem; color: #94a3b8; font-weight: 500; line-height: 1.4; display: flex; gap: 0.4rem; }
-    .widget-footer i { color: var(--gold); font-size: 0.7rem; }
-    .text-success { color: #10b981 !important; }
-
-    @media (max-width: 850px) {
-        .admin-edit-layout { grid-template-columns: 1fr; }
-        .edit-sidebar-column { order: -1; }
-        .info-widget { position: relative; top: 0; margin-bottom: 1rem; }
-        .pro-form-row { grid-template-columns: 1fr; }
-    }
-</style>
-{% endblock %}
-
-{% block javascripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const form = document.querySelector('.elite-admin-form');
-    
-    const inputs = {
-        nom: { el: document.getElementById('nom'), regex: /^[a-zA-ZÀ-ÿ\s-]{2,30}$/ },
-        prenom: { el: document.getElementById('prenom'), regex: /^[a-zA-ZÀ-ÿ\s-]{2,30}$/ },
-        email: { el: document.getElementById('email'), regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
-        telephone: { el: document.getElementById('telephone'), regex: /^[0-9]{8}$/ },
-        amount: { el: document.getElementById('amount'), custom: (v) => parseFloat(v) > 0 }
-    };
-
-    const updateVisuals = (key) => {
-        const field = inputs[key];
-        if (!field.el) return;
-
-        const val = field.el.value;
-        let isValid = false;
-
-        if (field.regex) {
-            isValid = field.regex.test(val);
-        } else if (field.custom) {
-            isValid = field.custom(val);
-        }
-
-        if (isValid) {
-            field.el.style.borderColor = '#10b981';
-            field.el.style.backgroundColor = '#f6fffa';
-        } else {
-            field.el.style.borderColor = '#ef4444';
-            field.el.style.backgroundColor = '#fffafb';
-        }
-        return isValid;
-    };
-
-    Object.keys(inputs).forEach(key => {
-        const inputEl = inputs[key].el;
-        if (inputEl) {
-            inputEl.addEventListener('input', () => updateVisuals(key));
-            updateVisuals(key); // Initial check
-        }
-    });
-
-    if (form) {
-        form.addEventListener('submit', function(e) {
-            let formValid = true;
-            Object.keys(inputs).forEach(key => {
-                if (!updateVisuals(key)) formValid = false;
-            });
-
-            if (!formValid) {
-                e.preventDefault();
-                alert("Veuillez corriger les erreurs (les champs en rouge) avant de valider.");
-            }
-        });
-    }
-});
-</script>
 {% endblock %}

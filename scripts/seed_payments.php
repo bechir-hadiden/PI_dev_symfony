@@ -24,10 +24,10 @@ if (empty($reservations)) {
 foreach ($reservations as $res) {
     if ($res->getStatut() === 'confirmee') {
         $p = new Paiement();
-        $p->setReservation($res);
-        $p->setMontant($res->getMontantTotal());
-        $p->setStatutPaiement('Payé');
-        $p->setMethodePaiement('Carte Bancaire');
+        $p->setReservationId($res->getId());
+        $p->setAmount($res->getMontantTotal());
+        $p->setStatus('Effectué');
+        $p->setMethodePaiement('Stripe');
         $em->persist($p);
     }
 }

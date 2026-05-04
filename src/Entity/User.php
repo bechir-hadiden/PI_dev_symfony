@@ -3,46 +3,36 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
-<<<<<<< HEAD
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-=======
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
-<<<<<<< HEAD
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-=======
-class User implements UserInterface, PasswordAuthenticatedUserInterface
-{
-
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-<<<<<<< HEAD
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
     #[ORM\Column]
     private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     */
     #[ORM\Column]
     private ?string $password = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $name = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $faceRegistered = false;
 
     #[ORM\Column]
     private ?float $walletBalance = 0.0;
@@ -73,48 +63,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->paiements = new ArrayCollection();
         $this->subscriptions = new ArrayCollection();
     }
-=======
-
-    #[ORM\Column(length: 180, unique: true)]
-    private ?string $email = null;
-
-
-    #[ORM\Column]
-    private array $roles = [];
-
-
-    #[ORM\Column]
-    private ?string $password = null;
-
-
-    #[ORM\Column(length: 255)]
-    private ?string $name = null;
-
-
-    #[ORM\Column(type: 'boolean')]
-    private bool $faceRegistered = false;
-
-
-
-    // ─────────────────────────────
-    // ID
-    // ─────────────────────────────
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-<<<<<<< HEAD
-=======
-
-
-    // ─────────────────────────────
-    // EMAIL
-    // ─────────────────────────────
-
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
     public function getEmail(): ?string
     {
         return $this->email;
@@ -123,7 +77,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(string $email): static
     {
         $this->email = $email;
-<<<<<<< HEAD
 
         return $this;
     }
@@ -133,20 +86,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      *
      * @see UserInterface
      */
-=======
-        return $this;
-    }
-
-
-
-    // utilisé par Symfony Security
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
     }
 
-<<<<<<< HEAD
     /**
      * @see UserInterface
      *
@@ -156,19 +100,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $roles = $this->roles;
         // guarantee every user at least has ROLE_USER
-=======
-
-
-    // ─────────────────────────────
-    // ROLES
-    // ─────────────────────────────
-
-    public function getRoles(): array
-    {
-        $roles = $this->roles;
-
-        // rôle par défaut
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
         $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
@@ -177,7 +108,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
-<<<<<<< HEAD
 
         return $this;
     }
@@ -185,17 +115,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @see PasswordAuthenticatedUserInterface
      */
-=======
-        return $this;
-    }
-
-
-
-    // ─────────────────────────────
-    // PASSWORD
-    // ─────────────────────────────
-
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
     public function getPassword(): ?string
     {
         return $this->password;
@@ -204,7 +123,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPassword(string $password): static
     {
         $this->password = $password;
-<<<<<<< HEAD
 
         return $this;
     }
@@ -216,6 +134,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): static
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    public function isFaceRegistered(): bool
+    {
+        return $this->faceRegistered;
+    }
+
+    public function setFaceRegistered(bool $faceRegistered): static
+    {
+        $this->faceRegistered = $faceRegistered;
+        return $this;
     }
 
     public function getWalletBalance(): ?float
@@ -272,8 +212,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
-
     /**
      * @return Collection<int, Subscription>
      */
@@ -326,53 +264,3 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 }
-=======
-        return $this;
-    }
-
-
-
-    // ─────────────────────────────
-    // NAME
-    // ─────────────────────────────
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
-    public function setName(string $name): static
-    {
-        $this->name = $name;
-        return $this;
-    }
-
-
-
-    // ─────────────────────────────
-    // FACE REGISTERED
-    // ─────────────────────────────
-
-    public function isFaceRegistered(): bool
-    {
-        return $this->faceRegistered;
-    }
-
-    public function setFaceRegistered(bool $faceRegistered): static
-    {
-        $this->faceRegistered = $faceRegistered;
-        return $this;
-    }
-
-
-
-    // ─────────────────────────────
-    // SECURITY CLEANUP
-    // ─────────────────────────────
-
-    public function eraseCredentials(): void
-    {
-        // rien pour l'instant
-    }
-}
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c

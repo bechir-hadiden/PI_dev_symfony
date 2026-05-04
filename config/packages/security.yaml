@@ -8,22 +8,16 @@ security:
             entity:
                 class: App\Entity\User
                 property: email
-<<<<<<< HEAD
 
-=======
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
 
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js|assets|build)/
             security: false
-<<<<<<< HEAD
         webhook:
             # Stripe webhooks must bypass authentication
             pattern: ^/webhook
             security: false
-=======
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
 
         main:
             lazy: true

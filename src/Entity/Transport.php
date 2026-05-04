@@ -5,12 +5,6 @@ namespace App\Entity;
 use App\Repository\TransportRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
-<<<<<<< HEAD
-use Doctrine\DBAL\Types\Types;
-use Doctrine\ORM\Mapping as ORM;
-
-#[ORM\Entity(repositoryClass: TransportRepository::class)]
-=======
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
@@ -21,33 +15,10 @@ use Symfony\Component\Validator\Constraints as Assert;
     fields: ['compagnie', 'numero'],
     message: 'Ce véhicule (même compagnie et numéro) existe déjà.'
 )]
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
 class Transport
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-<<<<<<< HEAD
-    #[ORM\Column]
-    private ?int $id = null;
-
-    #[ORM\Column(length: 255)]
-    private ?string $trajet = null; // ex: Tunis -> Sousse
-
-    #[ORM\Column]
-    private ?float $prix = null;
-
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $dateHeure = null;
-
-    #[ORM\ManyToOne(inversedBy: 'transports')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Vehicule $vehicule = null;
-
-    /**
-     * @var Collection<int, ReservationTransport>
-     */
-    #[ORM\OneToMany(targetEntity: ReservationTransport::class, mappedBy: 'transport')]
-=======
     #[ORM\Column(type: 'integer')]
     private ?int $id = null;
 
@@ -88,89 +59,30 @@ class Transport
     #[Assert\NotNull(message: 'Le type de transport est obligatoire.')]
     private ?TransportType $transportType = null;
 
-    #[ORM\Column(type: 'string', length: 100, nullable: true)]
-    private ?string $localisation = null;
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private ?string $trajet = null;
 
-    #[ORM\Column(type: 'float', nullable: true)]
-    private ?float $latitude = null;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $dateHeure = null;
 
-    #[ORM\Column(type: 'float', nullable: true)]
-    private ?float $longitude = null;
+    #[ORM\ManyToOne(targetEntity: Vehicule::class, inversedBy: 'transports')]
+    #[ORM\JoinColumn(name: 'vehicule_id', referencedColumnName: 'id', nullable: true)]
+    private ?Vehicule $vehicule = null;
 
     /** @var Collection<int, Reservation> */
     #[ORM\OneToMany(mappedBy: 'transport', targetEntity: Reservation::class, cascade: ['remove'], orphanRemoval: true)]
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
     private Collection $reservations;
+
+    /** @var Collection<int, ReservationTransport> */
+    #[ORM\OneToMany(mappedBy: 'transport', targetEntity: ReservationTransport::class, cascade: ['remove'], orphanRemoval: true)]
+    private Collection $reservationTransports;
 
     public function __construct()
     {
         $this->reservations = new ArrayCollection();
+        $this->reservationTransports = new ArrayCollection();
     }
 
-<<<<<<< HEAD
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
-
-    public function getTrajet(): ?string
-    {
-        return $this->trajet;
-    }
-
-    public function setTrajet(string $trajet): static
-    {
-        $this->trajet = $trajet;
-
-        return $this;
-    }
-
-    public function getPrix(): ?float
-    {
-        return $this->prix;
-    }
-
-    public function setPrix(float $prix): static
-    {
-        $this->prix = $prix;
-
-        return $this;
-    }
-
-    public function getDateHeure(): ?\DateTimeInterface
-    {
-        return $this->dateHeure;
-    }
-
-    public function setDateHeure(\DateTimeInterface $dateHeure): static
-    {
-        $this->dateHeure = $dateHeure;
-
-        return $this;
-    }
-
-    public function getVehicule(): ?Vehicule
-    {
-        return $this->vehicule;
-    }
-
-    public function setVehicule(?Vehicule $vehicule): static
-    {
-        $this->vehicule = $vehicule;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, ReservationTransport>
-     */
-    public function getReservations(): Collection
-    {
-        return $this->reservations;
-    }
-
-    public function addReservation(ReservationTransport $reservation): static
-=======
     public function getId(): ?int { return $this->id; }
 
     public function getCompagnie(): ?string { return $this->compagnie; }
@@ -194,51 +106,40 @@ class Transport
     public function getTransportType(): ?TransportType { return $this->transportType; }
     public function setTransportType(?TransportType $transportType): static { $this->transportType = $transportType; return $this; }
 
-    public function getLocalisation(): ?string { return $this->localisation; }
-    public function setLocalisation(?string $localisation): static { $this->localisation = $localisation; return $this; }
+    public function getLocalisation(): ?string { return $this->trajet; } // Alias for backward compatibility if needed
+    public function setLocalisation(?string $localisation): static { $this->trajet = $localisation; return $this; }
 
-    public function getLatitude(): ?float { return $this->latitude; }
-    public function setLatitude(?float $latitude): static { $this->latitude = $latitude; return $this; }
+    public function getTrajet(): ?string { return $this->trajet; }
+    public function setTrajet(?string $trajet): static { $this->trajet = $trajet; return $this; }
 
-    public function getLongitude(): ?float { return $this->longitude; }
-    public function setLongitude(?float $longitude): static { $this->longitude = $longitude; return $this; }
+    public function getDateHeure(): ?\DateTimeInterface { return $this->dateHeure; }
+    public function setDateHeure(?\DateTimeInterface $dateHeure): static { $this->dateHeure = $dateHeure; return $this; }
+
+    public function getVehicule(): ?Vehicule { return $this->vehicule; }
+    public function setVehicule(?Vehicule $vehicule): static { $this->vehicule = $vehicule; return $this; }
 
     /** @return Collection<int, Reservation> */
     public function getReservations(): Collection { return $this->reservations; }
 
     public function addReservation(Reservation $reservation): static
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
     {
         if (!$this->reservations->contains($reservation)) {
             $this->reservations->add($reservation);
             $reservation->setTransport($this);
         }
-<<<<<<< HEAD
 
-        return $this;
-    }
-
-    public function removeReservation(ReservationTransport $reservation): static
-    {
-        if ($this->reservations->removeElement($reservation)) {
-            // set the owning side to null (unless already changed)
-=======
         return $this;
     }
 
     public function removeReservation(Reservation $reservation): static
     {
         if ($this->reservations->removeElement($reservation)) {
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
+            // set the owning side to null (unless already changed)
             if ($reservation->getTransport() === $this) {
                 $reservation->setTransport(null);
             }
         }
-<<<<<<< HEAD
 
-        return $this;
-    }
-=======
         return $this;
     }
 
@@ -260,5 +161,4 @@ class Transport
         }
         return max(0, ($this->capacite ?? 0) - $placesReservees);
     }
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
 }

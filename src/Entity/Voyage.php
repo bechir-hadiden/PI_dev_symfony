@@ -62,10 +62,6 @@ class Voyage
     )]
     private ?string $description = null;
 
-<<<<<<< HEAD
-    // 9. pays_depart — varchar(100) NULL
-    #[ORM\Column(name: 'pays_depart', type: 'string', length: 100, nullable: true)]
-=======
     #[ORM\Column(name: 'pays_depart', type: 'string', length: 100, nullable: true)]
     #[Assert\Length(
         min: 2,
@@ -77,7 +73,6 @@ class Voyage
         pattern: '/^[\p{L}\s\-\,]+$/u',
         message: 'Le pays de départ ne peut contenir que des lettres, espaces et tirets.'
     )]
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
     private ?string $paysDepart = null;
 
     #[ORM\ManyToOne(targetEntity: Destination::class, inversedBy: 'voyages')]

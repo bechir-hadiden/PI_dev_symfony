@@ -265,6 +265,37 @@
                         </div>
                     </div>
 
+                    <!-- SMART ADVISOR AI (Recommendation) -->
+                    <div class="smart-advisor-box mt-4 fade-in delay-2" id="smartAdvisorBox">
+                        <div class="advisor-icon"><i class="fas fa-brain"></i></div>
+                        <div class="advisor-text">
+                            <h4 style="font-size: 0.85rem; color: var(--navy); margin-bottom: 2px; font-weight: 800;">Smart Advisor AI</h4>
+                            <p style="font-size: 0.75rem; color: var(--muted); margin-bottom: 0;" id="advisorMessage">
+                                Analyse en cours...
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <style>
+                        .smart-advisor-box {
+                            background: linear-gradient(to right, rgba(201, 168, 76, 0.1), rgba(201, 168, 76, 0.02));
+                            border-left: 4px solid var(--gold);
+                            border-radius: 8px;
+                            padding: 1rem 1.5rem;
+                            display: flex;
+                            align-items: center;
+                            gap: 1rem;
+                        }
+                        .advisor-icon {
+                            width: 40px; height: 40px;
+                            background: var(--gold); color: #fff;
+                            border-radius: 50%;
+                            display: flex; align-items: center; justify-content: center;
+                            font-size: 1.2rem;
+                            box-shadow: 0 4px 10px rgba(201,168,76,0.3);
+                        }
+                    </style>
+
                     <div class="security-trust">
                         <i class="fas fa-shield-halved"></i>
                         <span>Transaction encryptée SSL 256-Bit</span>
@@ -296,6 +327,12 @@
                     <span class="summary-label">Client</span>
                     <span class="summary-value" id="summary_client">Non renseigné</span>
                 </div>
+                {% if detected_country != 'Tunisie' %}
+                <div class="summary-line" style="background: rgba(239,68,68,0.05); padding: 5px 10px; border-radius: 8px; margin-top: 5px;">
+                    <span class="summary-label" style="color: #ef4444;">Frais Hors-Tunisie</span>
+                    <span class="summary-value" style="color: #ef4444;" id="summary_fee">+10%</span>
+                </div>
+                {% endif %}
                 <div class="summary-divider"></div>
                 
                 <div class="summary-total-block">
@@ -560,12 +597,19 @@
     });
 
     function updateSummary() {
-        const amount = document.getElementById('amount').value || '0.00';
+        const amountVal = document.getElementById('amount').value || '0.00';
         const nom = document.getElementById('nom').value || '';
         const prenom = document.getElementById('prenom').value || '';
         const subSelect = document.getElementById('subscription_id');
         
-        document.getElementById('summary_total').innerText = parseFloat(amount).toFixed(2);
+        const detectedCountry = '{{ detected_country }}';
+        let total = parseFloat(amountVal);
+        
+        if (detectedCountry !== 'Tunisie' && total > 0) {
+            total = total * 1.10;
+        }
+
+        document.getElementById('summary_total').innerText = total.toFixed(2);
         document.getElementById('summary_client').innerText = (prenom || nom) ? `${prenom} ${nom}` : 'Non renseigné';
 
         if (subSelect && subSelect.selectedIndex > 0) {
@@ -573,6 +617,19 @@
             document.getElementById('summary_service').innerText = selectedText;
         } else {
             document.getElementById('summary_service').innerText = "Paiement Simple";
+        }
+        
+        // --- SMART ADVISOR LOGIC ---
+        const walletBalance = {{ (user.walletBalance ?? 0)|number_format(2, '.', '') }};
+        const advisorMsg = document.getElementById('advisorMessage');
+        if (advisorMsg) {
+            if (total <= 0) {
+                advisorMsg.innerHTML = "Saisissez un montant pour que j'analyse vos meilleures options de paiement.";
+            } else if (walletBalance >= total) {
+                advisorMsg.innerHTML = `<strong>Excellente opportunité !</strong> Payer avec le Wallet vous rapportera <strong>${(total * 0.05).toFixed(2)} TND</strong> de Cashback immédiat et 10 Pts de fidélité !`;
+            } else {
+                advisorMsg.innerHTML = `<strong>Conseil Stripe :</strong> Votre solde Wallet (${walletBalance.toFixed(2)} TND) est insuffisant. Utilisez le paiement par Carte Bancaire sécurisé via Stripe.`;
+            }
         }
     }
     

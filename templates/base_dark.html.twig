@@ -37,13 +37,8 @@
     }
     .nav-logo { font-family:'Playfair Display',serif; font-size:1.5rem; font-weight:700; color:var(--gold); text-decoration:none; letter-spacing:1px; }
     .nav-logo span { color:var(--white); }
-<<<<<<< HEAD
-    .nav-links { display:flex; gap:1.2rem; list-style:none; }
+    .nav-links { display:flex; gap:1.2rem; list-style:none; align-items:center; }
     .nav-links a { color:rgba(255,255,255,0.7); text-decoration:none; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.3px; transition:color .3s; position:relative; }
-=======
-    .nav-links { display:flex; gap:2rem; list-style:none; align-items:center; }
-    .nav-links a { color:rgba(255,255,255,0.7); text-decoration:none; font-size:.875rem; font-weight:500; transition:color .3s; position:relative; }
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
     .nav-links a::after { content:''; position:absolute; bottom:-4px; left:0; width:0; height:1px; background:var(--gold); transition:width .3s; }
     .nav-links a:hover, .dropdown:hover > a { color:var(--gold); }
     .nav-links a:hover::after, .dropdown:hover > a::after { width:100%; }
@@ -183,9 +178,6 @@
     .search-field { flex:1; min-width:140px; display:flex; flex-direction:column; gap:.25rem; }
     .search-field label { font-size:.65rem; text-transform:uppercase; letter-spacing:1.2px; color:var(--gold); font-weight:700; }
     .search-field input, .search-field select { background:transparent; border:none; outline:none; color:var(--white); font-size:.9rem; font-family:'Plus Jakarta Sans',sans-serif; cursor:pointer; }
-<<<<<<< HEAD
-    .search-btn { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); border:none; cursor:pointer; padding:.85rem 1.6rem; border-radius:10px; font-weight:700; font-size:.875rem; display:flex; align-items:center; gap:.5rem; transition:transform .3s; white-space:nowrap; }
-=======
     .search-field select option { background:var(--navy); }
     .search-divider { width:1px; height:36px; background:rgba(201,168,76,0.2); }
     .search-btn { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); border:none; cursor:pointer; padding:.85rem 1.6rem; border-radius:10px; font-weight:700; font-size:.875rem; display:flex; align-items:center; gap:.5rem; transition:transform .3s,box-shadow .3s; white-space:nowrap; }
@@ -202,7 +194,6 @@
     .btn-navy:hover { background:var(--gold); color:var(--navy); }
     .btn-danger-sm { background:rgba(220,38,38,0.1); color:#dc2626; border:1px solid rgba(220,38,38,0.2); padding:.4rem .9rem; border-radius:8px; cursor:pointer; font-size:.78rem; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:.3rem; transition:all .3s; }
     .btn-danger-sm:hover { background:rgba(220,38,38,0.2); }
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
 
     .btn-ai-nav {
       background: rgba(201,168,76,0.1);
@@ -255,11 +246,6 @@
     #contact { background:var(--navy); display:grid; grid-template-columns:1fr 1.5fr; gap:5rem; }
     .contact-form { background:rgba(255,255,255,0.04); border:1px solid rgba(201,168,76,0.15); border-radius:18px; padding:2.2rem; min-width: 100%; }
     .form-group { margin-bottom:1.1rem; }
-<<<<<<< HEAD
-    .form-group label { display:block; font-size:.72rem; color:rgba(255,255,255,0.55); text-transform:uppercase; margin-bottom:.45rem; }
-    .form-group input, .form-group select, .form-group textarea { width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(201,168,76,0.15); border-radius:10px; padding:.75rem 1rem; color:var(--white); outline:none; }
-    .btn-submit { background:linear-gradient(135deg,var(--gold),var(--gold-l)); color:var(--navy); border:none; padding:.95rem; border-radius:10px; font-weight:700; cursor:pointer; width: 100%; }
-=======
     .form-group label { display:block; font-size:.72rem; color:rgba(255,255,255,0.55); font-weight:600; letter-spacing:.5px; text-transform:uppercase; margin-bottom:.45rem; }
     .form-group input, .form-group select, .form-group textarea { width:100%; background:rgba(255,255,255,0.06); border:1px solid rgba(201,168,76,0.15); border-radius:10px; padding:.75rem 1rem; color:var(--white); font-family:'Plus Jakarta Sans',sans-serif; font-size:.875rem; outline:none; transition:border-color .3s; }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color:var(--gold); }
@@ -303,17 +289,12 @@
       #chat-widget { bottom:16px !important; right:16px !important; }
       #chat-popup  { width:calc(100vw - 32px) !important; }
     }
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
 
     /* ── ANIMATIONS ── */
     @keyframes fadeInUp { from{opacity:0;transform:translateY(28px)} to{opacity:1;transform:translateY(0)} }
-<<<<<<< HEAD
     .fade-in { animation:fadeInUp .8s ease forwards; }
     .delay-1 { animation-delay:.2s; opacity:0; }
     .delay-2 { animation-delay:.4s; opacity:0; }
-
-    /* ── FOOTER ── */
-    footer { background:#07101a; border-top:1px solid rgba(201,168,76,0.1); padding:3.5rem 5% 2rem; color: white; }
 
     /* ───────────────────────────────────────────────────────────
        ── ELITE ADMIN DASHBOARD (CENTRALIZED)
@@ -383,20 +364,13 @@
     .vip-pass-detail .value { font-size: 1.1rem !important; font-weight: 700 !important; }
     
     .vip-pass-footer { margin-top: 3rem !important; border-top: 1px solid rgba(255,255,255,0.1) !important; padding-top: 2rem !important; display: flex !important; justify-content: space-between !important; align-items: flex-end !important; }
-=======
-    .fade-in  { animation:fadeInUp .8s ease forwards; }
-    .delay-1  { animation-delay:.2s; opacity:0; }
-    .delay-2  { animation-delay:.4s; opacity:0; }
 
     {% block extra_css %}{% endblock %}
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
   </style>
   {% block stylesheets %}{% endblock %}
 </head>
 <body>
 
-<<<<<<< HEAD
-=======
 {# ══ MODAL LOGIN ══════════════════════════════════════════════════ #}
 {% if not app.user %}
 <div class="modal-overlay" id="loginModal">
@@ -470,57 +444,40 @@
 {% endif %}
 
 {# ══ NAVBAR ══════════════════════════════════════════════════════ #}
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
 <nav id="navbar">
   <a href="{{ path('app_home') }}" class="nav-logo">Smart<span>Trip</span></a>
   <ul class="nav-links">
-<<<<<<< HEAD
-    <li><a href="{{ path('app_home') }}">Accueil</a></li>
-    <li><a href="{{ path('destination_index') }}">Destinations</a></li>
-    <li><a href="{{ path('voyage_index') }}">Voyages</a></li>
+    <li><a href="{{ path('app_home') }}">{{ 'nav.home'|trans }}</a></li>
     
-    {% if app.user %}
-      <li class="dropdown">
-        <a href="#">Espace Client <i class="fas fa-chevron-down" style="font-size: 0.6rem; margin-left: 3px;"></i></a>
-        <ul class="dropdown-content">
-          <li><a href="{{ path('app_user_paiement_index') }}"><i class="fas fa-wallet"></i> Mes Paiements</a></li>
-          <li><a href="{{ path('app_user_subscription_index') }}"><i class="fas fa-crown"></i> Mon Abonnement</a></li>
-          <li><a href="{{ path('app_logout') }}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-        </ul>
-      </li>
-
-      {% if is_granted('ROLE_ADMIN') %}
-        <li class="dropdown">
-          <a href="#" style="color: var(--gold-l);">Administration <i class="fas fa-chevron-down" style="font-size: 0.6rem; margin-left: 3px;"></i></a>
-          <ul class="dropdown-content">
-            <li><a href="{{ path('app_admin_paiement_index') }}"><i class="fas fa-chart-line"></i> Gestion Paiements</a></li>
-            <li><a href="{{ path('app_admin_subscription_index') }}"><i class="fas fa-users-gear"></i> Gestion Abonnements</a></li>
-          </ul>
-        </li>
-      {% endif %}
-    {% else %}
-      <li><a href="{{ path('app_login') }}"><i class="fas fa-user"></i> Connexion</a></li>
-    {% endif %}
-
-    <li><a href="{{ path('app_home') }}#about">À propos</a></li>
-    <li><a href="{{ path('app_home') }}#contact" class="nav-cta">Réserver</a></li>
-
-  </ul>
-</nav>
-
-=======
     {% if is_granted('ROLE_ADMIN') %}
       <li><a href="{{ path('admin_destination_index') }}">{{ 'nav.destinations'|trans }}</a></li>
       <li><a href="{{ path('admin_voyage_index') }}">{{ 'nav.voyages'|trans }}</a></li>
       <li><a href="{{ path('admin_transport_index') }}">Transports</a></li>
-      <li><a href="{{ path('admin_paiement_index') }}">Paiements</a></li>
-      <li><a href="{{ path('admin_destination_new') }}" style="color:var(--gold) !important;"><i class="fas fa-plus"></i> {{ 'nav.add'|trans }}</a></li>
+      <li class="dropdown">
+        <a href="#" style="color: var(--gold-l);">Administration <i class="fas fa-chevron-down" style="font-size: 0.6rem; margin-left: 3px;"></i></a>
+        <ul class="dropdown-content">
+          <li><a href="{{ path('admin_paiement_index') }}"><i class="fas fa-chart-line"></i> Gestion Paiements</a></li>
+          <li><a href="{{ path('app_admin_subscription_index') }}"><i class="fas fa-users-gear"></i> Gestion Abonnements</a></li>
+          <li><a href="{{ path('admin_destination_new') }}"><i class="fas fa-plus"></i> Ajouter Destination</a></li>
+        </ul>
+      </li>
     {% else %}
       <li><a href="{{ path('client_destination_index') }}">Destinations</a></li>
       <li><a href="{{ path('client_voyage_index') }}">Voyages</a></li>
       <li><a href="{{ path('transport_index') }}">Transports</a></li>
-      <li><a href="{{ path('user_paiement_index') }}">Mes Paiements</a></li>
+      <li><a href="{{ path('app_user_paiement_index') }}">Paiements</a></li>
+      {% if app.user %}
+        <li class="dropdown">
+          <a href="#">Espace Client <i class="fas fa-chevron-down" style="font-size: 0.6rem; margin-left: 3px;"></i></a>
+          <ul class="dropdown-content">
+            <li><a href="{{ path('app_client_dashboard') }}"><i class="fas fa-th-large"></i> Tableau de Bord</a></li>
+            <li><a href="{{ path('app_user_paiement_index') }}"><i class="fas fa-wallet"></i> Mes Paiements</a></li>
+            <li><a href="{{ path('app_user_subscription_index') }}"><i class="fas fa-crown"></i> Mon Abonnement</a></li>
+          </ul>
+        </li>
+      {% endif %}
     {% endif %}
+
     <li><a href="{{ path('app_home') }}#about">{{ 'nav.about'|trans }}</a></li>
     <li>
       <a href="#" class="nav-cta" onclick="event.preventDefault();toggleSarahChat()">
@@ -552,6 +509,9 @@
     <li>
       {% if app.user %}
         <div style="display:flex;align-items:center;gap:.6rem;">
+          <span class="nav-user" style="background: rgba(201, 168, 76, 0.1); border: 1px solid rgba(201, 168, 76, 0.2); padding: 5px 12px; border-radius: 20px; color: var(--gold); font-weight: 600;">
+            <i class="fas fa-wallet"></i> {{ app.user.walletBalance|number_format(2, ',', ' ') }} DT
+          </span>
           <span class="nav-user">
             <i class="fas fa-user-circle"></i>
             {{ app.user.email }}
@@ -569,8 +529,7 @@
   </ul>
 </nav>
 
-{# ── FLASH MESSAGES ── #}
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
+{# ══ FLASH MESSAGES ── #}
 {% for msg in app.flashes('success') %}
   <div class="flash flash-success">✅ {{ msg is iterable ? msg.message : msg }}</div>
 {% endfor %}
@@ -580,17 +539,6 @@
 
 {% block body %}{% endblock %}
 
-<<<<<<< HEAD
-<footer>
-  <div class="footer-grid">
-    <div class="footer-brand">
-      <a href="{{ path('app_home') }}" class="nav-logo">Voyage<span>Elite</span></a>
-      <p>Votre partenaire de confiance pour des voyages d'exception.</p>
-    </div>
-    <div class="footer-col">
-      <p style="color:rgba(255,255,255,0.45); font-size:0.8rem">© 2025 SmartTrip. Tous droits réservés.</p>
-    </div>
-=======
 {# ══ FOOTER ══════════════════════════════════════════════════════ #}
 <footer>
   <div class="footer-grid">
@@ -607,9 +555,8 @@
     <div class="footer-col">
       <h4>{{ 'footer.destinations'|trans }}</h4>
       <ul>
-           <li><a href="{{ path('client_destination_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.all_dest'|trans }}</a></li>
+        <li><a href="{{ path('client_destination_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.all_dest'|trans }}</a></li>
         <li><a href="{{ path('admin_destination_new') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.add_dest'|trans }}</a></li>
-  
       </ul>
     </div>
     <div class="footer-col">
@@ -623,16 +570,7 @@
       <h4>Transports</h4>
       <ul>
         <li><a href="{{ path('transport_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Réserver un transport</a></li>
-        <li><a href="{{ path('user_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Mes Paiements</a></li>
-        <li><a href="{{ path('admin_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Gestion Paiements (Admin)</a></li>
-        <li><a href="{{ path('admin_transport_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Gestion Transport (Admin)</a></li>
-      </ul>
-    </div>
-    <div class="footer-col">
-      <h4>{{ 'footer.voyages'|trans }}</h4>
-      <ul>
-        <li><a href="{{ path('transport_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Réserver un transport</a></li>
-        <li><a href="{{ path('user_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Mes Paiements</a></li>
+        <li><a href="{{ path('app_user_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Mes Paiements</a></li>
         <li><a href="{{ path('admin_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Gestion Paiements (Admin)</a></li>
         <li><a href="{{ path('admin_transport_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Gestion Transport (Admin)</a></li>
       </ul>
@@ -653,7 +591,6 @@
   <div class="footer-bottom">
     <p>© 2025 <span>SmartTrip</span>. {{ 'footer.rights'|trans }}</p>
     <p>{{ 'footer.made_with'|trans }} <span>♥</span> {{ 'footer.for'|trans }}</p>
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
   </div>
 </footer>
 
@@ -663,50 +600,6 @@
 {# ══ JAVASCRIPT ══════════════════════════════════════════════════ #}
 {% block javascripts %}
 <script>
-<<<<<<< HEAD
-window.addEventListener('scroll', () => {
-    const nav = document.getElementById('navbar');
-    if (nav) nav.style.background = window.scrollY > 50 ? 'rgba(13,27,42,0.99)' : 'rgba(13,27,42,0.96)';
-});
-
-// Correction pour les menus "collants"
-document.querySelectorAll('.dropdown-content a').forEach(link => {
-    link.addEventListener('click', () => {
-        const dropdown = link.closest('.dropdown-content');
-        if (dropdown) {
-            dropdown.style.display = 'none';
-            setTimeout(() => { dropdown.style.display = ''; }, 100);
-        }
-    });
-});
-</script>
-{% endblock %}
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const dropdowns = document.querySelectorAll('.dropdown');
-        
-        dropdowns.forEach(dropdown => {
-            const link = dropdown.querySelector('a');
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                
-                // Close others
-                dropdowns.forEach(d => {
-                    if (d !== dropdown) d.classList.remove('active');
-                });
-                
-                dropdown.classList.toggle('active');
-            });
-        });
-
-        // Close when clicking outside
-        document.addEventListener('click', function() {
-            dropdowns.forEach(d => d.classList.remove('active'));
-        });
-    });
-  </script>
-=======
   window.addEventListener('scroll', () => {
     const nav = document.getElementById('navbar');
     if (!nav) return;
@@ -720,6 +613,21 @@ document.querySelectorAll('.dropdown-content a').forEach(link => {
       const t = document.querySelector(href);
       if (t) { e.preventDefault(); t.scrollIntoView({behavior:'smooth'}); }
     });
+  });
+
+  // Dropdown handler
+  document.addEventListener('DOMContentLoaded', function() {
+      const dropdowns = document.querySelectorAll('.dropdown');
+      dropdowns.forEach(dropdown => {
+          const link = dropdown.querySelector('a');
+          link.addEventListener('click', function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              dropdowns.forEach(d => { if (d !== dropdown) d.classList.remove('active'); });
+              dropdown.classList.toggle('active');
+          });
+      });
+      document.addEventListener('click', () => dropdowns.forEach(d => d.classList.remove('active')));
   });
 
   function openModal() {
@@ -812,6 +720,5 @@ document.querySelectorAll('.dropdown-content a').forEach(link => {
 </script>
 {% endblock %}
 
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
 </body>
 </html>

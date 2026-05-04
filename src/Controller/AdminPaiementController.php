@@ -23,18 +23,24 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class AdminPaiementController extends AbstractController
 {
     #[Route('/', name: 'app_admin_paiement_index')]
-    public function index(Request $request, PaiementRepository $paiementRepository): Response
+    public function index(Request $request, PaiementRepository $paiementRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
-        $sort = $request->query->get('sort', 'datePaiement');
+        $sort = $request->query->get('sort', 'p.datePaiement');
         $direction = $request->query->get('direction', 'DESC');
         
-        $validFields = ['id', 'amount', 'status', 'datePaiement', 'methodePaiement'];
-        if (!in_array($sort, $validFields)) {
-            $sort = 'datePaiement';
-        }
+        $query = $paiementRepository->createQueryBuilder('p')
+            ->getQuery();
+
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            10
+        );
 
         return $this->render('backoffice/paiement/index.html.twig', [
-            'paiements' => $paiementRepository->findBy([], [$sort => $direction]),
+            'pagination' => $pagination,
+            'totalRevenue' => $paiementRepository->getTotalRevenue(),
+            'totalTransactions' => $paiementRepository->countAll(),
             'current_sort' => $sort,
             'current_direction' => $direction,
         ]);

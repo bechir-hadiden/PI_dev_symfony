@@ -34,8 +34,9 @@ class SmartPaymentService
     /**
      * Traite un paiement et retourne le paiement + le score de fraude (pour le test).
      */
-    public function processPayment(User $user, float $amount, string $clientIp = '127.0.0.1', ?string $cardCountry = null): array
+    public function processPayment(Paiement $paiement, string $clientIp = '127.0.0.1', ?string $cardCountry = null): array
     {
+        $user = $paiement->getUser();
         $this->logger->info("Début du traitement SmartPayment pour : {email}", ['email' => $user->getEmail()]);
 
         // 1. RÈGLE DE SÉCURITÉ : Vérification du blocage
@@ -44,22 +45,7 @@ class SmartPaymentService
         }
 
         $detectedIpCountry = $this->geoService->getCountryByIp($clientIp);
-        $finalAmount = $amount;
-        
-        // 2. GÉOLOCALISATION IP MÉTIER (IPinfo logic)
         $this->logger->info("Pays détecté par IP ($clientIp) : $detectedIpCountry");
-
-
-        if ($detectedIpCountry !== 'Tunisie') {
-            $finalAmount = $amount * 1.10;
-            $this->logger->warning("FRAIS INTERNATIONAUX (+10%) APPLIQUÉS : $finalAmount TND");
-        }
-
-        $paiement = new Paiement();
-        $paiement->setUser($user);
-        $paiement->setAmount($finalAmount);
-        $paiement->setDatePaiement(new \DateTime());
-        $paiement->setMethodePaiement('Stripe');
 
         // CALCUL DU SCORE DE FRAUDE (Incohérence IP vs Carte incluse)
         $fraudScore = $this->fraudService->calculateRiskScore($paiement, $clientIp, $detectedIpCountry, $cardCountry);
@@ -68,20 +54,9 @@ class SmartPaymentService
         // 4. RÈGLE ANTI-FRAUDE (Blocage si > 0.7)
         if ($fraudScore > 0.7) {
             $paiement->setStatus('bloqué');
-            $this->entityManager->persist($paiement);
             $this->entityManager->flush();
             throw new \Exception("Transaction bloquée par le système anti-fraude (Score: $fraudScore)");
         }
-
-        // 5. RÈGLE DU SEUIL : Validation Admin si > 1000 TND
-        if ($finalAmount > 1000) {
-            $paiement->setStatus('En attente');
-        } else {
-            $paiement->setStatus('Effectué');
-        }
-
-        $this->entityManager->persist($paiement);
-        $this->entityManager->flush();
 
         return ['paiement' => $paiement, 'score' => $fraudScore];
     }

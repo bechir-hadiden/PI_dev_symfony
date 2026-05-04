@@ -8,14 +8,6 @@ use Doctrine\Persistence\ManagerRegistry;
 
 /**
  * @extends ServiceEntityRepository<Paiement>
-<<<<<<< HEAD
-=======
- *
- * @method Paiement|null find($id, $lockMode = null, $lockVersion = null)
- * @method Paiement|null findOneBy(array $criteria, array $orderBy = null)
- * @method Paiement[]    findAll()
- * @method Paiement[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
  */
 class PaiementRepository extends ServiceEntityRepository
 {
@@ -23,7 +15,6 @@ class PaiementRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Paiement::class);
     }
-<<<<<<< HEAD
 
     /**
      * Compte le nombre de paiements effectués par un utilisateur dans les X dernières minutes.
@@ -41,6 +32,23 @@ class PaiementRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
-=======
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
+
+    public function getTotalRevenue(): float
+    {
+        return (float) $this->createQueryBuilder('p')
+            ->select('SUM(p.amount)')
+            ->where('p.status = :status OR p.status = :status2')
+            ->setParameter('status', 'Effectué')
+            ->setParameter('status2', 'Completed')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countAll(): int
+    {
+        return (int) $this->createQueryBuilder('p')
+            ->select('COUNT(p.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

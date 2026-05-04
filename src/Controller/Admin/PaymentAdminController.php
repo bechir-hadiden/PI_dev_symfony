@@ -14,7 +14,7 @@ class PaymentAdminController extends AbstractController
     public function index(\Symfony\Component\HttpFoundation\Request $request, PaiementRepository $repo, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         $allPaiements = $repo->findAll();
-        $totalRevenue = array_reduce($allPaiements, fn($carry, $p) => $carry + $p->getMontant(), 0);
+        $totalRevenue = array_reduce($allPaiements, fn($carry, $p) => $carry + $p->getAmount(), 0);
         $totalTransactions = count($allPaiements);
 
         $query = $repo->createQueryBuilder('p')

@@ -100,7 +100,7 @@ class DestinationController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Destination mise à jour avec succès !');
-            return $this->redirectToRoute('destination_show', ['id' => $destination->getId()]);
+            return $this->redirectToRoute('admin_destination_show', ['id' => $destination->getId()]);
         }
 
         return $this->render('destination/form.html.twig', [
@@ -120,7 +120,7 @@ class DestinationController extends AbstractController
             $this->addFlash('success', 'Destination supprimée.');
         }
 
-        return $this->redirectToRoute('destination_index');
+        return $this->redirectToRoute('admin_destination_index');
     }
 
     // ── YOUTUBE SEARCH ─────────────────────────────────────────────

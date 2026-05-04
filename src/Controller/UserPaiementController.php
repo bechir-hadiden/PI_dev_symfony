@@ -23,7 +23,7 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 class UserPaiementController extends AbstractController
 {
     #[Route('/', name: 'app_user_paiement_index')]
-    public function index(Request $request, PaiementRepository $paiementRepository, EntityManagerInterface $entityManager, \App\Service\CurrencyService $currencyService, \App\Service\GeoLocationService $geoService, \Knp\Component\Pager\PaginatorInterface $paginator): Response
+    public function index(Request $request, PaiementRepository $paiementRepository, EntityManagerInterface $entityManager, \App\Service\CurrencyService $currencyService, \App\Service\GeoLocationService $geoService, \App\Service\FraudService $fraudService, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -31,6 +31,18 @@ class UserPaiementController extends AbstractController
         // MOCK USER FOR TESTING WITHOUT AUTH
         if (!$user) {
             $user = $entityManager->getRepository(User::class)->findOneBy([]);
+            
+            // Si la base de données est complètement vide (aucun utilisateur)
+            if (!$user) {
+                $user = new User();
+                $user->setEmail('guest@smarttrip.com');
+                $user->setPassword('guestpassword');
+                $user->setWalletBalance(0);
+                $user->setLoyaltyPoints(0);
+                $user->setRoles(['ROLE_USER']);
+                $entityManager->persist($user);
+                $entityManager->flush();
+            }
         }
 
         $sort = $request->query->get('sort', 'p.datePaiement');
@@ -39,6 +51,14 @@ class UserPaiementController extends AbstractController
             $request->query->set('sort', $sort);
         }
         $direction = $request->query->get('direction', 'DESC');
+        $email = $request->query->get('email');
+
+        if ($email) {
+            $searchedUser = $entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+            if ($searchedUser) {
+                $user = $searchedUser;
+            }
+        }
 
         // DÉTECTION GÉO IP
         $clientIp = $request->getClientIp();
@@ -46,20 +66,26 @@ class UserPaiementController extends AbstractController
 
         // RÉCUPÉRATION DES RÉSERVATIONS EN ATTENTE (Pour l'IA de Rétention)
         $pendingReservations = []; // Default
-        try {
-            $pendingReservations = $entityManager->getRepository(\App\Entity\ReservationTransport::class)->findBy([
-                'user' => $user,
-                'status' => 'Pending'
-            ]);
-        } catch (\Exception $e) {
-            // Silently ignore if entity or field doesn't exist
+        if ($user->getId() !== null) {
+            try {
+                $pendingReservations = $entityManager->getRepository(\App\Entity\ReservationTransport::class)->findBy([
+                    'user' => $user,
+                    'status' => 'Pending'
+                ]);
+            } catch (\Exception $e) {
+                // Silently ignore if entity or field doesn't exist
+            }
         }
 
         // PAGINATION
-        $query = $paiementRepository->createQueryBuilder('p')
-            ->where('p.user = :user')
-            ->setParameter('user', $user)
-            ->getQuery();
+        if ($user->getId() === null) {
+            $query = [];
+        } else {
+            $query = $paiementRepository->createQueryBuilder('p')
+                ->where('p.user = :user')
+                ->setParameter('user', $user)
+                ->getQuery();
+        }
 
 
 
@@ -84,7 +110,8 @@ class UserPaiementController extends AbstractController
             'eur_rate' => $currencyService->getExchangeRate(),
             'detected_country' => $detectedCountry,
             'client_ip' => $clientIp,
-            'pending_reservations' => $pendingReservations
+            'pending_reservations' => $pendingReservations,
+            'email' => $email
         ]);
     }
 
@@ -95,6 +122,16 @@ class UserPaiementController extends AbstractController
         $user = $this->getUser();
         if (!$user) {
             $user = $entityManager->getRepository(User::class)->findOneBy([]);
+            if (!$user) {
+                $user = new User();
+                $user->setEmail('guest@smarttrip.com');
+                $user->setPassword('guestpassword');
+                $user->setWalletBalance(0);
+                $user->setLoyaltyPoints(0);
+                $user->setRoles(['ROLE_USER']);
+                $entityManager->persist($user);
+                $entityManager->flush();
+            }
         }
         
         $pdfOptions = new Options();
@@ -103,7 +140,7 @@ class UserPaiementController extends AbstractController
         $dompdf = new Dompdf($pdfOptions);
         
         $html = $this->renderView('export/paiement_pdf.html.twig', [
-            'paiements' => $paiementRepository->findBy(['user' => $user], ['datePaiement' => 'DESC']),
+            'paiements' => $user->getId() ? $paiementRepository->findBy(['user' => $user], ['datePaiement' => 'DESC']) : [],
             'title' => 'Mon Historique de Transactions'
         ]);
         
@@ -118,7 +155,7 @@ class UserPaiementController extends AbstractController
     }
 
     #[Route('/nouveau', name: 'app_user_paiement_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, SubscriptionRepository $subscriptionRepository, EntityManagerInterface $entityManager, ValidatorInterface $validator, SubscriptionService $subscriptionService, \App\Service\PaymentService $paymentService, \App\Service\CurrencyService $currencyService): Response
+    public function new(Request $request, SubscriptionRepository $subscriptionRepository, EntityManagerInterface $entityManager, ValidatorInterface $validator, SubscriptionService $subscriptionService, \App\Service\PaymentService $paymentService, \App\Service\CurrencyService $currencyService, \App\Service\SmartPaymentService $smartPaymentService, \App\Service\GeoLocationService $geoService): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -126,14 +163,19 @@ class UserPaiementController extends AbstractController
         // MOCK USER FOR TESTING WITHOUT AUTH
         if (!$user) {
             $user = $entityManager->getRepository(User::class)->findOneBy([]);
+            if (!$user) {
+                $user = new User();
+                $user->setEmail('guest@smarttrip.com');
+                $user->setPassword('guestpassword');
+                $user->setWalletBalance(0);
+                $user->setLoyaltyPoints(0);
+                $user->setRoles(['ROLE_USER']);
+                $entityManager->persist($user);
+                $entityManager->flush();
+            }
         }
 
-        if (!$user) {
-             $this->addFlash('error', 'Aucun utilisateur trouvé en base pour le test.');
-             return $this->redirectToRoute('app_user_paiement_index');
-        }
-
-        $subscriptions = $subscriptionRepository->findBy(['user' => $user], ['startDate' => 'DESC']);
+        $subscriptions = $user->getId() ? $subscriptionRepository->findBy(['user' => $user], ['startDate' => 'DESC']) : [];
 
         $reservation = null;
         $resId = $request->query->get('reservation');
@@ -158,6 +200,14 @@ class UserPaiementController extends AbstractController
                 return $this->redirectToRoute('app_user_paiement_new');
             }
 
+            // --- SMART BUSINESS LOGIC : Géo-monétaire (+10% si hors Tunisie) ---
+            $clientIp = $request->getClientIp();
+            $detectedCountry = $geoService->getCountryByIp($clientIp);
+            if ($detectedCountry !== 'Tunisie') {
+                $this->addFlash('warning', 'Frais internationaux de 10% appliqués (Session détectée hors Tunisie).');
+                $amount = $amount * 1.10;
+            }
+
             // --- Vérifier si l'utilisateur est bloqué ---
             if (in_array('ROLE_BLOCKED', $user->getRoles())) {
                 $this->addFlash('error', 'Votre compte est temporairement bloqué suite à des échecs de paiement répétés. Contactez le support.');
@@ -167,10 +217,12 @@ class UserPaiementController extends AbstractController
             $subscription = null;
             $subscriptionId = $request->request->get('subscription_id');
             if ($subscriptionId !== null && $subscriptionId !== '') {
-                $subscription = $subscriptionRepository->findOneBy([
-                    'id' => (int) $subscriptionId,
-                    'user' => $user,
-                ]);
+                if ($user->getId() !== null) {
+                    $subscription = $subscriptionRepository->findOneBy([
+                        'id' => (int) $subscriptionId,
+                        'user' => $user,
+                    ]);
+                }
                 if (!$subscription) {
                     $this->addFlash('error', 'Abonnement invalide.');
                     return $this->redirectToRoute('app_user_paiement_new');
@@ -221,6 +273,16 @@ class UserPaiementController extends AbstractController
                 }
 
                 $entityManager->persist($paiement);
+                
+                // --- SMART BUSINESS LOGIC : Score de Fraude AI ---
+                $riskScore = $smartPaymentService->processPayment($paiement, $clientIp)['score'];
+                $paiement->setScoreRisque($riskScore);
+                
+                if ($riskScore > 0.7) {
+                    $this->addFlash('error', 'Transaction bloquée par le système anti-fraude AI (Risque élevé).');
+                    return $this->redirectToRoute('app_user_paiement_index');
+                }
+
                 $entityManager->flush();
 
                 // Rediriger vers la page Stripe Elements Checkout
@@ -267,6 +329,7 @@ class UserPaiementController extends AbstractController
             'subscriptions' => $subscriptions,
             'reservation' => $reservation,
             'eur_rate' => $currencyService->getExchangeRate(),
+            'detected_country' => $geoService->getCountryByIp($request->getClientIp())
         ]);
     }
 

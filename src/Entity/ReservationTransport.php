@@ -18,7 +18,7 @@ class ReservationTransport
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(inversedBy: 'reservations')]
+    #[ORM\ManyToOne(inversedBy: 'reservationTransports')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Transport $transport = null;
 

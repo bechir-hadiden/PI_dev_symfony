@@ -15,8 +15,6 @@ class TransportRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Transport::class);
     }
-<<<<<<< HEAD
-=======
 
     /**
      * Find transports filtered by type name (case-insensitive).
@@ -59,5 +57,4 @@ class TransportRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
 }

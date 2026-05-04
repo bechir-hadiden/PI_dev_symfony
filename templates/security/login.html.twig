@@ -1,33 +1,4 @@
 {% extends 'base_dark.html.twig' %}
-<<<<<<< HEAD
-
-{% block title %}Connexion - SmartTrip{% endblock %}
-
-{% block body %}
-<div class="admin-dashboard-wrapper" style="display: flex; align-items: center; justify-content: center;">
-    <div class="contact-form" style="max-width: 450px; width: 100%; margin: 0 auto;">
-        <div style="text-align: center; margin-bottom: 2.5rem;">
-            <div class="hero-badge" style="margin-bottom: 1rem;">Accès Privé</div>
-            <h1 class="page-main-title">Voyage<em>Elite</em></h1>
-            <p class="page-subtitle">Connectez-vous à votre espace personnel</p>
-        </div>
-
-        <form method="post">
-            {% if error %}
-                <div class="flash flash-error" style="margin-bottom: 1.5rem; border-radius: 10px;">
-                    {{ error.messageKey|trans(error.messageData, 'security') }}
-                </div>
-            {% endif %}
-
-            <div class="form-group">
-                <label for="inputEmail">Adresse Email</label>
-                <input type="email" value="{{ last_username }}" name="email" id="inputEmail" class="form-control" autocomplete="email" required autofocus>
-            </div>
-            
-            <div class="form-group">
-                <label for="inputPassword">Mot de passe</label>
-                <input type="password" name="password" id="inputPassword" class="form-control" autocomplete="current-password" required>
-=======
 {% block title %}Connexion — SmartTrip{% endblock %}
 
 {% block extra_css %}
@@ -127,16 +98,6 @@
     transition: color .2s;
 }
 .login-back:hover { color: var(--gold); }
-.role-hint {
-    display: flex; gap: .8rem; margin-bottom: 1.8rem;
-}
-.role-badge {
-    flex: 1; padding: .6rem;
-    border: 1px solid rgba(201,168,76,0.15);
-    border-radius: 8px; text-align: center;
-    font-size: .7rem; color: rgba(255,255,255,0.4);
-}
-.role-badge strong { display: block; color: var(--gold); font-size: .75rem; margin-bottom: .2rem; }
 {% endblock %}
 
 {% block body %}
@@ -175,36 +136,10 @@
             <div class="remember-row">
                 <input type="checkbox" id="remember" name="_remember_me">
                 <label for="remember">Se souvenir de moi</label>
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
             </div>
 
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-<<<<<<< HEAD
-            {#
-                Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
-                See https://symfony.com/doc/current/security/remember_me.html
-
-                <div class="checkbox mb-3">
-                    <label>
-                        <input type="checkbox" name="_remember_me"> Remember me
-                    </label>
-                </div>
-            #}
-
-            <div style="margin-top: 2rem;">
-                <button class="btn-submit" type="submit">
-                    Se connecter
-                </button>
-            </div>
-            
-            <div style="text-align: center; margin-top: 1.5rem;">
-                <p style="font-size: 0.85rem; color: rgba(255,255,255,0.4);">
-                    Pas encore de compte ? <a href="#" style="color: var(--gold); text-decoration: none;">Inscrivez-vous</a>
-                </p>
-            </div>
-        </form>
-=======
             <button type="submit" class="btn-login">
                 Se connecter →
             </button>
@@ -213,7 +148,6 @@
         <a href="{{ path('app_home') }}" class="login-back">
             ← Retour à l'accueil
         </a>
->>>>>>> 34a4e2a76d1d62f6523af667bd145de3bfcb305c
     </div>
 </div>
 {% endblock %}
