@@ -1,0 +1,70 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+.content { padding: 2.5rem; max-width: 620px; }
+.form-section { background:var(--white);border:0.5px solid var(--border);padding:1.8rem;margin-bottom:1.5rem; }
+.form-section-title { font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);padding-bottom:1rem;margin-bottom:1.5rem;border-bottom:0.5px solid var(--border); }
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <div style="margin-bottom:1.5rem;">
+        <a href="{{ path('admin_user_index') }}" style="font-size:0.78rem;color:var(--muted);text-decoration:none;">← Back to Users</a>
+    </div>
+
+    <div class="section-tag">User Management</div>
+    <h1 style="font-size:1.9rem;margin-bottom:2rem;">{{ title }}</h1>
+
+    {{ form_start(form, {attr: {novalidate: 'novalidate'}}) }}
+
+    <div class="form-section">
+        <div class="form-section-title">Account Information</div>
+
+        <div class="form-group">
+            <label class="form-label">Username *</label>
+            {{ form_widget(form.username, {attr: {class: 'form-control'}}) }}
+            {% if form.username.vars.errors|length %}<div class="form-error">{{ form_errors(form.username) }}</div>{% endif %}
+            <div class="form-help">{{ form_help(form.username) }}</div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            {{ form_widget(form.fullName, {attr: {class: 'form-control'}}) }}
+            {% if form.fullName.vars.errors|length %}<div class="form-error">{{ form_errors(form.fullName) }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Email *</label>
+            {{ form_widget(form.email, {attr: {class: 'form-control'}}) }}
+            {% if form.email.vars.errors|length %}<div class="form-error">{{ form_errors(form.email) }}</div>{% endif %}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Phone</label>
+            {{ form_widget(form.phone, {attr: {class: 'form-control'}}) }}
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Role</label>
+            {{ form_widget(form.role, {attr: {class: 'form-control'}}) }}
+        </div>
+    </div>
+
+    <div class="form-section">
+        <div class="form-section-title">Security</div>
+        <div class="form-group">
+            <label class="form-label">{{ form_label(form.plainPassword) }}</label>
+            {{ form_widget(form.plainPassword, {attr: {class: 'form-control'}}) }}
+            {% if form.plainPassword.vars.errors|length %}<div class="form-error">{{ form_errors(form.plainPassword) }}</div>{% endif %}
+        </div>
+    </div>
+
+    <div style="display:flex;gap:1rem;">
+        <button type="submit" class="btn btn-primary">{{ user.id ? 'Update User' : 'Create User' }} →</button>
+        <a href="{{ path('admin_user_index') }}" class="btn btn-ghost">Cancel</a>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}SmartTrip{% endblock %} — SmartTrip</title>
+
+    {# Google Fonts — extracted from VoyageElite design #}
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+    <style>
+        /* ── CSS Variables (from VoyageElite) ────────────────────────────────── */
+        :root {
+            --ink:       #0d0d0d;
+            --sand:      #f0e8d8;
+            --cream:     #faf6ef;
+            --gold:      #b8963e;
+            --gold-lt:   #d4b06a;
+            --gold-dark: #8a6e2a;
+            --muted:     #6b6560;
+            --white:     #ffffff;
+            --danger:    #c0392b;
+            --success:   #2d7a4f;
+            --border:    rgba(184,150,62,0.2);
+            --shadow:    0 4px 24px rgba(13,13,13,0.07);
+            --radius:    2px;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--ink);
+            min-height: 100vh;
+        }
+
+        /* ── Typography ─────────────────────────────────────────────────────── */
+        h1,h2,h3,h4 {
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 300;
+        }
+        .serif { font-family: 'Cormorant Garamond', serif; }
+
+        /* ── Navbar ──────────────────────────────────────────────────────────── */
+        .navbar {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1.1rem 2.5rem;
+            background: rgba(250,246,239,0.94);
+            backdrop-filter: blur(14px);
+            border-bottom: 0.5px solid var(--border);
+        }
+        .navbar-logo {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.45rem; font-weight: 300; letter-spacing: 0.1em;
+            color: var(--ink); text-decoration: none;
+        }
+        .navbar-logo span { color: var(--gold); font-style: italic; }
+
+        .navbar-links {
+            display: flex; align-items: center; gap: 0.4rem; list-style: none;
+        }
+        .navbar-links a {
+            font-size: 0.75rem; font-weight: 400; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--muted);
+            text-decoration: none; padding: 0.45rem 0.9rem;
+            transition: color 0.2s; border-radius: var(--radius);
+        }
+        .navbar-links a:hover,
+        .navbar-links a.active { color: var(--gold); }
+
+        .navbar-links a.active {
+            background: rgba(184,150,62,0.08);
+        }
+
+        .navbar-right {
+            display: flex; align-items: center; gap: 1rem;
+        }
+
+        /* ── Avatar dropdown ──────────────────────────────────────────────────── */
+        .user-menu { position: relative; }
+        .user-menu-trigger {
+            display: flex; align-items: center; gap: 0.55rem;
+            cursor: pointer; background: none; border: none; padding: 0;
+            font-family: 'DM Sans', sans-serif;
+        }
+        .navbar-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            border: 1.5px solid var(--border); object-fit: cover;
+            transition: border-color 0.2s;
+        }
+        .user-menu-trigger:hover .navbar-avatar { border-color: var(--gold); }
+        .user-menu-name {
+            font-size: 0.8rem; color: var(--muted);
+            max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .user-menu-chevron {
+            font-size: 0.55rem; color: var(--muted);
+            transition: transform 0.22s;
+        }
+        .user-menu.open .user-menu-chevron { transform: rotate(180deg); }
+
+        /* Dropdown panel */
+        .user-dropdown {
+            position: absolute; top: calc(100% + 0.7rem); right: 0;
+            min-width: 210px;
+            background: var(--white);
+            border: 0.5px solid var(--border);
+            box-shadow: 0 8px 32px rgba(13,13,13,0.12);
+            opacity: 0;
+            transform: translateY(-6px);
+            pointer-events: none;
+            transition: opacity 0.2s, transform 0.2s;
+            z-index: 500;
+        }
+        .user-menu.open .user-dropdown {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+        .dropdown-header {
+            padding: 1rem 1.2rem 0.8rem;
+            border-bottom: 0.5px solid var(--border);
+        }
+        .dropdown-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem; font-weight: 300; color: var(--ink);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .dropdown-email {
+            font-size: 0.71rem; color: var(--muted); margin-top: 0.15rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .dropdown-role {
+            font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+            margin-top: 0.4rem; display: inline-block;
+            padding: 0.15rem 0.5rem;
+            background: rgba(184,150,62,0.1); color: var(--gold-dark);
+        }
+        .dropdown-items { padding: 0.4rem 0; }
+        .dropdown-item {
+            display: flex; align-items: center; gap: 0.7rem;
+            padding: 0.65rem 1.2rem;
+            font-size: 0.8rem; color: var(--muted);
+            text-decoration: none; cursor: pointer;
+            background: none; border: none; width: 100%;
+            font-family: 'DM Sans', sans-serif;
+            text-align: left;
+            transition: background 0.15s, color 0.15s;
+        }
+        .dropdown-item:hover { background: rgba(184,150,62,0.06); color: var(--ink); }
+        .dropdown-item .icon { font-size: 0.85rem; width: 16px; text-align: center; }
+        .dropdown-divider { height: 0.5px; background: var(--border); margin: 0.3rem 0; }
+        .dropdown-item.logout { color: var(--danger); }
+        .dropdown-item.logout:hover { background: rgba(192,57,43,0.06); }
+
+        /* ── Page wrapper ────────────────────────────────────────────────────── */
+        .page-wrapper {
+            padding-top: 4.5rem; /* below fixed navbar */
+            min-height: 100vh;
+        }
+
+        /* ── Section header ──────────────────────────────────────────────────── */
+        .section-tag {
+            font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase;
+            color: var(--gold); display: flex; align-items: center; gap: 0.6rem;
+            margin-bottom: 0.6rem;
+        }
+        .section-tag::before {
+            content: ''; width: 26px; height: 0.5px; background: var(--gold);
+        }
+
+        /* ── Buttons ─────────────────────────────────────────────────────────── */
+        .btn {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            padding: 0.7rem 1.5rem; font-size: 0.78rem;
+            letter-spacing: 0.1em; text-transform: uppercase;
+            font-weight: 500; text-decoration: none; cursor: pointer;
+            border: none; transition: all 0.22s; border-radius: var(--radius);
+        }
+        .btn-primary {
+            background: var(--ink); color: var(--white);
+        }
+        .btn-primary:hover { background: var(--gold); }
+
+        .btn-gold {
+            background: var(--gold); color: var(--white);
+        }
+        .btn-gold:hover { background: var(--gold-dark); }
+
+        .btn-outline {
+            background: transparent; color: var(--ink);
+            border: 0.5px solid var(--ink);
+        }
+        .btn-outline:hover { background: var(--ink); color: var(--white); }
+
+        .btn-danger {
+            background: var(--danger); color: var(--white);
+        }
+        .btn-danger:hover { opacity: 0.85; }
+
+        .btn-ghost {
+            background: transparent; color: var(--muted);
+            border: 0.5px solid var(--border);
+        }
+        .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+        .btn-sm { padding: 0.4rem 0.9rem; font-size: 0.7rem; }
+        .btn-xs { padding: 0.3rem 0.7rem; font-size: 0.65rem; }
+
+        /* ── Cards ───────────────────────────────────────────────────────────── */
+        .card {
+            background: var(--white);
+            border: 0.5px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        /* ── Forms ───────────────────────────────────────────────────────────── */
+        .form-group { margin-bottom: 1.4rem; }
+        .form-label {
+            display: block; font-size: 0.73rem; letter-spacing: 0.1em;
+            text-transform: uppercase; color: var(--muted); margin-bottom: 0.45rem;
+        }
+        .form-control {
+            width: 100%; padding: 0.7rem 1rem;
+            font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+            background: var(--cream); color: var(--ink);
+            border: 0.5px solid rgba(184,150,62,0.3);
+            outline: none; transition: border-color 0.2s;
+            border-radius: var(--radius);
+        }
+        .form-control:focus { border-color: var(--gold); background: var(--white); }
+        .form-error {
+            font-size: 0.73rem; color: var(--danger); margin-top: 0.3rem;
+        }
+        .form-help {
+            font-size: 0.72rem; color: var(--muted); margin-top: 0.3rem;
+        }
+        select.form-control { cursor: pointer; }
+        textarea.form-control { resize: vertical; }
+
+        /* ── Flash messages ───────────────────────────────────────────────────── */
+        .flash-container {
+            position: fixed; top: 5rem; right: 1.5rem; z-index: 1000;
+            display: flex; flex-direction: column; gap: 0.6rem;
+            max-width: 380px;
+        }
+        .flash {
+            padding: 0.85rem 1.2rem;
+            font-size: 0.82rem; line-height: 1.5;
+            border-left: 3px solid;
+            background: var(--white);
+            box-shadow: var(--shadow);
+            animation: slideIn 0.3s ease;
+            position: relative;
+        }
+        .flash-success { border-color: var(--success); color: var(--success); }
+        .flash-error   { border-color: var(--danger);  color: var(--danger); }
+        .flash-info    { border-color: var(--gold);    color: var(--gold); }
+        .flash-close {
+            position: absolute; top: 0.5rem; right: 0.7rem;
+            background: none; border: none; cursor: pointer;
+            font-size: 1rem; color: inherit; opacity: 0.6;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        /* ── Tables ──────────────────────────────────────────────────────────── */
+        .table-wrap { overflow-x: auto; }
+        table {
+            width: 100%; border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        thead th {
+            font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+            color: var(--muted); font-weight: 400;
+            padding: 0.7rem 1rem; text-align: left;
+            border-bottom: 0.5px solid var(--border);
+        }
+        tbody td {
+            padding: 0.85rem 1rem;
+            border-bottom: 0.5px solid var(--border);
+            vertical-align: middle;
+        }
+        tbody tr:hover { background: rgba(184,150,62,0.03); }
+
+        /* ── Badge ───────────────────────────────────────────────────────────── */
+        .badge {
+            display: inline-block; padding: 0.2rem 0.6rem;
+            font-size: 0.65rem; letter-spacing: 0.08em;
+            text-transform: uppercase; font-weight: 500;
+            border-radius: 20px;
+        }
+        .badge-admin   { background: rgba(184,150,62,0.15); color: var(--gold-dark); }
+        .badge-client  { background: rgba(45,122,79,0.12);  color: var(--success); }
+        .badge-blocked { background: rgba(192,57,43,0.12);  color: var(--danger); }
+        .badge-active  { background: rgba(45,122,79,0.12);  color: var(--success); }
+
+        /* ── Ticker ──────────────────────────────────────────────────────────── */
+        .ticker-wrap {
+            background: var(--gold); overflow: hidden; padding: 0.55rem 0;
+        }
+        .ticker {
+            display: flex; gap: 0;
+            animation: ticker 30s linear infinite;
+            white-space: nowrap;
+        }
+        .ticker span {
+            font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+            color: var(--ink); padding: 0 2rem;
+        }
+        @keyframes ticker {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* ── Utility ──────────────────────────────────────────────────────────── */
+        .text-muted  { color: var(--muted); }
+        .text-gold   { color: var(--gold); }
+        .text-danger { color: var(--danger); }
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mt-4 { margin-top: 2rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .d-flex { display: flex; }
+        .align-center { align-items: center; }
+        .gap-1 { gap: 0.5rem; }
+        .gap-2 { gap: 1rem; }
+        .justify-between { justify-content: space-between; }
+        .w-100 { width: 100%; }
+
+        {% block extra_css %}{% endblock %}
+    </style>
+</head>
+<body>
+
+{# ── Navbar ─────────────────────────────────────────────────────────────────── #}
+{% if app.user %}
+<nav class="navbar">
+    <a href="{{ is_granted('ROLE_ADMIN') ? path('admin_dashboard') : path('client_hotels') }}" class="navbar-logo">
+        Smart<span>Trip</span>
+    </a>
+
+    <ul class="navbar-links">
+        {% if is_granted('ROLE_ADMIN') %}
+            <li><a href="{{ path('admin_dashboard') }}" class="{{ app.request.attributes.get('_route') starts with 'admin_dashboard' ? 'active' }}">Dashboard</a></li>
+            <li><a href="{{ path('admin_hotel_index') }}" class="{{ app.request.attributes.get('_route') starts with 'admin_hotel' ? 'active' }}">Hotels</a></li>
+            <li><a href="{{ path('admin_user_index') }}" class="{{ app.request.attributes.get('_route') starts with 'admin_user' ? 'active' }}">Users</a></li>
+            <li><a href="#" class="text-muted" style="opacity:0.4;cursor:not-allowed;">Avion</a></li>
+            <li><a href="#" class="text-muted" style="opacity:0.4;cursor:not-allowed;">Transport</a></li>
+            <li><a href="#" class="text-muted" style="opacity:0.4;cursor:not-allowed;">Offers</a></li>
+            <li><a href="#" class="text-muted" style="opacity:0.4;cursor:not-allowed;">Payment</a></li>
+        {% else %}
+            <li><a href="{{ path('client_hotels') }}" class="{{ app.request.attributes.get('_route') starts with 'client_hotel' ? 'active' }}">Hotels</a></li>
+        {% endif %}
+    </ul>
+
+    <div class="navbar-right">
+        <div class="user-menu" id="userMenu">
+            <button class="user-menu-trigger" onclick="toggleUserMenu(event)" aria-haspopup="true" aria-expanded="false">
+                <img src="{{ app.user.avatarUrl }}" alt="{{ app.user.username }}" class="navbar-avatar">
+                <span class="user-menu-name">{{ app.user.fullName }}</span>
+                <span class="user-menu-chevron">▼</span>
+            </button>
+
+            <div class="user-dropdown" role="menu">
+                {# Header with user info #}
+                <div class="dropdown-header">
+                    <div class="dropdown-name">{{ app.user.fullName }}</div>
+                    <div class="dropdown-email">{{ app.user.email }}</div>
+                    <span class="dropdown-role">{{ app.user.role }}</span>
+                </div>
+
+                {# Menu items #}
+                <div class="dropdown-items">
+                    <a href="{{ path('profile_settings') }}" class="dropdown-item" role="menuitem">
+                        <span class="icon">⚙</span>
+                        Settings
+                    </a>
+
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('admin_dashboard') }}" class="dropdown-item" role="menuitem">
+                        <span class="icon">◈</span>
+                        Admin Dashboard
+                    </a>
+                    {% endif %}
+
+                    <div class="dropdown-divider"></div>
+
+                    <a href="{{ path('app_logout') }}" class="dropdown-item logout" role="menuitem">
+                        <span class="icon">→</span>
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</nav>
+{% endif %}
+
+{# ── Flash Messages ───────────────────────────────────────────────────────────── #}
+<div class="flash-container" id="flashContainer">
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="flash flash-{{ label }}">
+                {{ message }}
+                <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+</div>
+
+{# ── Main Content ─────────────────────────────────────────────────────────────── #}
+<div class="page-wrapper">
+    {% block body %}{% endblock %}
+</div>
+
+{# ── Footer ───────────────────────────────────────────────────────────────────── #}
+<footer style="background:var(--ink);color:var(--sand);padding:2rem 2.5rem;display:flex;align-items:center;justify-content:space-between;margin-top:4rem;">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:300;letter-spacing:0.1em;">
+        Smart<span style="color:var(--gold);font-style:italic;">Trip</span>
+    </div>
+    <div style="font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(240,232,216,0.4);">
+        © {{ "now"|date("Y") }} SmartTrip. All rights reserved.
+    </div>
+</footer>
+
+<script>
+    // Auto-dismiss flash messages after 5 seconds
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.flash').forEach(el => {
+            setTimeout(() => el.style.opacity = '0', 4500);
+            setTimeout(() => el.remove(), 5000);
+        });
+    });
+
+    // Confirm delete dialogs
+    function confirmDelete(formId, message) {
+        if (confirm(message || 'Are you sure you want to delete this item?')) {
+            document.getElementById(formId).submit();
+        }
+    }
+
+    // ── User menu dropdown ────────────────────────────────────────────────────
+    function toggleUserMenu(e) {
+        e.stopPropagation();
+        const menu = document.getElementById('userMenu');
+        if (!menu) return;
+        const isOpen = menu.classList.toggle('open');
+        menu.querySelector('.user-menu-trigger').setAttribute('aria-expanded', isOpen);
+    }
+
+    // Close when clicking outside
+    document.addEventListener('click', () => {
+        const menu = document.getElementById('userMenu');
+        if (menu && menu.classList.contains('open')) {
+            menu.classList.remove('open');
+            menu.querySelector('.user-menu-trigger').setAttribute('aria-expanded', 'false');
+        }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const menu = document.getElementById('userMenu');
+            if (menu) {
+                menu.classList.remove('open');
+                const trigger = menu.querySelector('.user-menu-trigger');
+                if (trigger) { trigger.setAttribute('aria-expanded', 'false'); trigger.focus(); }
+            }
+        }
+    });
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

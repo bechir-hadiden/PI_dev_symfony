@@ -1,0 +1,271 @@
+{% extends 'base.html.twig' %}
+{% block title %}Verify Code{% endblock %}
+
+{% block extra_css %}
+.reset-page { min-height:100vh; display:grid; grid-template-columns:1fr 1fr; padding-top:0!important; }
+.reset-left { background:var(--ink); position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; padding:3rem; }
+.reset-left-bg { position:absolute; inset:0; background:url('https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=900&q=80') center/cover; opacity:0.25; }
+.reset-left-content { position:relative; z-index:1; }
+.reset-left h2 { font-size:clamp(1.8rem,2.5vw,2.5rem); color:var(--white); font-weight:300; line-height:1.2; margin-bottom:0.8rem; }
+.reset-left h2 em { color:var(--gold-lt); }
+.reset-left p { color:rgba(240,232,216,0.6); font-size:0.86rem; line-height:1.7; max-width:320px; }
+.reset-logo { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:300; letter-spacing:0.12em; color:var(--white); text-decoration:none; margin-bottom:auto; padding-bottom:3rem; display:block; }
+.reset-logo span { color:var(--gold-lt); font-style:italic; }
+.reset-right { display:flex; flex-direction:column; justify-content:center; align-items:center; padding:3rem 4rem; background:var(--cream); }
+.reset-wrap { max-width:420px; width:100%; }
+.step-dot { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:500; border:1.5px solid var(--border); color:var(--muted); background:var(--cream); position:relative; z-index:1; transition:all 0.3s; }
+.step-dot.active { background:var(--gold); border-color:var(--gold); color:var(--white); }
+.step-dot.done { background:var(--ink); border-color:var(--ink); color:var(--white); }
+.step-line { width:60px; height:1px; background:var(--border); }
+.step-label { font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); text-align:center; margin-top:0.3rem; }
+.steps-row { display:flex; flex-direction:column; align-items:center; }
+.back-link { font-size:0.78rem; color:var(--muted); text-decoration:none; display:inline-flex; align-items:center; gap:0.4rem; margin-bottom:2rem; transition:color 0.2s; }
+.back-link:hover { color:var(--gold); }
+
+/* OTP digit inputs */
+.otp-group {
+    display: flex;
+    gap: 0.6rem;
+    justify-content: center;
+    margin: 1.5rem 0;
+}
+.otp-input {
+    width: 52px; height: 58px;
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem; font-weight: 300;
+    background: var(--white);
+    border: 1.5px solid rgba(184,150,62,0.3);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.2s, transform 0.15s;
+    border-radius: 2px;
+    caret-color: var(--gold);
+}
+.otp-input:focus {
+    border-color: var(--gold);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(184,150,62,0.15);
+}
+.otp-input.filled { border-color: var(--gold); background: rgba(184,150,62,0.05); }
+.otp-input.error { border-color: var(--danger); }
+
+/* Timer */
+.otp-timer {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 1.2rem;
+}
+.otp-timer .time {
+    color: var(--gold);
+    font-weight: 500;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+}
+.otp-timer .time.urgent { color: var(--danger); }
+
+/* Email hint */
+.email-hint {
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 0.5rem;
+}
+.email-hint strong { color: var(--ink); }
+
+@media (max-width: 768px) {
+    .reset-page { grid-template-columns: 1fr; }
+    .reset-left { display: none; }
+    .reset-right { padding: 2rem 1.5rem; }
+    .otp-input { width: 44px; height: 52px; font-size: 1.4rem; }
+}
+{% endblock %}
+
+{% block body %}
+<div class="reset-page" style="padding-top:0!important;">
+
+    <div class="reset-left">
+        <div class="reset-left-bg"></div>
+        <a href="{{ path('app_login') }}" class="reset-logo">Smart<span>Trip</span></a>
+        <div class="reset-left-content">
+            <h2>Check your<br><em>inbox</em> for<br>the code.</h2>
+            <p>Enter the 6-digit code we sent. It expires in 10 minutes for your security.</p>
+        </div>
+    </div>
+
+    <div class="reset-right">
+        <div class="reset-wrap">
+
+            {# Steps indicator #}
+            <div class="steps-indicator" style="display:flex;align-items:flex-start;margin-bottom:2.5rem;">
+                <div class="steps-row">
+                    <div class="step-dot done">✓</div>
+                    <div class="step-label">Email</div>
+                </div>
+                <div class="step-line" style="margin-top:16px;"></div>
+                <div class="steps-row">
+                    <div class="step-dot active">2</div>
+                    <div class="step-label">Verify</div>
+                </div>
+                <div class="step-line" style="margin-top:16px;"></div>
+                <div class="steps-row">
+                    <div class="step-dot">3</div>
+                    <div class="step-label">Password</div>
+                </div>
+            </div>
+
+            <a href="{{ path('password_reset_request') }}" class="back-link">← Change email</a>
+
+            <div class="section-tag" style="margin-bottom:0.8rem;">Step 2 of 3</div>
+            <h1 style="font-size:1.9rem;margin-bottom:0.4rem;">Enter Verification Code</h1>
+
+            <p class="email-hint" style="text-align:left;margin:0.6rem 0 1rem;">
+                We sent a 6-digit code to <strong>{{ email }}</strong>
+            </p>
+
+            {# Success/error flash (e.g. resend confirmation) #}
+            {% for msg in app.flashes('success') %}
+            <div class="flash flash-success" style="position:static;margin-bottom:1rem;">{{ msg }}</div>
+            {% endfor %}
+            {% for msg in app.flashes('error') %}
+            <div class="flash flash-error" style="position:static;margin-bottom:1rem;">{{ msg }}</div>
+            {% endfor %}
+
+            {% if error %}
+            <div class="flash flash-error" style="position:static;margin-bottom:1rem;">{{ error }}</div>
+            {% endif %}
+
+            <form method="post" action="{{ path('password_reset_verify') }}" id="otpForm" novalidate>
+
+                <div class="otp-group" id="otpGroup">
+                    {% for i in 1..6 %}
+                    <input
+                        type="text"
+                        id="digit{{ i }}"
+                        name="digit{{ i }}"
+                        class="otp-input"
+                        maxlength="1"
+                        pattern="[0-9]"
+                        inputmode="numeric"
+                        autocomplete="one-time-code"
+                        {% if i == 1 %}autofocus{% endif %}
+                    >
+                    {% endfor %}
+                </div>
+
+                {# Countdown timer — 10 minutes #}
+                <div class="otp-timer">
+                    Code expires in <span class="time" id="countdown">10:00</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100" id="verifyBtn" style="justify-content:center;">
+                    Verify Code →
+                </button>
+            </form>
+
+            <div style="text-align:center;margin-top:1.2rem;">
+                <form method="post" action="{{ path('password_reset_resend') }}" style="display:inline;">
+                    <span style="font-size:0.8rem;color:var(--muted);">Didn't receive it?</span>
+                    <button type="submit" style="background:none;border:none;cursor:pointer;font-size:0.8rem;color:var(--gold);text-decoration:underline;padding:0;margin-left:0.3rem;">
+                        Resend code
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── OTP digit navigation ──────────────────────────────────────────────────────
+const inputs = document.querySelectorAll('.otp-input');
+
+inputs.forEach((input, idx) => {
+    // Only allow digits
+    input.addEventListener('keydown', (e) => {
+        if (!/^\d$/.test(e.key) && !['Backspace', 'Delete', 'Tab', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+            e.preventDefault();
+        }
+    });
+
+    input.addEventListener('input', (e) => {
+        const val = e.target.value.replace(/\D/g, '');
+        e.target.value = val.slice(-1); // keep only last digit
+
+        if (val) {
+            e.target.classList.add('filled');
+            // Auto-advance to next
+            if (idx < inputs.length - 1) {
+                inputs[idx + 1].focus();
+            }
+        } else {
+            e.target.classList.remove('filled');
+        }
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !input.value && idx > 0) {
+            inputs[idx - 1].focus();
+            inputs[idx - 1].value = '';
+            inputs[idx - 1].classList.remove('filled');
+        }
+        if (e.key === 'ArrowLeft' && idx > 0) inputs[idx - 1].focus();
+        if (e.key === 'ArrowRight' && idx < inputs.length - 1) inputs[idx + 1].focus();
+    });
+
+    // Handle paste — distribute digits across inputs
+    input.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+        pasted.split('').forEach((digit, i) => {
+            if (inputs[idx + i]) {
+                inputs[idx + i].value = digit;
+                inputs[idx + i].classList.add('filled');
+            }
+        });
+        const nextEmpty = idx + pasted.length;
+        if (inputs[nextEmpty]) inputs[nextEmpty].focus();
+        else inputs[inputs.length - 1].focus();
+    });
+});
+
+// ── 10-minute countdown ───────────────────────────────────────────────────────
+let seconds = 600;
+const countdownEl = document.getElementById('countdown');
+
+const timer = setInterval(() => {
+    seconds--;
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    countdownEl.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+
+    if (seconds <= 60) {
+        countdownEl.classList.add('urgent');
+    }
+
+    if (seconds <= 0) {
+        clearInterval(timer);
+        countdownEl.textContent = 'Expired';
+        countdownEl.classList.add('urgent');
+        document.getElementById('verifyBtn').disabled = true;
+        document.getElementById('verifyBtn').textContent = 'Code Expired — Resend';
+    }
+}, 1000);
+
+// ── Validate before submit ────────────────────────────────────────────────────
+document.getElementById('otpForm').addEventListener('submit', (e) => {
+    const allFilled = [...inputs].every(i => i.value.length === 1);
+    if (!allFilled) {
+        e.preventDefault();
+        inputs.forEach(i => {
+            if (!i.value) i.classList.add('error');
+        });
+    }
+});
+
+inputs.forEach(i => i.addEventListener('input', () => i.classList.remove('error')));
+</script>
+{% endblock %}

@@ -1,0 +1,140 @@
+{% extends 'base.html.twig' %}
+{% block title %}Register{% endblock %}
+
+{% block extra_css %}
+.auth-page {
+    min-height:100vh; display:grid; grid-template-columns:1fr 1fr; padding-top:0!important;
+}
+.auth-left {
+    background:var(--ink); position:relative; overflow:hidden;
+    display:flex; flex-direction:column; justify-content:flex-end; padding:3rem;
+}
+.auth-left-bg {
+    position:absolute; inset:0;
+    background:url('https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?w=800&q=80') center/cover;
+    opacity:0.3;
+}
+.auth-left-content { position:relative;z-index:1; }
+.auth-left h2 { font-size:clamp(1.8rem,2.5vw,2.5rem); color:var(--white); font-weight:300; line-height:1.2; margin-bottom:0.8rem; }
+.auth-left h2 em { color:var(--gold-lt); }
+.auth-left p { color:rgba(240,232,216,0.65); font-size:0.86rem; line-height:1.7; max-width:320px; }
+.auth-logo { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:300; letter-spacing:0.12em; color:var(--white); text-decoration:none; margin-bottom:auto; padding-bottom:3rem; }
+.auth-logo span { color:var(--gold-lt); font-style:italic; }
+.auth-right { display:flex; flex-direction:column; justify-content:center; padding:2rem 4rem; background:var(--cream); overflow-y:auto; }
+.auth-form-wrap { max-width:420px; width:100%; }
+.auth-footer { font-size:0.82rem; color:var(--muted); margin-top:1.5rem; text-align:center; }
+.auth-footer a { color:var(--gold); text-decoration:none; }
+.google-btn {
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.7rem; width: 100%; padding: 0.75rem 1.5rem;
+    background: #fff; color: #3c4043;
+    border: 1px solid #dadce0;
+    font-size: 0.83rem; font-weight: 500;
+    text-decoration: none; cursor: pointer;
+    transition: background 0.18s, box-shadow 0.18s;
+    border-radius: 2px;
+}
+.google-btn:hover { background: #f8f9fa; box-shadow: 0 2px 8px rgba(60,64,67,0.12); }
+.auth-divider-row {
+    display: flex; align-items: center; gap: 1rem;
+    margin: 1.2rem 0; color: var(--muted); font-size: 0.8rem;
+}
+.auth-divider-row::before, .auth-divider-row::after { content: ''; flex: 1; height: 0.5px; background: var(--border); }
+@media (max-width:768px) { .auth-page { grid-template-columns:1fr; } .auth-left { display:none; } .auth-right { padding:2rem 1.5rem; } }
+{% endblock %}
+
+{% block body %}
+<div class="auth-page" style="padding-top:0!important;">
+
+    <div class="auth-left">
+        <div class="auth-left-bg"></div>
+        <a href="{{ path('app_login') }}" class="auth-logo">Smart<span>Trip</span></a>
+        <div class="auth-left-content">
+            <h2>Start your<br><em>journey</em><br>today.</h2>
+            <p>Create your free client account and unlock access to hundreds of luxury hotels worldwide.</p>
+        </div>
+    </div>
+
+    <div class="auth-right">
+        <div class="auth-form-wrap">
+            <div class="section-tag" style="margin-bottom:1rem;">New Account</div>
+            <h1 style="font-size:2rem;margin-bottom:0.4rem;">Create Account</h1>
+            <p style="color:var(--muted);font-size:0.88rem;margin-bottom:2rem;">Join SmartTrip as a client — free, forever.</p>
+
+            {{ form_start(registrationForm, {attr: {novalidate: 'novalidate'}}) }}
+
+            <div class="form-group">
+                <label class="form-label">{{ form_label(registrationForm.username) }}</label>
+                {{ form_widget(registrationForm.username, {attr: {class: 'form-control'}}) }}
+                {% if registrationForm.username.vars.errors|length %}
+                    <div class="form-error">{{ form_errors(registrationForm.username) }}</div>
+                {% endif %}
+                <div class="form-help">{{ form_help(registrationForm.username) }}</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">{{ form_label(registrationForm.fullName) }}</label>
+                {{ form_widget(registrationForm.fullName, {attr: {class: 'form-control'}}) }}
+                {% if registrationForm.fullName.vars.errors|length %}
+                    <div class="form-error">{{ form_errors(registrationForm.fullName) }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">{{ form_label(registrationForm.email) }}</label>
+                {{ form_widget(registrationForm.email, {attr: {class: 'form-control'}}) }}
+                {% if registrationForm.email.vars.errors|length %}
+                    <div class="form-error">{{ form_errors(registrationForm.email) }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">{{ form_label(registrationForm.phone) }}</label>
+                {{ form_widget(registrationForm.phone, {attr: {class: 'form-control'}}) }}
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div class="form-group">
+                    <label class="form-label">Password</label>
+                    {{ form_widget(registrationForm.plainPassword.first, {attr: {class: 'form-control'}}) }}
+                    {% if registrationForm.plainPassword.first.vars.errors|length %}
+                        <div class="form-error">{{ form_errors(registrationForm.plainPassword.first) }}</div>
+                    {% endif %}
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Confirm Password</label>
+                    {{ form_widget(registrationForm.plainPassword.second, {attr: {class: 'form-control'}}) }}
+                    {% if registrationForm.plainPassword.second.vars.errors|length %}
+                        <div class="form-error">{{ form_errors(registrationForm.plainPassword.second) }}</div>
+                    {% endif %}
+                </div>
+            </div>
+            {% if registrationForm.plainPassword.vars.errors|length %}
+                <div class="form-error mb-2">{{ form_errors(registrationForm.plainPassword) }}</div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-primary w-100 mt-2" style="justify-content:center;">
+                Create Account →
+            </button>
+
+            {{ form_end(registrationForm) }}
+
+            <div class="auth-divider-row">or</div>
+
+            <a href="{{ path('google_oauth_connect') }}" class="google-btn">
+                <svg width="18" height="18" viewBox="0 0 48 48" style="flex-shrink:0;">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                </svg>
+                Sign up with Google
+            </a>
+
+            <p class="auth-footer">
+                Already have an account? <a href="{{ path('app_login') }}">Sign in</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

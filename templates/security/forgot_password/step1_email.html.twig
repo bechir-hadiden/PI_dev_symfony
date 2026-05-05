@@ -1,0 +1,166 @@
+{% extends 'base.html.twig' %}
+{% block title %}Forgot Password{% endblock %}
+
+{% block extra_css %}
+.reset-page {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding-top: 0 !important;
+}
+.reset-left {
+    background: var(--ink);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 3rem;
+}
+.reset-left-bg {
+    position: absolute; inset: 0;
+    background: url('https://images.unsplash.com/photo-1564501049412-61c2a3083791?w=900&q=80') center/cover;
+    opacity: 0.25;
+}
+.reset-left-content { position: relative; z-index: 1; }
+.reset-left h2 { font-size: clamp(1.8rem,2.5vw,2.5rem); color: var(--white); font-weight: 300; line-height: 1.2; margin-bottom: 0.8rem; }
+.reset-left h2 em { color: var(--gold-lt); }
+.reset-left p { color: rgba(240,232,216,0.6); font-size: 0.86rem; line-height: 1.7; max-width: 320px; }
+.reset-logo { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:300; letter-spacing:0.12em; color:var(--white); text-decoration:none; margin-bottom:auto; padding-bottom:3rem; display:block; }
+.reset-logo span { color:var(--gold-lt); font-style:italic; }
+
+.reset-right {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem 4rem;
+    background: var(--cream);
+}
+.reset-wrap { max-width: 400px; width: 100%; }
+
+/* Steps indicator */
+.steps-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 2.5rem;
+}
+.step-dot {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.72rem; font-weight: 500;
+    border: 1.5px solid var(--border);
+    color: var(--muted);
+    background: var(--cream);
+    position: relative; z-index: 1;
+    transition: all 0.3s;
+}
+.step-dot.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--white);
+}
+.step-dot.done {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--white);
+}
+.step-line {
+    width: 60px; height: 1px;
+    background: var(--border);
+}
+.step-label {
+    font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted); text-align: center; margin-top: 0.3rem;
+}
+.steps-row { display: flex; flex-direction: column; align-items: center; }
+
+.reset-title { font-size: 1.9rem; margin-bottom: 0.4rem; }
+.reset-subtitle { color: var(--muted); font-size: 0.88rem; margin-bottom: 2rem; line-height: 1.6; }
+.back-link { font-size: 0.78rem; color: var(--muted); text-decoration: none; display: inline-flex; align-items: center; gap: 0.4rem; margin-bottom: 2rem; transition: color 0.2s; }
+.back-link:hover { color: var(--gold); }
+
+@media (max-width: 768px) {
+    .reset-page { grid-template-columns: 1fr; }
+    .reset-left { display: none; }
+    .reset-right { padding: 2rem 1.5rem; }
+}
+{% endblock %}
+
+{% block body %}
+<div class="reset-page" style="padding-top:0!important;">
+
+    {# Left panel #}
+    <div class="reset-left">
+        <div class="reset-left-bg"></div>
+        <a href="{{ path('app_login') }}" class="reset-logo">Smart<span>Trip</span></a>
+        <div class="reset-left-content">
+            <h2>Reset your<br><em>password</em><br>securely.</h2>
+            <p>We'll send a 6-digit verification code to your email address. The code expires in 10 minutes.</p>
+        </div>
+    </div>
+
+    {# Right panel #}
+    <div class="reset-right">
+        <div class="reset-wrap">
+
+            {# Steps #}
+            <div class="steps-indicator" style="align-items:flex-start;margin-bottom:2.5rem;">
+                <div class="steps-row">
+                    <div class="step-dot active">1</div>
+                    <div class="step-label">Email</div>
+                </div>
+                <div class="step-line" style="margin-top:16px;"></div>
+                <div class="steps-row">
+                    <div class="step-dot">2</div>
+                    <div class="step-label">Verify</div>
+                </div>
+                <div class="step-line" style="margin-top:16px;"></div>
+                <div class="steps-row">
+                    <div class="step-dot">3</div>
+                    <div class="step-label">Password</div>
+                </div>
+            </div>
+
+            <a href="{{ path('app_login') }}" class="back-link">← Back to Sign In</a>
+
+            <div class="section-tag" style="margin-bottom:0.8rem;">Step 1 of 3</div>
+            <h1 class="reset-title">Forgot Password?</h1>
+            <p class="reset-subtitle">
+                Enter the email address linked to your account and we'll send you a verification code.
+            </p>
+
+            {% if error %}
+            <div class="flash flash-error" style="position:static;margin-bottom:1.2rem;">{{ error }}</div>
+            {% endif %}
+
+            <form method="post" action="{{ path('password_reset_request') }}" novalidate>
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        class="form-control"
+                        placeholder="your@email.com"
+                        autocomplete="email"
+                        autofocus
+                        required
+                    >
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100" style="justify-content:center;margin-top:0.5rem;">
+                    Send Verification Code →
+                </button>
+            </form>
+
+            <p style="font-size:0.8rem;color:var(--muted);text-align:center;margin-top:1.5rem;">
+                Remember your password? <a href="{{ path('app_login') }}" style="color:var(--gold);text-decoration:none;">Sign in</a>
+            </p>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block extra_css %}
+.content { padding: 2.5rem; max-width: 860px; }
+.form-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem 1.5rem; }
+.form-grid .full { grid-column:1/-1; }
+.form-section { background:var(--white); border:0.5px solid var(--border); padding:1.8rem; margin-bottom:1.5rem; }
+.form-section-title {
+    font-size:0.7rem; letter-spacing:0.2em; text-transform:uppercase;
+    color:var(--muted); padding-bottom:1rem; margin-bottom:1.5rem;
+    border-bottom:0.5px solid var(--border);
+}
+.image-gallery { display:flex; flex-wrap:wrap; gap:0.7rem; margin-bottom:1rem; }
+.img-thumb-wrap {
+    position:relative; width:90px; height:70px;
+}
+.img-thumb { width:100%; height:100%; object-fit:cover; border:0.5px solid var(--border); }
+.img-del-btn {
+    position:absolute; top:2px; right:2px;
+    background:var(--danger); color:#fff; border:none;
+    width:18px; height:18px; font-size:10px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    opacity:0; transition:opacity 0.2s;
+}
+.img-thumb-wrap:hover .img-del-btn { opacity:1; }
+{% endblock %}
+
+{% block body %}
+<div class="content">
+    <div style="margin-bottom:1.5rem;">
+        <a href="{{ path('admin_hotel_index') }}" style="font-size:0.78rem;color:var(--muted);text-decoration:none;">← Back to Hotels</a>
+    </div>
+
+    <div class="section-tag">Hotel Management</div>
+    <h1 style="font-size:1.9rem;margin-bottom:2rem;">{{ title }}</h1>
+
+    {{ form_start(form, {attr: {enctype: 'multipart/form-data', novalidate: 'novalidate'}}) }}
+
+    {# ── Basic Info ── #}
+    <div class="form-section">
+        <div class="form-section-title">Basic Information</div>
+        <div class="form-grid">
+            <div class="form-group full">
+                <label class="form-label">Hotel Name *</label>
+                {{ form_widget(form.name, {attr: {class: 'form-control'}}) }}
+                {{ form_errors(form.name) }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">City *</label>
+                {{ form_widget(form.city, {attr: {class: 'form-control'}}) }}
+                {{ form_errors(form.city) }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Country *</label>
+                {{ form_widget(form.country, {attr: {class: 'form-control'}}) }}
+                {{ form_errors(form.country) }}
+            </div>
+            <div class="form-group full">
+                <label class="form-label">Address / Location *</label>
+                {{ form_widget(form.location, {attr: {class: 'form-control'}}) }}
+                {{ form_errors(form.location) }}
+            </div>
+            <div class="form-group full">
+                <label class="form-label">Description</label>
+                {{ form_widget(form.description, {attr: {class: 'form-control', rows: 4}}) }}
+            </div>
+        </div>
+    </div>
+
+    {# ── Pricing & Policies ── #}
+    <div class="form-section">
+        <div class="form-section-title">Pricing & Policies</div>
+        <div class="form-grid">
+            <div class="form-group">
+                <label class="form-label">Price per Night (€) *</label>
+                {{ form_widget(form.pricePerNight, {attr: {class: 'form-control'}}) }}
+                {{ form_errors(form.pricePerNight) }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Price per Week (€)</label>
+                {{ form_widget(form.pricePerWeek, {attr: {class: 'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Check-in Time</label>
+                {{ form_widget(form.checkInTime, {attr: {class: 'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Check-out Time</label>
+                {{ form_widget(form.checkOutTime, {attr: {class: 'form-control'}}) }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contact Email</label>
+                {{ form_widget(form.contactEmail, {attr: {class: 'form-control'}}) }}
+                {{ form_errors(form.contactEmail) }}
+            </div>
+            <div class="form-group">
+                <label class="form-label">Contact Phone</label>
+                {{ form_widget(form.contactPhone, {attr: {class: 'form-control'}}) }}
+            </div>
+        </div>
+    </div>
+
+    {# ── Amenities ── #}
+    <div class="form-section">
+        <div class="form-section-title">Amenities</div>
+        <div class="form-group">
+            <label class="form-label">Amenities (comma-separated)</label>
+            {{ form_widget(form.amenitiesInput, {attr: {class: 'form-control', id: 'amenitiesInput'}}) }}
+            <div class="form-help">e.g. Free WiFi, Pool, Spa, Restaurant, Gym</div>
+        </div>
+        {# Live preview tags #}
+        <div id="amenityTags" style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.6rem;"></div>
+    </div>
+
+    {# ── Photos ── #}
+    <div class="form-section">
+        <div class="form-section-title">Photos</div>
+
+        {# Existing images (on edit) #}
+        {% if hotel.images|length > 0 %}
+        <div style="margin-bottom:1.2rem;">
+            <div class="form-help" style="margin-bottom:0.7rem;">Current photos (hover to delete):</div>
+            <div class="image-gallery">
+                {% for image in hotel.images %}
+                <div class="img-thumb-wrap">
+                    <img src="{{ image.imageUrl }}" alt="Hotel photo" class="img-thumb">
+                    <form method="post" action="{{ path('admin_hotel_image_delete', {id: image.id}) }}" style="display:inline;">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete_image_' ~ image.id) }}">
+                        <button type="submit" class="img-del-btn" title="Remove photo">×</button>
+                    </form>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="form-group">
+            <label class="form-label">Upload New Photos</label>
+            {{ form_widget(form.photos, {attr: {class: 'form-control', style: 'padding:0.4rem'}}) }}
+            {{ form_errors(form.photos) }}
+            <div class="form-help">JPEG, PNG, WebP · Max 5MB per image · Multiple allowed</div>
+        </div>
+    </div>
+
+    {# ── Submit ── #}
+    <div style="display:flex;gap:1rem;align-items:center;">
+        <button type="submit" class="btn btn-primary">
+            {% if hotel.id %}Update Hotel{% else %}Create Hotel{% endif %} →
+        </button>
+        <a href="{{ path('admin_hotel_index') }}" class="btn btn-ghost">Cancel</a>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Live amenity tag preview
+    const input = document.getElementById('amenitiesInput');
+    const tagsContainer = document.getElementById('amenityTags');
+
+    function renderTags() {
+        const values = input.value.split(',').map(v => v.trim()).filter(Boolean);
+        tagsContainer.innerHTML = values.map(v =>
+            `<span style="display:inline-block;padding:0.2rem 0.6rem;font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;background:rgba(184,150,62,0.12);color:#8a6e2a;">${v}</span>`
+        ).join('');
+    }
+
+    if (input) {
+        input.addEventListener('input', renderTags);
+        renderTags(); // run on page load (for edit)
+    }
+</script>
+{% endblock %}

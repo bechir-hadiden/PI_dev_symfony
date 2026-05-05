@@ -1,0 +1,400 @@
+{% extends 'base.html.twig' %}
+{% block title %}Hotels{% endblock %}
+
+{% block extra_css %}
+/* ── Hero strip ── */
+.client-hero {
+    background: var(--ink);
+    position: relative;
+    overflow: hidden;
+    padding: 4rem 2.5rem 3rem;
+    margin-bottom: 0;
+}
+.client-hero-bg {
+    position: absolute; inset: 0;
+    background: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&q=80') center/cover;
+    opacity: 0.22;
+}
+.client-hero-content { position: relative; z-index: 1; max-width: 680px; }
+.client-hero h1 {
+    font-size: clamp(2.4rem, 4vw, 3.8rem);
+    color: var(--white); font-weight: 300; line-height: 1.1;
+    margin-bottom: 1rem;
+}
+.client-hero h1 em { color: var(--gold-lt); }
+.client-hero p { color: rgba(240,232,216,0.7); font-size: 0.92rem; line-height: 1.7; max-width: 420px; margin-bottom: 2rem; }
+
+/* ── Search bar ── */
+.search-section {
+    background: var(--cream);
+    padding: 0 2.5rem 2.5rem;
+    position: relative; z-index: 1;
+    border-bottom: 0.5px solid rgba(201,168,76,0.2);
+}
+.search-form {
+    display: flex; flex-wrap: wrap; gap: 0;
+    background: var(--white);
+    border: none;
+    max-width: 800px;
+}
+.search-form input[type="text"] {
+    flex: 2; min-width: 200px; padding: 0.9rem 1.2rem;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.84rem;
+    background: var(--white); color: var(--navy);
+    border: 0.5px solid rgba(201,168,76,0.4); border-right: none;
+    outline: none;
+}
+.search-form input[type="number"] {
+    flex: 1; min-width: 120px; padding: 0.9rem 1.2rem;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.84rem;
+    background: var(--white); color: var(--navy);
+    border: 0.5px solid rgba(201,168,76,0.4);
+    outline: none;
+}
+.search-form input::placeholder { color: #aaa; }
+.search-form button {
+    background: var(--gold); color: var(--navy);
+    border: none; padding: 0 1.8rem;
+    font-size: 0.76rem; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    cursor: pointer; transition: background 0.2s, color 0.2s;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+.search-form button:hover { background: var(--navy); color: var(--white); }
+.search-form .filter-label {
+    font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 0.4rem 0.8rem;
+    display: flex; align-items: center;
+}
+
+/* ── Ticker ── */
+.ticker-wrap {
+    background: var(--gold); overflow: hidden; padding: 0.6rem 0;
+}
+.ticker { display:flex; animation: ticker 28s linear infinite; white-space: nowrap; }
+.ticker span { font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); padding: 0 2rem; }
+@keyframes ticker { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+/* ── Hotels section ── */
+.hotels-section { padding: 3rem 2.5rem; background: var(--navy-2); }
+.section-header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom: 2.5rem; }
+.section-header h2 { font-size: 2rem; color: var(--white); }
+
+/* ── Hotel card ── */
+.hotels-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    background: transparent;
+}
+.hotel-card {
+    background: var(--navy);
+    cursor: pointer;
+    transition: transform 0.25s, box-shadow 0.25s;
+    text-decoration: none; color: inherit;
+    display: block;
+    border: 1px solid rgba(201,168,76,0.1);
+}
+.hotel-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(13,13,13,0.3); z-index: 1; border-color: rgba(201,168,76,0.3); }
+.hotel-card-img {
+    position: relative;
+    height: 210px; overflow: hidden;
+    background: var(--navy);
+}
+.hotel-card-img img {
+    width: 100%; height: 100%; object-fit: cover;
+    transition: transform 0.5s ease;
+}
+.hotel-card:hover .hotel-card-img img { transform: scale(1.04); }
+.hotel-card-badge {
+    position: absolute; top: 1rem; right: 1rem;
+    background: rgba(201,168,76,0.2); backdrop-filter: blur(8px);
+    border: 0.5px solid rgba(201,168,76,0.4);
+    padding: 0.3rem 0.7rem;
+    font-size: 0.7rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--gold-l); font-weight: 500;
+}
+.hotel-card-rating {
+    position: absolute; bottom: 1rem; left: 1rem;
+    background: rgba(13,13,13,0.75); backdrop-filter: blur(6px);
+    padding: 0.3rem 0.6rem;
+    font-size: 0.78rem; color: var(--gold-lt);
+}
+.hotel-card-body { padding: 1.4rem; }
+.hotel-card-location {
+    font-size: 0.68rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--gold-l); margin-bottom: 0.4rem;
+    display: flex; align-items: center; gap: 0.3rem;
+}
+.hotel-card-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem; font-weight: 300;
+    line-height: 1.2; margin-bottom: 0.8rem;
+    color: var(--white);
+}
+.hotel-card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 0.9rem;
+    border-top: 0.5px solid rgba(201,168,76,0.2);
+}
+.hotel-card-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem; font-weight: 300; color: var(--gold);
+    line-height: 1;
+}
+.hotel-card-price sub {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(255,255,255,0.45); font-weight: 400;
+}
+.hotel-card-cta {
+    font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(255,255,255,0.45); transition: color 0.2s;
+    display: flex; align-items: center; gap: 0.3rem;
+}
+.hotel-card:hover .hotel-card-cta { color: var(--gold); }
+.hotel-card-cta .arrow { transition: transform 0.2s; }
+.hotel-card:hover .hotel-card-cta .arrow { transform: translateX(4px); }
+
+/* ── Empty state ── */
+.empty-state {
+    text-align: center; padding: 5rem 2rem;
+    background: var(--navy); border: 1px solid rgba(201,168,76,0.1);
+}
+.empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+.empty-state h3 { font-size: 1.4rem; margin-bottom: 0.5rem; color: var(--white); }
+.empty-state p { color: rgba(255,255,255,0.45); font-size: 0.88rem; }
+{% endblock %}
+
+{% block body %}
+
+{# ── Hero ── #}
+<div class="client-hero">
+    <div class="client-hero-bg"></div>
+    <div class="client-hero-content">
+        <div class="section-tag" style="margin-bottom:1.2rem;">Luxury Collection</div>
+        <h1>Discover <em>exceptional</em><br>hotels worldwide</h1>
+        <p>Curated selection of the world's finest hotels — from boutique urban retreats to beachfront palaces.</p>
+    </div>
+</div>
+
+{# ── Quick Links: Voyages, Destinations, Hotels & Transport ── #}
+<div style="background:var(--ink);padding:2.5rem;">
+    <div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;">
+        <a href="{{ path('client_voyage_index') }}" style="text-decoration:none;">
+            <div style="background:linear-gradient(135deg,rgba(201,168,76,0.15),rgba(201,168,76,0.05));border:0.5px solid rgba(201,168,76,0.3);padding:2rem;transition:all 0.3s;position:relative;overflow:hidden;">
+                <div style="position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=600&q=80') center/cover;opacity:0.15;"></div>
+                <div style="position:relative;z-index:1;">
+                    <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;">Explorer</div>
+                    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--white);margin-bottom:0.5rem;">Nos <em style="color:var(--gold);">Voyages</em></h3>
+                    <p style="color:rgba(255,255,255,0.6);font-size:0.85rem;margin-bottom:1rem;">Découvrez nos offres de voyages organisés</p>
+                    <span style="font-size:0.75rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:0.4rem;">Parcourir <span style="transition:transform 0.2s;">→</span></span>
+                </div>
+            </div>
+        </a>
+        <a href="{{ path('client_destination_index') }}" style="text-decoration:none;">
+            <div style="background:linear-gradient(135deg,rgba(201,168,76,0.15),rgba(201,168,76,0.05));border:0.5px solid rgba(201,168,76,0.3);padding:2rem;transition:all 0.3s;position:relative;overflow:hidden;">
+                <div style="position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=600&q=80') center/cover;opacity:0.15;"></div>
+                <div style="position:relative;z-index:1;">
+                    <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;">Découvrir</div>
+                    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--white);margin-bottom:0.5rem;">Nos <em style="color:var(--gold);">Destinations</em></h3>
+                    <p style="color:rgba(255,255,255,0.6);font-size:0.85rem;margin-bottom:1rem;">Explorez nos destinations dans le monde entier</p>
+                    <span style="font-size:0.75rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:0.4rem;">Explorer <span style="transition:transform 0.2s;">→</span></span>
+                </div>
+            </div>
+        </a>
+        <a href="{{ path('client_hotels') }}" style="text-decoration:none;">
+            <div style="background:linear-gradient(135deg,rgba(201,168,76,0.15),rgba(201,168,76,0.05));border:0.5px solid rgba(201,168,76,0.3);padding:2rem;transition:all 0.3s;position:relative;overflow:hidden;">
+                <div style="position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600&q=80') center/cover;opacity:0.15;"></div>
+                <div style="position:relative;z-index:1;">
+                    <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;">Séjourner</div>
+                    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--white);margin-bottom:0.5rem;">Nos <em style="color:var(--gold);">Hôtels</em></h3>
+                    <p style="color:rgba(255,255,255,0.6);font-size:0.85rem;margin-bottom:1rem;">Découvrez nos hôtels de luxe sélectionnés</p>
+                    <span style="font-size:0.75rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:0.4rem;">Découvrir <span style="transition:transform 0.2s;">→</span></span>
+                </div>
+            </div>
+        </a>
+        <a href="{{ path('transport_index') }}" style="text-decoration:none;">
+            <div style="background:linear-gradient(135deg,rgba(201,168,76,0.15),rgba(201,168,76,0.05));border:0.5px solid rgba(201,168,76,0.3);padding:2rem;transition:all 0.3s;position:relative;overflow:hidden;">
+                <div style="position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=600&q=80') center/cover;opacity:0.15;"></div>
+                <div style="position:relative;z-index:1;">
+                    <div style="font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;">Voyager</div>
+                    <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--white);margin-bottom:0.5rem;">Nos <em style="color:var(--gold);">Transports</em></h3>
+                    <p style="color:rgba(255,255,255,0.6);font-size:0.85rem;margin-bottom:1rem;">Réservez votre transport pour votre voyage</p>
+                    <span style="font-size:0.75rem;color:var(--gold);text-transform:uppercase;letter-spacing:0.1em;display:flex;align-items:center;gap:0.4rem;">Réserver <span style="transition:transform 0.2s;">→</span></span>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+{# ── Ticker ── #}
+<div class="ticker-wrap">
+    <div class="ticker">
+        {% set items = ['Free Cancellation Available', 'Best Price Guarantee', 'Exclusive Member Rates', '5-Star Experiences', 'Worldwide Destinations', 'Luxury Redefined', 'Free Cancellation Available', 'Best Price Guarantee', 'Exclusive Member Rates', '5-Star Experiences', 'Worldwide Destinations', 'Luxury Redefined'] %}
+        {% for item in items %}
+            <span>{{ item }}</span><span style="color:rgba(0,0,0,0.3);padding:0 0.5rem;">◆</span>
+        {% endfor %}
+    </div>
+</div>
+
+{# ── Hotel Grid ── #}
+<div class="hotels-section">
+    <div class="section-header">
+        <div>
+            <div class="section-tag">Available Now</div>
+            <h2>
+                {% if query %}
+                    Results for "{{ query }}"
+                {% else %}
+                    Our <em style="font-style:italic;">Finest</em> Hotels
+                {% endif %}
+            </h2>
+        </div>
+        <p class="text-muted" style="font-size:0.82rem;">
+            {{ hotels|length }} hotel{{ hotels|length != 1 ? 's' : '' }} found
+            {% if query %}
+                &nbsp;·&nbsp; <a href="{{ path('client_hotels') }}" style="color:var(--gold);text-decoration:none;">Clear search</a>
+            {% endif %}
+        </p>
+    </div>
+
+    {# ── Search ── #}
+    <form method="get" action="{{ path('client_hotels') }}" class="search-form" id="hotel-filter-form" style="margin-bottom:2rem;">
+        <input
+            type="text"
+            name="q"
+            id="filter-name"
+            value="{{ query }}"
+            placeholder="Search by hotel name, city, country…"
+            autocomplete="off"
+        >
+        <span class="filter-label">€</span>
+        <input
+            type="number"
+            name="price_min"
+            id="filter-price-min"
+            value="{{ priceMin }}"
+            placeholder="Min price"
+            min="0"
+        >
+        <span class="filter-label">to</span>
+        <input
+            type="number"
+            name="price_max"
+            id="filter-price-max"
+            value="{{ priceMax }}"
+            placeholder="Max price"
+            min="0"
+        >
+        <button type="submit">Search</button>
+        {% if query or priceMin or priceMax %}
+            <a href="{{ path('client_hotels') }}" style="padding:0.9rem 1rem;font-size:0.75rem;color:var(--muted);text-decoration:none;white-space:nowrap;">Clear filters</a>
+        {% endif %}
+    </form>
+
+    {% if hotels|length > 0 %}
+    <div class="hotels-grid">
+        {% for hotel in hotels %}
+        <a href="{{ path('client_hotel_detail', {id: hotel.id}) }}" class="hotel-card">
+            <div class="hotel-card-img">
+                <img
+                    src="{{ hotel.mainImageUrl }}"
+                    alt="{{ hotel.name }}"
+                    loading="lazy"
+                >
+                <div class="hotel-card-badge">{{ hotel.city }}</div>
+                <div class="hotel-card-rating">★ {{ hotel.rating }}</div>
+            </div>
+            <div class="hotel-card-body">
+                <div class="hotel-card-location">
+                    ◎ {{ hotel.location }}, {{ hotel.country }}
+                </div>
+                <div class="hotel-card-name">{{ hotel.name }}</div>
+
+                {# Amenity previews #}
+                {% set amenities = hotel.amenityNames %}
+                {% if amenities|length > 0 %}
+                <div style="display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.8rem;">
+                    {% for a in amenities|slice(0,3) %}
+                    <span style="font-size:0.64rem;letter-spacing:0.06em;text-transform:uppercase;color:var(--muted);border:0.5px solid var(--border);padding:0.15rem 0.45rem;">{{ a }}</span>
+                    {% endfor %}
+                    {% if amenities|length > 3 %}
+                    <span style="font-size:0.64rem;color:var(--muted);">+{{ amenities|length - 3 }} more</span>
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <div class="hotel-card-footer">
+                    <div>
+                        <div class="hotel-card-price">
+                            €{{ hotel.pricePerNight }}
+                            <sub>/ night</sub>
+                        </div>
+                    </div>
+                    <div class="hotel-card-cta">
+                        View details <span class="arrow">→</span>
+                    </div>
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <div class="icon">🏨</div>
+        <h3>No hotels found</h3>
+        <p>
+            {% if query %}
+                No results for "{{ query }}". Try a different search term.
+            {% else %}
+                No hotels are currently listed.
+            {% endif %}
+        </p>
+        {% if query %}
+        <a href="{{ path('client_hotels') }}" class="btn btn-ghost mt-3">View all hotels</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+{% block javascripts %}
+<script>
+    // Auto-submit form when user types/pauses (debounced)
+    const filterForm = document.getElementById('hotel-filter-form');
+    const nameInput = document.getElementById('filter-name');
+    const priceMinInput = document.getElementById('filter-price-min');
+    const priceMaxInput = document.getElementById('filter-price-max');
+
+    let debounceTimer;
+    const DEBOUNCE_MS = 400;
+
+    function debouncedSubmit() {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+            filterForm.submit();
+        }, DEBOUNCE_MS);
+    }
+
+    // Auto-submit on input (with debounce)
+    if (nameInput) nameInput.addEventListener('input', debouncedSubmit);
+    if (priceMinInput) priceMinInput.addEventListener('input', debouncedSubmit);
+    if (priceMaxInput) priceMaxInput.addEventListener('input', debouncedSubmit);
+
+    // Also submit on Enter key immediately
+    [nameInput, priceMinInput, priceMaxInput].forEach(input => {
+        if (input) {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    clearTimeout(debounceTimer);
+                    filterForm.submit();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
+
+{% endblock %}

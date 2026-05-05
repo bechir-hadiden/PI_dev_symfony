@@ -7,7 +7,7 @@ security:
         app_user_provider:
             entity:
                 class: App\Entity\User
-                property: email
+                property: username
 
     firewalls:
         dev:
@@ -18,12 +18,16 @@ security:
             lazy: true
             provider: app_user_provider
 
+            custom_authenticator: App\Security\AppAuthenticator
+
+            entry_point: form_login
+
             form_login:
                 login_path: app_login
                 check_path: app_login
+                username_parameter: _username
+                password_parameter: _password
                 default_target_path: app_home
-                username_parameter: email
-                password_parameter: password
                 enable_csrf: true
 
             logout:

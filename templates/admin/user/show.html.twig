@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ user.fullName }} — Admin{% endblock %}
+
+{% block body %}
+<div style="padding:2.5rem;max-width:600px;">
+    <div style="margin-bottom:1.5rem;">
+        <a href="{{ path('admin_user_index') }}" style="font-size:0.78rem;color:var(--muted);text-decoration:none;">← Back to Users</a>
+    </div>
+
+    <div class="section-tag">User Profile</div>
+    <h1 style="font-size:2rem;margin-bottom:1.5rem;">{{ user.fullName }}</h1>
+
+    <div style="background:var(--white);border:0.5px solid var(--border);padding:2rem;display:flex;gap:1.5rem;align-items:flex-start;margin-bottom:1.5rem;">
+        <img src="{{ user.avatarUrl }}" alt="{{ user.username }}" style="width:70px;height:70px;border-radius:50%;border:2px solid var(--border);object-fit:cover;">
+        <div style="flex:1;">
+            <div style="font-size:1.1rem;font-weight:500;margin-bottom:0.3rem;">{{ user.fullName }}</div>
+            <div style="font-size:0.82rem;color:var(--muted);margin-bottom:0.6rem;">@{{ user.username }}</div>
+            <span class="badge {{ user.isAdmin() ? 'badge-admin' : 'badge-client' }}">{{ user.role }}</span>
+            {% if user.isBlocked %}<span class="badge badge-blocked" style="margin-left:0.4rem;">Blocked</span>{% endif %}
+        </div>
+    </div>
+
+    <div style="background:var(--white);border:0.5px solid var(--border);padding:1.5rem;margin-bottom:1.5rem;">
+        {% set rows = [
+            ['Email', user.email],
+            ['Phone', user.phone ?? '—'],
+            ['Member since', user.createdAt ? user.createdAt|date('d F Y') : '—'],
+        ] %}
+        {% for row in rows %}
+        <div style="display:flex;padding:0.7rem 0;border-bottom:0.5px solid var(--border);{% if loop.last %}border-bottom:none;{% endif %}">
+            <span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);width:140px;flex-shrink:0;">{{ row[0] }}</span>
+            <span style="font-size:0.9rem;">{{ row[1] }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div style="display:flex;gap:0.8rem;flex-wrap:wrap;">
+        <a href="{{ path('admin_user_edit', {id: user.id}) }}" class="btn btn-outline btn-sm">Edit</a>
+
+        {% if user != app.user %}
+        <form id="block-form" method="post" action="{{ path('admin_user_toggle_block', {id: user.id}) }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('toggle_block_' ~ user.id) }}">
+            <button type="submit" class="btn btn-sm {{ user.isBlocked ? 'btn-gold' : 'btn-ghost' }}"
+                style="{{ not user.isBlocked ? 'border-color:var(--danger);color:var(--danger);' : '' }}">
+                {{ user.isBlocked ? 'Unblock Account' : 'Block Account' }}
+            </button>
+        </form>
+
+        <form id="del-form" method="post" action="{{ path('admin_user_delete', {id: user.id}) }}" style="display:inline;">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete_user_' ~ user.id) }}">
+            <button type="button" class="btn btn-danger btn-sm"
+                onclick="confirmDelete('del-form','Delete this user permanently?')">Delete</button>
+        </form>
+        {% endif %}
+
+        <a href="{{ path('admin_user_index') }}" class="btn btn-ghost btn-sm">← Back</a>
+    </div>
+</div>
+{% endblock %}

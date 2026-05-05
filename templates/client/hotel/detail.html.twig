@@ -1,0 +1,520 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ hotel.name }}{% endblock %}
+
+{% block extra_css %}
+/* ── Layout ── */
+.detail-page { max-width: 1200px; margin: 0 auto; padding: 2rem 2.5rem 4rem; }
+.breadcrumb {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-size: 0.75rem; color: var(--muted);
+    margin-bottom: 1.8rem;
+}
+.breadcrumb a { color: var(--muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--gold); }
+.breadcrumb-sep { color: var(--border); }
+
+/* ── Gallery ── */
+.gallery-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 220px 220px;
+    gap: 4px;
+    margin-bottom: 2.5rem;
+    border-radius: 0;
+    overflow: hidden;
+}
+.gallery-grid img {
+    width: 100%; height: 100%; object-fit: cover;
+    cursor: pointer; transition: filter 0.3s;
+}
+.gallery-grid img:hover { filter: brightness(0.88); }
+.gallery-main { grid-row: 1 / 3; }
+.gallery-more-btn {
+    position: absolute; bottom: 1rem; right: 1rem;
+    background: rgba(250,246,239,0.92); backdrop-filter: blur(8px);
+    border: 0.5px solid var(--border);
+    padding: 0.4rem 1rem; font-size: 0.72rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; color: var(--ink);
+}
+.gallery-more-wrap { position: relative; }
+
+/* ── Two-column detail layout ── */
+.detail-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 2.5rem;
+    align-items: start;
+}
+
+/* ── Main content ── */
+.hotel-header { margin-bottom: 2rem; }
+.hotel-header h1 {
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-weight: 300; line-height: 1.1;
+    margin-bottom: 0.5rem;
+}
+.hotel-meta {
+    display: flex; align-items: center; flex-wrap: wrap;
+    gap: 1.2rem; color: var(--muted); font-size: 0.82rem;
+    margin-bottom: 1rem;
+}
+.hotel-meta .sep { color: var(--border); }
+.hotel-rating { color: var(--gold); font-size: 0.88rem; }
+
+.section-block {
+    background: var(--white);
+    border: 0.5px solid var(--border);
+    padding: 1.8rem;
+    margin-bottom: 1.2rem;
+}
+.section-block-title {
+    font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted); padding-bottom: 0.9rem; margin-bottom: 1.2rem;
+    border-bottom: 0.5px solid var(--border);
+}
+.description-text {
+    font-size: 0.92rem; line-height: 1.85; color: #444;
+}
+
+/* ── Amenities ── */
+.amenities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 0.6rem;
+}
+.amenity-item {
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.7rem 0.9rem;
+    border: 0.5px solid var(--border);
+    font-size: 0.8rem;
+}
+.amenity-icon { color: var(--gold); font-size: 0.9rem; }
+
+/* ── Room types ── */
+.rooms-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.8rem;
+}
+.room-card {
+    border: 0.5px solid var(--border);
+    padding: 1.2rem;
+    background: var(--cream);
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+}
+.room-card:hover { border-color: var(--gold); }
+.room-card.selected {
+    border-color: var(--gold);
+    background: var(--white);
+    box-shadow: 0 4px 16px rgba(201,168,76,0.15);
+}
+.room-card.unavailable { opacity: 0.5; cursor: not-allowed; }
+.room-name { font-weight: 500; margin-bottom: 0.3rem; font-size: 0.95rem; }
+.room-desc { font-size: 0.78rem; color: var(--muted); margin-bottom: 0.6rem; line-height: 1.5; }
+.room-price { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--gold); }
+.room-occupancy { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+.room-unavailable { opacity: 0.5; }
+
+/* ── Sticky Reservation Card ── */
+.reservation-card {
+    position: sticky;
+    top: 5.5rem;
+    background: var(--white);
+    border: 0.5px solid var(--border);
+    box-shadow: 0 8px 40px rgba(13,13,13,0.1);
+}
+.res-card-header {
+    background: var(--ink);
+    padding: 1.4rem 1.6rem;
+    border-bottom: 0.5px solid rgba(184,150,62,0.3);
+}
+.res-price-display {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.4rem; font-weight: 300;
+    color: var(--gold-lt); line-height: 1;
+}
+.res-price-label {
+    font-size: 0.68rem; letter-spacing: 0.15em; text-transform: uppercase;
+    color: rgba(240,232,216,0.5); margin-top: 0.3rem;
+}
+.res-card-body { padding: 1.4rem 1.6rem; }
+.res-input-label {
+    font-size: 0.68rem; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 0.4rem; display: block;
+}
+.res-nights-input {
+    width: 100%; padding: 0.65rem 1rem;
+    font-family: 'DM Sans', sans-serif; font-size: 1rem;
+    background: var(--cream); color: var(--ink);
+    border: 0.5px solid rgba(184,150,62,0.3);
+    outline: none; text-align: center;
+    -moz-appearance: textfield;
+}
+.res-nights-input:focus { border-color: var(--gold); }
+.res-total-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1rem 0;
+    border-top: 0.5px solid var(--border);
+    margin-top: 1rem;
+}
+.res-total-label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+.res-total-price {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.8rem; color: var(--ink); font-weight: 300;
+    transition: all 0.2s;
+}
+.res-total-price.changed { color: var(--gold); }
+.btn-reserve {
+    width: 100%; padding: 1rem;
+    background: var(--gold); color: var(--white);
+    border: none; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem; letter-spacing: 0.15em; text-transform: uppercase;
+    font-weight: 500; margin-top: 0.8rem;
+    transition: background 0.22s;
+}
+.btn-reserve:hover { background: var(--gold-dark); }
+.res-note {
+    font-size: 0.72rem; color: var(--muted); text-align: center;
+    margin-top: 0.8rem; line-height: 1.6;
+}
+.res-card-footer {
+    padding: 1rem 1.6rem;
+    border-top: 0.5px solid var(--border);
+    background: var(--cream);
+}
+.res-info-row {
+    display: flex; justify-content: space-between;
+    font-size: 0.78rem; padding: 0.3rem 0;
+    color: var(--muted);
+}
+.res-info-row strong { color: var(--ink); }
+
+/* ── Lightbox ── */
+.lightbox {
+    position: fixed; inset: 0; z-index: 9998;
+    background: rgba(13,13,13,0.94); backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+}
+.lightbox img { max-width: 90vw; max-height: 85vh; object-fit: contain; }
+.lightbox-close {
+    position: absolute; top: 1.5rem; right: 2rem;
+    background: none; border: none; color: var(--white);
+    font-size: 2rem; cursor: pointer; opacity: 0.7;
+}
+.lightbox-close:hover { opacity: 1; }
+
+@media (max-width: 900px) {
+    .detail-layout { grid-template-columns: 1fr; }
+    .reservation-card { position: static; }
+    .gallery-grid { grid-template-rows: 180px 180px; }
+}
+{% endblock %}
+
+{% block body %}
+<div class="detail-page">
+
+    {# ── Breadcrumb ── #}
+    <div class="breadcrumb">
+        <a href="{{ path('client_hotels') }}">Hotels</a>
+        <span class="breadcrumb-sep">›</span>
+        <span>{{ hotel.city }}</span>
+        <span class="breadcrumb-sep">›</span>
+        <span>{{ hotel.name }}</span>
+    </div>
+
+    {# ── Photo Gallery ── #}
+    {% set images = hotel.images %}
+    {% if images|length > 0 %}
+    <div class="gallery-grid" id="gallery" style="position:relative;">
+        {# Main image #}
+        <img
+            src="{{ images[0].imageUrl }}"
+            alt="{{ hotel.name }}"
+            class="gallery-main"
+            onclick="openLightbox('{{ images[0].imageUrl }}')"
+        >
+        {# Side images #}
+        {% for i in 1..2 %}
+            {% if images[i] is defined %}
+            <div class="gallery-more-wrap">
+                <img
+                    src="{{ images[i].imageUrl }}"
+                    alt="{{ hotel.name }} photo {{ i+1 }}"
+                    onclick="openLightbox('{{ images[i].imageUrl }}')"
+                >
+                {% if i == 2 and images|length > 3 %}
+                <button class="gallery-more-btn" onclick="openLightbox('{{ images[i].imageUrl }}')">
+                    +{{ images|length - 3 }} photos
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="height:300px;background:var(--ink);margin-bottom:2.5rem;display:flex;align-items:center;justify-content:center;">
+        <span style="color:rgba(240,232,216,0.3);font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;">No photos yet</span>
+    </div>
+    {% endif %}
+
+    {# ── Two-column layout ── #}
+    <div class="detail-layout">
+
+        {# ── LEFT: Hotel Info ── #}
+        <div>
+            {# Header #}
+            <div class="hotel-header">
+                <div class="section-tag" style="margin-bottom:0.6rem;">{{ hotel.city }}, {{ hotel.country }}</div>
+                <h1>{{ hotel.name }}</h1>
+                <div class="hotel-meta">
+                    <span>◎ {{ hotel.location }}</span>
+                    <span class="sep">|</span>
+                    <span class="hotel-rating">★ {{ hotel.rating }} <span style="color:var(--muted);">({{ hotel.reviewCount }} reviews)</span></span>
+                    {% if hotel.checkInTime %}
+                    <span class="sep">|</span>
+                    <span>Check-in {{ hotel.checkInTime }}</span>
+                    {% endif %}
+                    {% if hotel.checkOutTime %}
+                    <span>· Check-out {{ hotel.checkOutTime }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Description #}
+            {% if hotel.description %}
+            <div class="section-block">
+                <div class="section-block-title">About this Hotel</div>
+                <p class="description-text">{{ hotel.description }}</p>
+            </div>
+            {% endif %}
+
+            {# Amenities #}
+            {% if hotel.amenities|length > 0 %}
+            <div class="section-block">
+                <div class="section-block-title">Amenities & Facilities</div>
+                <div class="amenities-grid">
+                    {% set icons = {'WiFi':'◈', 'Pool':'◯', 'Spa':'✦', 'Gym':'◈', 'Restaurant':'◆', 'Bar':'◇', 'Parking':'◈', 'Beach':'◯'} %}
+                    {% for amenity in hotel.amenities %}
+                    <div class="amenity-item">
+                        <span class="amenity-icon">◈</span>
+                        <span>{{ amenity.amenityName }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {# Room Types #}
+            {% if hotel.roomTypes|length > 0 %}
+            <div class="section-block">
+                <div class="section-block-title">Select a Room Type</div>
+                <div class="rooms-grid">
+                    {% for room in hotel.roomTypes %}
+                    <div
+                        class="room-card {{ not room.available ? 'unavailable' : '' }}"
+                        data-room-id="{{ room.id }}"
+                        data-room-price="{{ room.pricePerNight }}"
+                        data-room-name="{{ room.name }}"
+                        onclick="{{ room.available ? "selectRoom(this)" : "" }}"
+                    >
+                        <div class="room-name">{{ room.name }}</div>
+                        {% if room.description %}
+                        <div class="room-desc">{{ room.description }}</div>
+                        {% endif %}
+                        <div class="room-price">€{{ room.pricePerNight }}<span style="font-family:'DM Sans',sans-serif;font-size:0.7rem;color:var(--muted);">/night</span></div>
+                        <div class="room-occupancy">Up to {{ room.maxOccupancy }} guests</div>
+                        {% if not room.available %}
+                        <span class="badge badge-blocked" style="margin-top:0.5rem;">Unavailable</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+        </div>
+
+        {# ── RIGHT: Reservation Card ── #}
+        <div>
+            <div class="reservation-card">
+                <div class="res-card-header">
+                    <div class="res-price-display" id="priceDisplay">
+                        €{{ hotel.pricePerNight }}
+                    </div>
+                    <div class="res-price-label">per night · best rate guaranteed</div>
+                </div>
+
+                <div class="res-card-body">
+                    <form
+                        method="post"
+                        action="{{ path('client_hotel_reserve', {id: hotel.id}) }}"
+                        id="reserveForm"
+                    >
+                        <input type="hidden" name="_token" value="{{ csrf_token('reserve_' ~ hotel.id) }}">
+                        <input type="hidden" name="room_type_id" id="selectedRoomId" value="">
+
+                        <label class="res-input-label" for="nights">Number of Nights</label>
+                        <div style="display:flex;align-items:center;gap:0;border:0.5px solid rgba(184,150,62,0.3);">
+                            <button type="button" onclick="changeNights(-1)"
+                                style="width:42px;height:44px;background:var(--cream);border:none;cursor:pointer;font-size:1.2rem;color:var(--muted);transition:color 0.2s;"
+                                onmouseover="this.style.color='var(--gold)'"
+                                onmouseout="this.style.color='var(--muted)'"
+                            >−</button>
+                            <input
+                                type="number"
+                                id="nightsInput"
+                                name="nights"
+                                value="1"
+                                min="1"
+                                max="365"
+                                class="res-nights-input"
+                                style="border:none;border-left:0.5px solid rgba(184,150,62,0.2);border-right:0.5px solid rgba(184,150,62,0.2);border-radius:0;"
+                            >
+                            <button type="button" onclick="changeNights(1)"
+                                style="width:42px;height:44px;background:var(--cream);border:none;cursor:pointer;font-size:1.2rem;color:var(--muted);transition:color 0.2s;"
+                                onmouseover="this.style.color='var(--gold)'"
+                                onmouseout="this.style.color='var(--muted)'"
+                            >+</button>
+                        </div>
+
+                        <div class="res-total-row">
+                            <div>
+                                <div class="res-total-label">Total Estimate</div>
+                                <div style="font-size:0.72rem;color:var(--muted);margin-top:0.2rem;" id="nightsSummary">1 night</div>
+                            </div>
+                            <div class="res-total-price" id="totalPrice">€{{ hotel.pricePerNight }}</div>
+                        </div>
+
+                        <button type="submit" class="btn-reserve">
+                            Request Reservation →
+                        </button>
+                    </form>
+
+                    <p class="res-note">
+                        Free cancellation available · No payment required now
+                    </p>
+                </div>
+
+                <div class="res-card-footer">
+                    {% if hotel.checkInTime %}
+                    <div class="res-info-row">
+                        <span>Check-in</span>
+                        <strong>{{ hotel.checkInTime }}</strong>
+                    </div>
+                    {% endif %}
+                    {% if hotel.checkOutTime %}
+                    <div class="res-info-row">
+                        <span>Check-out</span>
+                        <strong>{{ hotel.checkOutTime }}</strong>
+                    </div>
+                    {% endif %}
+                    {% if hotel.contactEmail %}
+                    <div class="res-info-row">
+                        <span>Contact</span>
+                        <strong>{{ hotel.contactEmail }}</strong>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# ── Lightbox ── #}
+<div class="lightbox" id="lightbox" style="display:none;" onclick="closeLightbox()">
+    <img id="lightboxImg" src="" alt="Hotel photo">
+    <button class="lightbox-close" onclick="closeLightbox()">×</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let selectedRoomPrice = {{ hotel.pricePerNight }};
+    let selectedRoomName = 'Standard Room';
+
+    // Room prices from backend
+    const roomPrices = {
+        {% for room in hotel.roomTypes %}{% if room.available %}{{ room.id }}: {{ room.pricePerNight }},{% endif %}{% endfor %}
+    };
+    const roomNames = {
+        {% for room in hotel.roomTypes %}{% if room.available %}{{ room.id }}: '{{ room.name }}',{% endif %}{% endfor %}
+    };
+
+    function selectRoom(roomCard) {
+        // Remove selected class from all rooms
+        document.querySelectorAll('.room-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        // Add selected class to clicked room
+        roomCard.classList.add('selected');
+
+        // Update selected room data
+        const roomId = roomCard.dataset.roomId;
+        const roomPrice = parseFloat(roomCard.dataset.roomPrice);
+        const roomName = roomCard.dataset.roomName;
+
+        selectedRoomPrice = roomPrice;
+        selectedRoomName = roomName;
+
+        // Update hidden input
+        document.getElementById('selectedRoomId').value = roomId;
+
+        // Update price display at top
+        document.getElementById('priceDisplay').textContent = '€' + roomPrice.toLocaleString('fr-FR');
+
+        // Update total
+        updateTotal();
+    }
+
+    function changeNights(delta) {
+        const input = document.getElementById('nightsInput');
+        const newVal = Math.max(1, Math.min(365, parseInt(input.value || 1) + delta));
+        input.value = newVal;
+        updateTotal();
+    }
+
+    function updateTotal() {
+        const nights = parseInt(document.getElementById('nightsInput').value) || 1;
+        const total  = (nights * selectedRoomPrice).toFixed(2);
+
+        const totalEl = document.getElementById('totalPrice');
+        totalEl.textContent = '€' + parseFloat(total).toLocaleString('fr-FR', {minimumFractionDigits: 2});
+        totalEl.classList.add('changed');
+        setTimeout(() => totalEl.classList.remove('changed'), 300);
+
+        const summary = document.getElementById('nightsSummary');
+        summary.textContent = nights + ' night' + (nights > 1 ? 's' : '') + ' × €' + selectedRoomPrice;
+    }
+
+    document.getElementById('nightsInput').addEventListener('input', updateTotal);
+
+    // Auto-select first available room on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const firstAvailable = document.querySelector('.room-card:not(.unavailable)');
+        if (firstAvailable) {
+            selectRoom(firstAvailable);
+        }
+    });
+
+    // Lightbox
+    function openLightbox(src) {
+        document.getElementById('lightboxImg').src = src;
+        document.getElementById('lightbox').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() {
+        document.getElementById('lightbox').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeLightbox();
+    });
+
+    // Run once to init
+    updateTotal();
+</script>
+{% endblock %}
