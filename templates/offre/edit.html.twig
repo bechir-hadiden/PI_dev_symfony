@@ -3,10 +3,55 @@
 {% block body %}
 <div class="container-fluid py-5" style="background-color: #F4F7FB; min-height: 100vh;">
     <div class="text-center mb-5">
-        <h1 class="label-title">Nouvelle Promotion</h1>
-        <p class="text-muted">Créez une offre attractive pour vos voyageurs.</p>
+        <h1 class="label-title">Modifier la Promotion</h1>
+        <p class="text-muted">Ajustez les détails de votre offre actuelle.</p>
     </div>
 
     {{ include('offre/_form.html.twig') }}
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    
+    <!-- SCRIPT POUR LA LISTE DÉROULANTE DYNAMIQUE (Catégorie -> Éléments) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const categorySelect = document.querySelector('#offre_category'); 
+            const targetSelect = document.querySelector('#offre_id_target');
+
+            if (categorySelect && targetSelect) {
+                categorySelect.addEventListener('change', function() {
+                    const category = this.value;
+                    
+                    targetSelect.innerHTML = '<option value="">Chargement en cours...</option>';
+
+                    if (!category) {
+                        targetSelect.innerHTML = '<option value="">Sélectionnez d\'abord une catégorie</option>';
+                        return;
+                    }
+
+                    fetch(`/offre/api/items/${category}`)
+                        .then(response => {
+                            if (!response.ok) throw new Error('Erreur réseau');
+                            return response.json();
+                        })
+                        .then(data => {
+                            targetSelect.innerHTML = '<option value="">-- Choisissez un élément --</option>';
+                            
+                            data.forEach(item => {
+                                const option = document.createElement('option');
+                                option.value = item.id;
+                                option.textContent = item.label;
+                                targetSelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => {
+                            console.error('Erreur API:', error);
+                            targetSelect.innerHTML = '<option value="">Erreur lors du chargement des éléments</option>';
+                        });
+                });
+            }
+        });
+    </script>
 {% endblock %}

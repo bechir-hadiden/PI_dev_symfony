@@ -1,0 +1,428 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Carte d'embarquement - {{ reservation.flightNumber }} - SmartTrip{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .boarding-pass-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .boarding-pass {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Header */
+        .boarding-header {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .airline-logo {
+            width: 70px;
+            height: 70px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+        
+        /* Timeline du vol */
+        .flight-timeline {
+            padding: 25px 30px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transform: translateY(-50%);
+        }
+        
+        .timeline-point {
+            background: white;
+            padding: 0 15px;
+            position: relative;
+            z-index: 1;
+            text-align: center;
+        }
+        
+        .timeline-time {
+            font-weight: bold;
+            color: #667eea;
+            font-size: 18px;
+        }
+        
+        .timeline-city {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .timeline-airport {
+            font-size: 11px;
+            color: #adb5bd;
+        }
+        
+        /* Infos principales */
+        .flight-main {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 2px dashed #dee2e6;
+        }
+        
+        .flight-info-item {
+            text-align: center;
+        }
+        
+        .flight-info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #6c757d;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+        
+        .flight-info-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        /* Détails passager */
+        .passenger-details {
+            padding: 30px;
+            border-bottom: 2px dashed #dee2e6;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+            display: inline-block;
+        }
+        
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .detail-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+        
+        .detail-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .detail-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .detail-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        /* QR Code */
+        .qr-section {
+            padding: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
+        .qr-wrapper {
+            display: inline-block;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .qr-code-img {
+            width: 200px;
+            height: 200px;
+        }
+        
+        .scan-instruction {
+            margin-top: 15px;
+            font-size: 13px;
+            color: #6c757d;
+        }
+        
+        .scan-instruction i {
+            color: #667eea;
+            margin-right: 5px;
+        }
+        
+        /* Footer */
+        .boarding-footer {
+            padding: 20px 30px;
+            background: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .important-info {
+            font-size: 12px;
+            color: #6c757d;
+        }
+        
+        .important-info i {
+            margin-right: 5px;
+            color: #ffc107;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-action {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        
+        .btn-action:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .flight-main {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+            .boarding-footer {
+                flex-direction: column;
+                text-align: center;
+            }
+            .flight-info-value {
+                font-size: 22px;
+            }
+            .timeline-point {
+                padding: 0 8px;
+            }
+            .timeline-time {
+                font-size: 14px;
+            }
+            .timeline::before {
+                left: 10%;
+                right: 10%;
+            }
+        }
+        
+        /* Impression */
+        @media print {
+            .boarding-pass-container {
+                background: white;
+                padding: 0;
+            }
+            .action-buttons,
+            .navbar,
+            footer,
+            .btn-action {
+                display: none !important;
+            }
+            .boarding-pass {
+                box-shadow: none;
+                margin: 0;
+            }
+            .qr-wrapper {
+                box-shadow: none;
+                border: 1px solid #ddd;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="boarding-pass-container">
+    <div class="boarding-pass">
+        <!-- Header -->
+        <div class="boarding-header">
+            <div class="airline-logo">
+                <i class="fas fa-plane"></i>
+            </div>
+            <h2 class="mb-2">CARTE D'EMBARQUEMENT</h2>
+            <p class="mb-0 opacity-75">{{ reservation.airline ?? 'SmartTrip Airlines' }}</p>
+            <small class="opacity-50">Boarding Pass</small>
+        </div>
+        
+        <!-- Timeline du vol -->
+        <div class="flight-timeline">
+            <div class="timeline">
+                <div class="timeline-point">
+                    <div class="timeline-time">{{ reservation.departureTime|date('H:i') }}</div>
+                    <div class="timeline-city">{{ reservation.departureAirport }}</div>
+                    <div class="timeline-airport">Départ</div>
+                </div>
+                <div class="timeline-point">
+                    <i class="fas fa-plane text-primary"></i>
+                </div>
+                <div class="timeline-point">
+                    <div class="timeline-time">{{ reservation.arrivalTime|date('H:i') }}</div>
+                    <div class="timeline-city">{{ reservation.arrivalAirport }}</div>
+                    <div class="timeline-airport">Arrivée</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Infos principales -->
+        <div class="flight-main">
+            <div class="flight-info-item">
+                <div class="flight-info-label">Vol</div>
+                <div class="flight-info-value">{{ reservation.flightNumber }}</div>
+            </div>
+            <div class="flight-info-item">
+                <div class="flight-info-label">Porte</div>
+                <div class="flight-info-value">{{ reservation.gateNumber ?? 'À confirmer' }}</div>
+            </div>
+            <div class="flight-info-item">
+                <div class="flight-info-label">Siège</div>
+                <div class="flight-info-value">{{ reservation.seatNumber }}</div>
+            </div>
+        </div>
+        
+        <!-- Détails passager -->
+        <div class="passenger-details">
+            <div class="section-title">
+                <i class="fas fa-user me-2 text-primary"></i>Détails du passager
+            </div>
+            <div class="details-grid">
+                <div class="detail-card">
+                    <div class="detail-label">Nom complet</div>
+                    <div class="detail-value">{{ reservation.nomClient }}</div>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-label">Email</div>
+                    <div class="detail-value">{{ reservation.email }}</div>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-label">Classe</div>
+                    <div class="detail-value">{{ reservation.class ?? 'Economy' }}</div>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-label">Bagages</div>
+                    <div class="detail-value">{{ reservation.baggageAllowance ?? '20kg' }}</div>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-label">Date de réservation</div>
+                    <div class="detail-value">{{ reservation.reservationDate|date('d/m/Y H:i') }}</div>
+                </div>
+                <div class="detail-card">
+                    <div class="detail-label">Référence</div>
+                    <div class="detail-value">#{{ reservation.id }}</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- QR Code -->
+        <div class="qr-section">
+            <div class="qr-wrapper">
+                {% if qrCode %}
+                    {% if qrCode starts with 'data:image' or qrCode starts with 'http' %}
+                        <img src="{{ qrCode }}" alt="QR Code" class="qr-code-img">
+                    {% else %}
+                        <img src="{{ asset(qrCode) }}" alt="QR Code" class="qr-code-img">
+                    {% endif %}
+                {% else %}
+                    <div class="text-center p-4">
+                        <i class="fas fa-qrcode fa-4x text-muted"></i>
+                        <p class="mt-2 mb-0">QR Code non disponible</p>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="scan-instruction">
+                <i class="fas fa-mobile-alt"></i>
+                Présentez ce code à l'embarquement
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="boarding-footer">
+            <div class="important-info">
+                <i class="fas fa-clock"></i> Présentez-vous 2h avant le départ
+            </div>
+            <div class="important-info">
+                <i class="fas fa-passport"></i> Pièce d'identité obligatoire
+            </div>
+            <div class="action-buttons">
+                <button onclick="window.print()" class="btn btn-primary btn-action">
+                    <i class="fas fa-print me-2"></i>Imprimer
+                </button>
+                <a href="{{ path('app_reservation_index') }}" class="btn btn-outline-secondary btn-action">
+                    <i class="fas fa-arrow-left me-2"></i>Retour
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

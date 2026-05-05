@@ -153,3 +153,39 @@ body { background-color: #F4F7FB; }
     background-color: #F8F9FA;
     color: #1A73E8;
 }
+/* Conteneur pour espacer du menu latéral */
+.admin-wrapper {
+    padding: 20px;
+    background-color: #f1f5f9;
+}
+
+/* Force l'aspect "Carte Blanche" */
+.custom-card {
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+    border: 1px solid #e2e8f0 !important;
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+/* Fix Pagination (pour qu'elle ne soit plus en liste à puces) */
+.navigation ul.pagination {
+    display: flex !important;
+    padding-left: 0;
+    list-style: none;
+    border-radius: 0.25rem;
+    gap: 5px;
+}
+.navigation .page-item .page-link {
+    border-radius: 8px !important;
+    color: #1e293b;
+    border: 1px solid #e2e8f0;
+    padding: 8px 16px;
+    text-decoration: none;
+}
+.navigation .page-item.active .page-link {
+    background-color: #1A73E8 !important;
+    color: white !important;
+    border-color: #1A73E8 !important;
+}

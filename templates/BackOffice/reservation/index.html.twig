@@ -1,12 +1,17 @@
 {% extends 'BackOffice/base_admin.html.twig' %}
+
 {% block title %}Historique Transport – Admin{% endblock %}
+
 {% block page_title %}Historique des Transports (Réservations){% endblock %}
 
 {% block body %}
 <div class="stat-row">
   <div class="stat-card">
     <div class="stat-icon gold"><i class="fas fa-calendar-alt"></i></div>
-    <div><div class="stat-value">{{ pagination.totalItemCount }}</div><div class="stat-label">Total réservations</div></div>
+    <div>
+      <div class="stat-value">{{ pagination.totalItemCount }}</div>
+      <div class="stat-label">Total réservations</div>
+    </div>
   </div>
 </div>
 
@@ -27,11 +32,11 @@
             <th>#</th>
             <th>Client</th>
             <th>Email</th>
-            <th>Véhicule</th>
-            <th>Type</th>
+            <th>Vol / Compagnie</th>
+            <th>Destination</th>
             <th>Places</th>
-            <th>Montant</th>
-            <th>Date</th>
+            <th>Montant Total</th>
+            <th>Date Réservation</th>
             <th>Statut</th>
             <th>Actions</th>
           </tr>
@@ -39,25 +44,55 @@
         <tbody>
           {% for r in pagination %}
           <tr>
+            {# ID de la réservation #}
             <td style="color:var(--muted);font-size:.8rem">{{ r.id }}</td>
+            
+            {# Nom du client #}
             <td><strong>{{ r.nomClient }}</strong></td>
-            <td style="font-size:.8rem;color:var(--muted)">{{ r.emailClient }}</td>
-            <td>{{ r.transport.compagnie }} <span style="color:var(--muted);font-size:.78rem">({{ r.transport.numero }})</span></td>
-            <td><span class="badge" style="background:rgba(201,168,76,0.1);color:var(--gold)">{{ r.transport.transportType.nom }}</span></td>
-            <td>{{ r.nombrePlaces }}</td>
-            <td><strong style="color:var(--gold)">{{ r.montantTotal|number_format(2, ',', ' ') }} DT</strong></td>
-            <td style="font-size:.8rem">{{ r.dateReservation|date('d/m/Y H:i') }}</td>
+            
+            {# Email (Corrigé de emailClient -> email) #}
+            <td style="font-size:.8rem;color:var(--muted)">{{ r.email }}</td>
+            
+            {# Infos Vol (Compagnie + Numéro) #}
             <td>
-              {% if r.statut == 'confirmee' %}
-                <span class="badge badge-confirm">Confirmée</span>
-              {% elseif r.statut == 'annulee' %}
-                <span class="badge badge-cancel">Annulée</span>
+                {{ r.airline }} 
+                <span style="color:var(--muted);font-size:.78rem">({{ r.flightNumber }})</span>
+            </td>
+            
+            {# Destination #}
+            <td><span class="badge" style="background:rgba(201,168,76,0.1);color:var(--gold)">{{ r.destination }}</span></td>
+            
+            {# Nombre de passagers (Corrigé de nombrePlaces -> numberOfPassengers) #}
+            <td>{{ r.numberOfPassengers }}</td>
+            
+            {# Prix total (Utilise la méthode getTotalPrice() de l'entité) #}
+            <td>
+                <strong style="color:var(--gold)">
+                    {{ r.totalPrice|number_format(2, ',', ' ') }} DT
+                </strong>
+            </td>
+            
+            {# Date de réservation (Corrigé de dateReservation -> reservationDate) #}
+            <td style="font-size:.8rem">{{ r.reservationDate|date('d/m/Y H:i') }}</td>
+            
+            {# Statut (Utilise les constantes de l'entité : pending, confirmed, cancelled) #}
+            <td>
+              {% if r.status == 'confirmed' %}
+                <span class="badge badge-confirm" style="background:#d4edda; color:#155724; padding:5px 10px; border-radius:4px;">Confirmée</span>
+              {% elseif r.status == 'cancelled' %}
+                <span class="badge badge-cancel" style="background:#f8d7da; color:#721c24; padding:5px 10px; border-radius:4px;">Annulée</span>
+              {% elseif r.status == 'completed' %}
+                <span class="badge badge-info" style="background:#d1ecf1; color:#0c5460; padding:5px 10px; border-radius:4px;">Terminée</span>
               {% else %}
-                <span class="badge badge-pending">En attente</span>
+                <span class="badge badge-pending" style="background:#fff3cd; color:#856404; padding:5px 10px; border-radius:4px;">En attente</span>
               {% endif %}
             </td>
+            
+            {# Actions #}
             <td>
-              <a href="{{ path('admin_reservation_show', {id: r.id}) }}" class="btn btn-secondary btn-sm"><i class="fas fa-eye"></i></a>
+              <a href="{{ path('admin_reservation_show', {id: r.id}) }}" class="btn btn-secondary btn-sm" title="Voir les détails">
+                <i class="fas fa-eye"></i>
+              </a>
             </td>
           </tr>
           {% endfor %}
@@ -65,6 +100,8 @@
       </table>
     {% endif %}
   </div>
+  
+  {# Pagination KNP #}
   <div class="card-footer" style="padding:1rem;display:flex;justify-content:center">
     {{ knp_pagination_render(pagination) }}
   </div>

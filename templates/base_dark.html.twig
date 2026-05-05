@@ -408,12 +408,17 @@
       <li><a href="{{ path('admin_voyage_index') }}">{{ 'nav.voyages'|trans }}</a></li>
       <li><a href="{{ path('admin_transport_index') }}">Transports</a></li>
       <li><a href="{{ path('admin_paiement_index') }}">Paiements</a></li>
+      {# ── BOUTON AVIS ADMIN ── #}
+      <li><a href="/avis"><i class="fas fa-star"></i> Avis</a></li>
       <li><a href="{{ path('admin_destination_new') }}" style="color:var(--gold) !important;"><i class="fas fa-plus"></i> {{ 'nav.add'|trans }}</a></li>
     {% else %}
       <li><a href="{{ path('client_destination_index') }}">Destinations</a></li>
       <li><a href="{{ path('client_voyage_index') }}">Voyages</a></li>
+      <li><a href="{{ path('app_offre_client_index') }}" style="color: var(--gold);">Offres Exclusives</a></li>
       <li><a href="{{ path('transport_index') }}">Transports</a></li>
       <li><a href="{{ path('user_paiement_index') }}">Mes Paiements</a></li>
+      {# ── BOUTON AVIS CLIENT ── #}
+      <li><a href="/avis"><i class="fas fa-star"></i> Avis</a></li>
     {% endif %}
     <li><a href="{{ path('app_home') }}#about">{{ 'nav.about'|trans }}</a></li>
     <li>
@@ -489,9 +494,8 @@
     <div class="footer-col">
       <h4>{{ 'footer.destinations'|trans }}</h4>
       <ul>
-           <li><a href="{{ path('client_destination_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.all_dest'|trans }}</a></li>
+        <li><a href="{{ path('client_destination_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.all_dest'|trans }}</a></li>
         <li><a href="{{ path('admin_destination_new') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> {{ 'footer.add_dest'|trans }}</a></li>
-  
       </ul>
     </div>
     <div class="footer-col">
@@ -506,6 +510,7 @@
       <ul>
         <li><a href="{{ path('transport_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Réserver un transport</a></li>
         <li><a href="{{ path('user_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Mes Paiements</a></li>
+        <li><a href="/avis"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Avis</a></li>
         <li><a href="{{ path('admin_paiement_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Gestion Paiements (Admin)</a></li>
         <li><a href="{{ path('admin_transport_index') }}"><i class="fas fa-chevron-right" style="font-size:.6rem"></i> Gestion Transport (Admin)</a></li>
       </ul>

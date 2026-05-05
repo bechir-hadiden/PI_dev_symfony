@@ -86,6 +86,7 @@ public function indexAdmin(OffreRepository $offreRepository, PaginatorInterface 
     // 4. On envoie BIEN le $pagination à la vue
     return $this->render('admin/offre/index.html.twig', [
         'offres' => $pagination, // <--- C'est ici que la magie opère
+        'allOffres' => $offreRepository->findAll(),
         'stats' => $stats
     ]);
 }
@@ -207,45 +208,47 @@ public function manageCoupons(Offre $offre, EntityManagerInterface $em): Respons
 
     // --- API : RÉCUPÉRER LES ÉLÉMENTS PAR CATÉGORIE ---
     // --- API : RÉCUPÉRER LES ÉLÉMENTS PAR CATÉGORIE ---
-    #[Route('/api/items/{category}', name: 'app_offre_api_items', methods: ['GET'])]
+#[Route('/api/items/{category}', name: 'app_offre_api_items', methods: ['GET'])]
     public function getItemsByCategory(string $category, EntityManagerInterface $entityManager): JsonResponse
     {
         $connection = $entityManager->getConnection();
-        $items = [];
+        $items =[];
 
         try {
             switch ($category) {
                 case 'HOTEL':
-                    // Table 'hotels' (s), colonne 'id'
-                    $sql = "SELECT id, name as label FROM hotels";
+                    // Table 'hotels' -> colonnes confirmées: id, name, price_per_night
+                    $sql = "SELECT id, CONCAT('Hôtel : ', name, ' (', price_per_night, ' DT)') as label FROM hotels";
                     $items = $connection->fetchAllAssociative($sql);
                     break;
 
                 case 'VOL':
-                    // Table 'vols' (s), colonne 'id'
-                    $sql = "SELECT id, CONCAT('Vers ', arrivee) as label FROM vols";
+                    // Table 'vols' -> colonnes confirmées: id, arrivee, prix
+                    $sql = "SELECT id, CONCAT('Vol vers ', arrivee, ' (', prix, ' DT)') as label FROM vols";
                     $items = $connection->fetchAllAssociative($sql);
                     break;
 
                 case 'TRANSPORT':
-                    // Table 'vehicule' (pas de s), colonne 'idVehicule'
-                    $sql = "SELECT idVehicule as id, CONCAT(type, ' (', ville, ')') as label FROM vehicule";
+                    // Table 'vehicule' -> colonnes confirmées: idVehicule, type, ville, prix
+                    $sql = "SELECT idVehicule as id, CONCAT('Transport : ', type, ' à ', ville, ' (', prix, ' DT)') as label FROM vehicule";
                     $items = $connection->fetchAllAssociative($sql);
                     break;
 
                 case 'VOYAGE':
-                    // Table 'voyages' (s), colonne 'id' (et non id_voyage)
-                    $sql = "SELECT id, destination as label FROM voyages";
+                    // Jointure obligatoire entre 'voyages' et 'destination'
+                    $sql = "SELECT v.id, CONCAT('Voyage : ', d.nom, ' - ', d.pays, ' (', v.prix, ' DT)') as label 
+                            FROM voyages v 
+                            LEFT JOIN destination d ON v.destination_id = d.id";
                     $items = $connection->fetchAllAssociative($sql);
                     break;
             }
         } catch (\Exception $e) {
+            // S'il y a une erreur SQL, cela renverra le message d'erreur exact pour déboguer facilement
             return new JsonResponse(['error' => $e->getMessage()], 500);
         }
 
         return new JsonResponse($items);
     }
-
     #[Route('/api/offre/{id}/generate-code', name: 'app_api_generate_code', methods: ['POST'])]
 public function generateCode(Offre $offre, EntityManagerInterface $em): Response
 {
