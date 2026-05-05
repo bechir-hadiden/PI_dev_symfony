@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="bg-white shadow-sm rounded-4 p-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4 fw-bold">Coupons pour : {{ offre.titre }}</h2>
+            <a href="{{ path('app_offre_index') }}" class="btn btn-light btn-sm rounded-pill">← Retour</a>
+        </div>
+
+        <div class="row">
+            <!-- Formulaire d'ajout (Comme à gauche en JavaFX) -->
+            <div class="col-md-4 border-end">
+                <div class="p-3 bg-light rounded-4">
+                    <h6 class="fw-bold mb-3">Nouveau Code</h6>
+                    <form action="{{ path('app_admin_add_coupon', {'id': offre.id}) }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label small">Code Coupon</label>
+                            <div class="input-group">
+                                <input type="text" name="code_texte" id="newCode" class="form-control" required>
+                                <button type="button" class="btn btn-dark" onclick="generateRandom()">🎲</button>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Date d'expiration</label>
+                            <input type="date" name="date_expire" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 rounded-pill">Ajouter le Coupon</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Liste des coupons (Comme à droite en JavaFX) -->
+            <div class="col-md-8">
+                <table class="table align-middle">
+                    <thead>
+                        <tr class="text-muted small">
+                            <th>Code</th>
+                            <th>Expiration</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in coupons %}
+                        <tr>
+                            <td class="fw-bold text-primary">{{ c.codeTexte }}</td>
+                            <td>{{ c.dateExpiration|date('d/m/Y') }}</td>
+                            <td class="text-end">
+                                <a href="{{ path('app_coupon_pdf', {'id': c.id}) }}" class="btn btn-sm btn-danger">PDF</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function generateRandom() {
+    const code = "SMART-" + Math.random().toString(36).substring(2, 10).toUpperCase();
+    document.getElementById('newCode').value = code;
+}
+</script>
+{% endblock %}

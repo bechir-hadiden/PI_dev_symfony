@@ -9,14 +9,21 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
-    #[Route('/admin/login', name: 'app_admin_login')]
-    public function adminLogin(AuthenticationUtils $authenticationUtils): Response
+    #[Route('/admin/login', name: 'app_login')]
+    public function login(AuthenticationUtils $authenticationUtils): Response
     {
+        // --- AJOUTE CE BLOC ICI ---
         if ($this->getUser()) {
-            return $this->redirectToRoute('admin_dashboard');
+            // Si c'est un ADMIN, on l'envoie vers ton dashboard d'offres
+            if (in_array('ROLE_ADMIN', $this->getUser()->getRoles())) {
+                return $this->redirectToRoute('app_offre_index');
+            }
+            // Sinon (Client), on l'envoie vers l'accueil
+            return $this->redirectToRoute('app_home');
         }
+        // --------------------------
 
-        $error = $authenticationUtils->getLastAuthenticationError();
+        $error        = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
         return $this->render('admin/login.html.twig', [
@@ -25,23 +32,7 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    #[Route(path: '/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
-    {
-        if ($this->getUser()) {
-            return $this->redirectToRoute('app_home');
-        }
-
-        $error = $authenticationUtils->getLastAuthenticationError();
-        $lastUsername = $authenticationUtils->getLastUsername();
-
-        return $this->render('security/login.html.twig', [
-            'last_username' => $lastUsername, 
-            'error' => $error
-        ]);
-    }
-
-    #[Route(path: '/logout', name: 'app_logout')]
+    #[Route('/admin/logout', name: 'app_logout')]
     public function logout(): void
     {
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');

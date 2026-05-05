@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #faf6ef; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 20px auto; background: #ffffff; border-top: 5px solid #b8963e; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .header { padding: 40px; text-align: center; background-color: #0d0d0d; }
+        .content { padding: 40px; text-align: center; color: #333333; }
+        .offer-title { color: #b8963e; font-size: 24px; font-weight: bold; text-transform: uppercase; margin-bottom: 10px; }
+        .code-box { background-color: #f8f9fa; border: 2px dashed #b8963e; padding: 25px; margin: 30px 0; font-family: 'Courier New', monospace; font-size: 32px; font-weight: bold; color: #0d0d0d; letter-spacing: 4px; }
+        .footer { padding: 30px; text-align: center; font-size: 12px; color: #6b6560; background: #f0e8d8; }
+        .btn { background-color: #b8963e; color: #ffffff !important; padding: 15px 30px; text-decoration: none; font-weight: bold; text-transform: uppercase; font-size: 14px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="margin:0; color: #ffffff; letter-spacing: 8px;">SMART<span style="color:#b8963e;">TRIP</span></h1>
+        </div>
+        <div class="content">
+            <p style="text-transform: uppercase; letter-spacing: 2px; color: #6b6560; font-size: 14px;">Privilège Voyageur</p>
+            <h2 class="offer-title">{{ offreNom }}</h2>
+            <p>Félicitations ! Votre code de réduction exclusif a été généré avec succès.</p>
+            
+            <div class="code-box">
+                {{ codeTexte }}
+            </div>
+
+            <p style="margin-bottom: 40px;">Ce code est personnel et valable jusqu'au <br> <strong>{{ dateExpire|date('d/m/Y') }}</strong>.</p>
+            
+            <a href="http://localhost:8000/offre/client" class="btn">Réserver mon voyage</a>
+        </div>
+        <div class="footer">
+            <p>SmartTrip — L'Art du Voyage Parfait</p>
+            <p>Cet email soutient l'économie locale et le tourisme durable (ODD 8).</p>
+        </div>
+    </div>
+</body>
+</html>

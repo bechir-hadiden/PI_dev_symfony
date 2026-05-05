@@ -447,7 +447,7 @@
 <nav id="navbar">
   <a href="{{ path('app_home') }}" class="nav-logo">Smart<span>Trip</span></a>
   <ul class="nav-links">
-    <li><a href="{{ path('app_home') }}">{{ 'nav.home'|trans }}</a></li>
+    
     
     {% if is_granted('ROLE_ADMIN') %}
       <li><a href="{{ path('admin_destination_index') }}">{{ 'nav.destinations'|trans }}</a></li>
@@ -466,7 +466,9 @@
     {% else %}
       <li><a href="{{ path('client_destination_index') }}">Destinations</a></li>
       <li><a href="{{ path('client_voyage_index') }}">Voyages</a></li>
+      <li><a href="{{ path('app_offre_client_index') }}" style="color: var(--gold);">Offres Exclusives</a></li>
       <li><a href="{{ path('transport_index') }}">Transports</a></li>
+      <li><a href="/avis"><i class="fas fa-star"></i> Avis</a></li>
       {% if app.user %}
         <li class="dropdown">
           <a href="#">Espace Client <i class="fas fa-chevron-down" style="font-size: 0.6rem; margin-left: 3px;"></i></a>

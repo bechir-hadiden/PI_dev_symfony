@@ -3,18 +3,7 @@
 
 {% block body %}
 {# ── TEST MODE BAR ── #}
-<div class="test-mode-bar" style="position:fixed; top:0; left:0; right:0; z-index:9999; background:rgba(15,23,42,0.95); backdrop-filter:blur(10px); border-bottom:1px solid rgba(201,168,76,0.3); padding:10px 20px; display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">
-    <span style="color:var(--gold-l); font-weight:bold; align-self:center; margin-right:auto;"><i class="fas fa-dollar-sign"></i> MODULE PAIEMENT ISOLÉ</span>
-    <a href="{{ path('app_home') }}" class="btn-outline-light" style="padding:5px 15px; font-size:0.85rem; text-decoration:none; border:1px solid rgba(255,255,255,0.3);">
-        <i class="fas fa-home"></i> Accueil
-    </a>
-    <a href="{{ path('app_admin_dashboard') }}" class="btn-gold" style="padding:5px 15px; font-size:0.85rem; text-decoration:none;">
-        <i class="fas fa-user-shield"></i> PAIEMENT (ADMIN)
-    </a>
-    <a href="{{ path('app_client_dashboard') }}" class="btn-outline-light" style="padding:5px 15px; font-size:0.85rem; text-decoration:none; border:1px solid var(--gold-l); color:var(--gold-l);">
-        <i class="fas fa-wallet"></i> PAIEMENT (CLIENT)
-    </a>
-</div>
+
 
 {# Adjust hero top padding to account for the bar #}
 <style> .hero { padding-top: 60px !important; } </style>

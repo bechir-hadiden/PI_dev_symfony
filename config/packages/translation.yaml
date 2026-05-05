@@ -1,17 +1,8 @@
-# framework:
-#     default_locale: fr
-#     translator:
-#         default_path: '%kernel.project_dir%/translations'
-#         fallbacks:
-#             - fr
-#         enabled_locales:
-#             - fr
-#             - en
-#             - ar
-
-
 framework:
     default_locale: fr
+    # enabled_locales doit être ici, au même niveau que 'translator'
+    enabled_locales: ['fr', 'en', 'ar'] 
+    
     translator:
         default_path: '%kernel.project_dir%/translations'
         fallbacks:

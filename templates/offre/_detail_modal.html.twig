@@ -1,0 +1,130 @@
+<!-- Modal pour l'offre {{ o.id }} -->
+<div class="modal fade" id="modal{{ o.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+            
+            <!-- Image Header -->
+            <div class="position-relative">
+                {% if o.imageUrl %}
+                    {% if 'http' in o.imageUrl %}
+                        {# Cas 1 : Image externe (Pexels / Unsplash) #}
+                        <img src="{{ o.imageUrl }}" class="w-100" style="height: 250px; object-fit: cover; border-radius: 20px 20px 0 0;">
+                    {% else %}
+                        {# Cas 2 : Image locale (public/images/...) #}
+                        <img src="{{ asset('images/' ~ o.imageUrl) }}" class="w-100" style="height: 250px; object-fit: cover; border-radius: 20px 20px 0 0;">
+                    {% endif %}
+                {% else %}
+                    {# Cas 3 : Image par défaut #}
+                    <img src="{{ asset('images/default.jpg') }}" class="w-100" style="height: 250px; object-fit: cover; border-radius: 20px 20px 0 0;">
+                {% endif %}
+
+                <span class="badge position-absolute top-0 end-0 m-3 p-2 px-3" 
+                    style="background-color: #FF5A1F; color: white; border-radius: 10px; font-weight: bold; font-size: 1.1rem;">
+                    -{{ o.tauxRemise }}%
+                </span>
+            </div>
+
+            <div class="modal-body p-4">
+                <!-- Infos Destination & Titre -->
+                <div class="mb-3">
+                    <span class="text-primary fw-bold">📍 {{ o.labelDestination }}</span> <!-- Corrigé : labelDestination -->
+                    <h2 class="fw-bold h4 mt-1" style="color: #05203C;">{{ o.titre|upper }}</h2>
+                    <p class="text-muted small">
+                        <i class="bi bi-calendar-event"></i> 
+                        Validité : Du {{ o.dateDebut|date('d/m/Y') }} au {{ o.dateFin|date('d/m/Y') }}
+                    </p>
+                </div>
+
+                <hr class="text-muted opacity-25">
+
+                <!-- Description -->
+                <h6 class="fw-bold">À propos de cette offre</h6>
+                <p class="text-muted" style="line-height: 1.6;">{{ o.description }}</p>
+
+                <hr class="text-muted opacity-25">
+
+                <!-- Action Box (Logique Métier & APIs) -->
+                <div class="p-3 text-center rounded-4" style="background-color: #F8FAFC; border: 1px solid #E2E8F0;">
+                    <h6 class="fw-bold mb-3">Obtenez votre coupon maintenant</h6>
+                    
+                    <button class="btn btn-primary rounded-pill px-4 mb-3 w-100 fw-bold" 
+                            onclick="generateCoupon({{ o.id }})" id="btnGen{{ o.id }}">
+                        Générer mon Code de réduction 🎁
+                    </button>
+
+                    <div class="d-flex gap-2 justify-content-center align-items-center">
+                        <input type="text" class="form-control text-center fw-bold bg-white" 
+                               id="codeResult{{ o.id }}" placeholder="Code généré" readonly 
+                               style="font-family: monospace; border-radius: 10px; height: 45px;">
+                        
+                        <!-- Bouton PDF -->
+                        <button class="btn btn-danger disabled" id="btnPDF{{ o.id }}" onclick="downloadPDF({{ o.id }})">
+                            PDF 📄
+                        </button>
+
+                        <!-- Bouton Mail -->
+                        <button class="btn btn-info text-white disabled" id="btnMail{{ o.id }}" onclick="sendMail({{ o.id }})">
+                            Mail 📧
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 justify-content-center pb-4">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Fermer la fiche</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Empêcher les doublons de fonctions si plusieurs modaux sont chargés
+if (typeof generateCoupon !== 'function') {
+    function generateCoupon(offreId) {
+        const btn = document.getElementById('btnGen' + offreId);
+        const input = document.getElementById('codeResult' + offreId);
+        const pdfBtn = document.getElementById('btnPDF' + offreId);
+        const mailBtn = document.getElementById('btnMail' + offreId);
+
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Génération...';
+
+        // Appel à l'API de ton contrôleur
+        fetch('/offre/api/offre/' + offreId + '/generate-code', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                input.value = data.code;
+                btn.innerHTML = 'Code Généré ✅';
+                btn.classList.replace('btn-primary', 'btn-success');
+                btn.disabled = true;
+                
+                // Activer les boutons d'export
+                pdfBtn.classList.remove('disabled');
+                mailBtn.classList.remove('disabled');
+                
+                // Stocker l'ID du code promo pour les actions suivantes
+                input.dataset.codeId = data.id_code;
+            });
+    }
+
+    function downloadPDF(offreId) {
+        const codeId = document.getElementById('codeResult' + offreId).dataset.codeId;
+        window.open('/offre/coupon/' + codeId + '/pdf', '_blank');
+    }
+
+    function sendMail(offreId) {
+        const codeId = document.getElementById('codeResult' + offreId).dataset.codeId;
+        const mailBtn = document.getElementById('btnMail' + offreId);
+        
+        mailBtn.innerHTML = '...';
+        
+        fetch('/offre/coupon/' + codeId + '/send-mail')
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    alert('Le coupon a été envoyé à votre adresse email !');
+                    mailBtn.innerHTML = 'Envoyé ✅';
+                }
+            });
+    }
+}
+</script>

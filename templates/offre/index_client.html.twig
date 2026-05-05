@@ -1,0 +1,201 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}SmartTrip — Offres Exclusives{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    
+    <!-- 1. AJOUT DE BOOTSTRAP CSS (Seulement pour cette page) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* Variables adaptées aux couleurs globales du groupe */
+        :root {
+            --ink:      #0d1b2a;
+            --cream:    #faf6ef;
+            --gold:     #c9a84c;
+            --muted:    #7a8a99;
+        }
+
+        /* Empêche Bootstrap de casser la police d'écriture du groupe */
+        body { font-family: 'Plus Jakarta Sans', sans-serif !important; background: var(--cream) !important; }
+        a { text-decoration: none; }
+
+        .shadow-hover:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(201, 168, 76, 0.15) !important;
+        }
+        .img-zoom { transition: transform 0.8s ease; }
+        .card:hover .img-zoom { transform: scale(1.1); }
+        .border-gold:focus { border-color: var(--gold) !important; box-shadow: 0 0 0 0.25rem rgba(201, 168, 76, 0.1) !important; }
+
+        /* Style des Filtres */
+        .filter-pill {
+            background: transparent; border: 1px solid var(--gold);
+            color: var(--muted); padding: 8px 25px; border-radius: 50px;
+            text-transform: uppercase; font-size: 0.75rem; font-weight: bold;
+            transition: 0.3s;
+            display: inline-block;
+        }
+        .filter-pill.active, .filter-pill:hover { background: var(--gold); color: var(--ink); text-decoration: none; }
+        
+        /* Ajustements typo */
+        .hero-tag { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.85rem; font-weight: 700; color: var(--gold); letter-spacing: 2px; text-transform: uppercase; }
+        .hero-desc { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.1rem; color: var(--muted); }
+        .badge-odd { background: rgba(201, 168, 76, 0.1); color: var(--gold); font-size: 0.7rem; padding: 4px 8px; border-radius: 4px; font-weight: 600; }
+        
+        /* Bouton personnalisé pour ne pas subir le bleu par défaut de Bootstrap */
+        .btn-gold-custom {
+            background: linear-gradient(135deg, var(--gold), #e8c97a);
+            color: var(--ink);
+            font-weight: 700;
+            border-radius: 50px;
+            border: none;
+            transition: all 0.3s;
+        }
+        .btn-gold-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(201, 168, 76, 0.4);
+            color: var(--ink);
+        }
+        
+        /* Ajustement z-index de la modale pour passer par dessus la Navbar */
+        .modal-backdrop { z-index: 1040 !important; }
+        .modal { z-index: 1050 !important; }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="container" style="padding-top: 130px; padding-bottom: 60px;">
+    
+    <!-- Conteneur Principal (Ta boîte blanche centrale) -->
+    <div class="shadow-lg p-4 p-lg-5 rounded-4" style="background: white; border-top: 3px solid var(--gold);">
+        
+        <!-- Header Section -->
+        <div class="row align-items-end mb-5">
+            <div class="col-md-7">
+                <div class="hero-tag" style="margin-bottom: 0.5rem;">Sélection Privilège</div>
+                <h1 style="font-family: 'Playfair Display', serif; font-size: 3.5rem; margin: 0; color: var(--ink);">
+                    Nos Offres <em style="color: var(--gold);">Exclusives</em>
+                </h1>
+                <p class="hero-desc mb-0 mt-2">Découvrez des opportunités de voyage orchestrées pour l'excellence.</p>
+            </div>
+            <div class="col-md-5 mt-4 mt-md-0">
+                <div class="position-relative">
+                    <input type="text" id="clientSearch" class="form-control border-gold rounded-pill" 
+                           placeholder="Chercher une destination ou un titre..." 
+                           style="border: 1px solid var(--gold); padding: 12px 20px; font-style: italic; background: rgba(255,255,255,0.9);">
+                    <span style="position: absolute; right: 20px; top: 14px; color: var(--gold);"><i class="fas fa-search"></i></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barre de Filtres -->
+        <div class="d-flex flex-wrap gap-3 mb-5 justify-content-center">
+            <a href="{{ path('app_offre_client_index', {'cat': 'ALL'}) }}" 
+               class="filter-pill {{ active_cat == 'ALL' ? 'active' : '' }}">🌟 Toutes les Offres</a>
+            <a href="{{ path('app_offre_client_index', {'cat': 'HOTEL'}) }}" 
+               class="filter-pill {{ active_cat == 'HOTEL' ? 'active' : '' }}">🏨 Hôtels d'Exception</a>
+            <a href="{{ path('app_offre_client_index', {'cat': 'VOL'}) }}" 
+               class="filter-pill {{ active_cat == 'VOL' ? 'active' : '' }}">✈️ Vols Privilèges</a>
+            <a href="{{ path('app_offre_client_index', {'cat': 'TRANSPORT'}) }}" 
+               class="filter-pill {{ active_cat == 'TRANSPORT' ? 'active' : '' }}">🚗 Transports</a>
+        </div>
+
+        <!-- Grille des Offres -->
+        <div class="row g-4" id="offersGrid">
+            {% for o in offres %}
+            <div class="col-md-4 offer-item">
+                <div class="card h-100 border-0 rounded-4 shadow-hover" style="background: var(--cream); transition: all 0.4s ease; overflow: hidden;">
+                    <!-- Image Area -->
+                    <div class="position-relative overflow-hidden" style="height: 220px;">
+                        <img src="{% if o.imageUrl starts with 'http' %}{{ o.imageUrl }}{% else %}{{ asset('images/' ~ o.imageUrl) }}{% endif %}" 
+                             class="w-100 h-100 img-zoom" style="object-fit: cover;">
+                        <div class="position-absolute top-0 end-0 m-3 p-2 rounded-2" 
+                             style="background: var(--gold); color: var(--ink); font-weight: bold; letter-spacing: 0.1em; font-size: 0.85rem;">
+                            -{{ o.tauxRemise }}%
+                        </div>
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span style="color: var(--gold); text-transform: uppercase; letter-spacing: 0.15em; font-size: 0.75rem; font-weight: 700;">
+                                <i class="fas fa-map-marker-alt"></i> {{ o.labelDestination }}
+                            </span>
+                            {% if o.isLocalSupport %}
+                                <span class="badge-odd"><i class="fas fa-handshake"></i> Soutien Local</span>
+                            {% endif %}
+                        </div>
+
+                        <h4 class="mb-3" style="font-family: 'Playfair Display', serif; font-weight: 600; color: var(--ink);">
+                            {{ o.titre|upper }}
+                        </h4>
+
+                        <div class="d-flex align-items-center gap-3 mb-4">
+                            <span style="font-size: 1.6rem; color: var(--ink); font-weight: 600;">{{ o.prixFinal }} DT</span>
+                            <span style="text-decoration: line-through; color: var(--muted); font-size: 0.9rem;">{{ o.prixInitial }} DT</span>
+                        </div>
+
+                        <!-- Bouton Découvrir -->
+                        <button class="btn-gold-custom w-100 py-2" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#modal{{ o.id }}">
+                            DÉCOUVRIR L'OFFRE
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div id="noResults" class="col-12 text-center py-5 d-none">
+                <h3 style="font-family: 'Playfair Display', serif; color: var(--muted);">Aucune offre ne correspond à votre recherche.</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inclusion de tes modales (elles vont refonctionner grâce au JS ci-dessous) -->
+{% for o in offres %}
+    {% include 'offre/_detail_modal.html.twig' with {'o': o} %}
+{% endfor %}
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    
+    <!-- 2. AJOUT DE BOOTSTRAP JS (Obligatoire pour que le pop-up s'ouvre) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SCRIPT DE RECHERCHE DYNAMIQUE -->
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('clientSearch');
+        const offerItems = document.querySelectorAll('.offer-item');
+        const noResults = document.getElementById('noResults');
+
+        if(searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.toLowerCase().trim();
+                let visibleCount = 0;
+
+                offerItems.forEach(item => {
+                    const title = item.querySelector('h4').textContent.toLowerCase();
+                    const destination = item.querySelector('span').textContent.toLowerCase();
+
+                    if (title.includes(query) || destination.includes(query)) {
+                        item.style.display = 'block';
+                        visibleCount++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                if (visibleCount === 0) noResults.classList.remove('d-none');
+                else noResults.classList.add('d-none');
+            });
+        }
+    });
+    </script>
+{% endblock %}
