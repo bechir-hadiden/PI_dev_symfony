@@ -40,7 +40,9 @@
                     <p style="font-size: 0.85rem; opacity: 0.9; margin-bottom: 1rem;">L'IA analyse l'heure de départ ({{ params.hour }}) et les conditions actuelles.</p>
                     <div style="background: rgba(255,255,255,0.1); padding: 1rem; border-radius: 10px;">
                         <div style="font-size: 0.75rem; opacity: 0.7; margin-bottom: 0.3rem;">Risque de retard global</div>
-                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--gold);">{{ recommendation.results|first.ia_prediction.probability }}%</div>
+                        <div style="font-size: 1.5rem; font-weight: 800; color: var(--gold);">
+                            {{ (recommendation.results|length > 0) ? recommendation.results|first.ia_prediction.probability : '--' }}%
+                        </div>
                     </div>
                 </div>
 

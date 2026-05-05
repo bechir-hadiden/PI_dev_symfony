@@ -10,6 +10,7 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -18,20 +19,38 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 180)]
+    #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
-    /**
-     * @var list<string> The user roles
-     */
-    #[ORM\Column(type: 'json')]  // <--- MODIFICATION IMPORTANTE ICI
+    #[ORM\Column(type: 'json')]
     private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     */
     #[ORM\Column]
     private ?string $password = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $name = null;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $faceRegistered = false;
+
+    #[ORM\Column]
+    private ?float $walletBalance = 0.0;
+
+    #[ORM\Column]
+    private ?int $loyaltyPoints = 0;
+
+    /**
+     * @var Collection<int, Paiement>
+     */
+    #[ORM\OneToMany(targetEntity: Paiement::class, mappedBy: 'user')]
+    private Collection $paiements;
+
+    /**
+     * @var Collection<int, Subscription>
+     */
+    #[ORM\OneToMany(targetEntity: Subscription::class, mappedBy: 'user', orphanRemoval: true)]
+    private Collection $subscriptions;
 
     /**
      * @var Collection<int, Vote>
@@ -39,8 +58,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Vote::class, mappedBy: 'user', orphanRemoval: true)]
     private Collection $votes;
 
+    #[ORM\Column(length: 100, nullable: true, options: ['default' => 'Tunisie'])]
+    private ?string $pays = 'Tunisie';
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $estBloque = false;
+
     public function __construct()
     {
+        $this->paiements = new ArrayCollection();
+        $this->subscriptions = new ArrayCollection();
         $this->votes = new ArrayCollection();
     }
 
@@ -73,6 +100,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     /**
      * @see UserInterface
+<<<<<<< HEAD
+=======
+     *
+     * @return list<string>
+>>>>>>> gestionpaiement
      */
     public function getRoles(): array
     {
@@ -108,6 +140,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+<<<<<<< HEAD
     #[\Deprecated]
     public function eraseCredentials(): void
     {
@@ -141,6 +174,143 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             }
         }
 
+        return $this;
+=======
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials(): void
+    {
+        // If you store any temporary, sensitive data on the user, clear it here
+        // $this->plainPassword = null;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(?string $name): static
+    {
+        $this->name = $name;
+        return $this;
+    }
+
+    public function isFaceRegistered(): bool
+    {
+        return $this->faceRegistered;
+    }
+
+    public function setFaceRegistered(bool $faceRegistered): static
+    {
+        $this->faceRegistered = $faceRegistered;
+        return $this;
+    }
+
+    public function getWalletBalance(): ?float
+    {
+        return $this->walletBalance;
+>>>>>>> gestionpaiement
+    }
+
+    public function setWalletBalance(float $walletBalance): static
+    {
+        $this->walletBalance = $walletBalance;
+
+        return $this;
+    }
+
+    public function getLoyaltyPoints(): ?int
+    {
+        return $this->loyaltyPoints;
+    }
+
+    public function setLoyaltyPoints(int $loyaltyPoints): static
+    {
+        $this->loyaltyPoints = $loyaltyPoints;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Paiement>
+     */
+    public function getPaiements(): Collection
+    {
+        return $this->paiements;
+    }
+
+    public function addPaiement(Paiement $paiement): static
+    {
+        if (!$this->paiements->contains($paiement)) {
+            $this->paiements->add($paiement);
+            $paiement->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePaiement(Paiement $paiement): static
+    {
+        if ($this->paiements->removeElement($paiement)) {
+            // set the owning side to null (unless already changed)
+            if ($paiement->getUser() === $this) {
+                $paiement->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Subscription>
+     */
+    public function getSubscriptions(): Collection
+    {
+        return $this->subscriptions;
+    }
+
+    public function addSubscription(Subscription $subscription): static
+    {
+        if (!$this->subscriptions->contains($subscription)) {
+            $this->subscriptions->add($subscription);
+            $subscription->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSubscription(Subscription $subscription): static
+    {
+        if ($this->subscriptions->removeElement($subscription)) {
+            // set the owning side to null (unless already changed)
+            if ($subscription->getUser() === $this) {
+                $subscription->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getPays(): ?string
+    {
+        return $this->pays;
+    }
+
+    public function setPays(?string $pays): static
+    {
+        $this->pays = $pays;
+        return $this;
+    }
+
+    public function isEstBloque(): bool
+    {
+        return $this->estBloque;
+    }
+
+    public function setEstBloque(bool $estBloque): static
+    {
+        $this->estBloque = $estBloque;
         return $this;
     }
 }

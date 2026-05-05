@@ -9,18 +9,14 @@ use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 class SecurityController extends AbstractController
 {
-    #[Route('/admin/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    #[Route('/admin/login', name: 'app_admin_login')]
+    public function adminLogin(AuthenticationUtils $authenticationUtils): Response
     {
-        // Si l'utilisateur est déjà connecté, rediriger vers le dashboard
         if ($this->getUser()) {
             return $this->redirectToRoute('admin_dashboard');
         }
 
-        // Récupérer les erreurs
         $error = $authenticationUtils->getLastAuthenticationError();
-        
-        // Dernier nom d'utilisateur saisi
         $lastUsername = $authenticationUtils->getLastUsername();
 
         return $this->render('admin/login.html.twig', [
@@ -29,7 +25,23 @@ class SecurityController extends AbstractController
         ]);
     }
 
-    #[Route('/admin/logout', name: 'app_logout')]
+    #[Route(path: '/login', name: 'app_login')]
+    public function login(AuthenticationUtils $authenticationUtils): Response
+    {
+        if ($this->getUser()) {
+            return $this->redirectToRoute('app_home');
+        }
+
+        $error = $authenticationUtils->getLastAuthenticationError();
+        $lastUsername = $authenticationUtils->getLastUsername();
+
+        return $this->render('security/login.html.twig', [
+            'last_username' => $lastUsername, 
+            'error' => $error
+        ]);
+    }
+
+    #[Route(path: '/logout', name: 'app_logout')]
     public function logout(): void
     {
         throw new \LogicException('This method can be blank - it will be intercepted by the logout key on your firewall.');

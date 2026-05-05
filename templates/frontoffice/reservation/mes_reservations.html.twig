@@ -1,0 +1,63 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Mes Réservations Transport{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h1 class="text-light">Mes Réservations</h1>
+        <a href="{{ path('app_user_transport_index') }}" class="btn btn-primary">Réserver un autre transport</a>
+    </div>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} mb-4">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="card bg-dark text-light border-secondary shadow">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead class="bg-navy">
+                        <tr>
+                            <th class="ps-4 py-3">ID</th>
+                            <th>Trajet</th>
+                            <th>Date du Transport</th>
+                            <th>Date de Réservation</th>
+                            <th>Véhicule</th>
+                            <th>Statut</th>
+                            <th class="pe-4">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in reservations %}
+                            <tr>
+                                <td class="ps-4">#RT-{{ r.id }}</td>
+                                <td class="fw-bold">{{ r.transport.trajet }}</td>
+                                <td>{{ r.transport.dateHeure|date('d/m/Y H:i') }}</td>
+                                <td class="text-muted small">{{ r.dateReservation|date('d/m/Y H:i') }}</td>
+                                <td>{{ r.transport.vehicule.marque }} <small>({{ r.transport.vehicule.type }})</small></td>
+                                <td>
+                                    <span class="badge {{ r.status == 'Confirmé' ? 'bg-success' : 'bg-danger' }}">
+                                        {{ r.status }}
+                                    </span>
+                                </td>
+                                <td class="pe-4">
+                                    <a href="#" class="btn btn-sm btn-outline-light">Détails</a>
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">Vous n'avez aucune réservation de transport.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
