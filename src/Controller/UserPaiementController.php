@@ -23,7 +23,17 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 class UserPaiementController extends AbstractController
 {
     #[Route('/', name: 'app_user_paiement_index')]
-    public function index(Request $request, PaiementRepository $paiementRepository, EntityManagerInterface $entityManager, \App\Service\CurrencyService $currencyService, \App\Service\GeoLocationService $geoService, \App\Service\FraudService $fraudService, \Knp\Component\Pager\PaginatorInterface $paginator): Response
+    public function index(
+        Request $request, 
+        PaiementRepository $paiementRepository, 
+        EntityManagerInterface $entityManager, 
+        \App\Service\CurrencyService $currencyService, 
+        \App\Service\GeoLocationService $geoService, 
+        \App\Service\FraudService $fraudService, 
+        \Knp\Component\Pager\PaginatorInterface $paginator,
+        \App\Service\SarahAiService $sarahAi,
+        \App\Service\SmartAdvisorService $smartAdvisor
+    ): Response
     {
         /** @var User $user */
         $user = $this->getUser();
@@ -77,14 +87,28 @@ class UserPaiementController extends AbstractController
             }
         }
 
-        // PAGINATION
+        // PAGINATION & FILTERING
+        $status = $request->query->get('status');
+        $methodParam = $request->query->get('method');
+
         if ($user->getId() === null) {
             $query = [];
         } else {
-            $query = $paiementRepository->createQueryBuilder('p')
+            $qb = $paiementRepository->createQueryBuilder('p')
                 ->where('p.user = :user')
-                ->setParameter('user', $user)
-                ->getQuery();
+                ->setParameter('user', $user);
+
+            if ($status && $status !== 'all') {
+                $qb->andWhere('p.status = :status')
+                   ->setParameter('status', $status);
+            }
+
+            if ($methodParam) {
+                $qb->andWhere('p.methodePaiement = :method')
+                   ->setParameter('method', $methodParam);
+            }
+
+            $query = $qb->getQuery();
         }
 
 
@@ -111,7 +135,9 @@ class UserPaiementController extends AbstractController
             'detected_country' => $detectedCountry,
             'client_ip' => $clientIp,
             'pending_reservations' => $pendingReservations,
-            'email' => $email
+            'email' => $email,
+            'nudges' => $sarahAi->getNudgesForUser($user->getEmail()),
+            'advice' => $smartAdvisor->getPaymentAdvice($user, 100.0)
         ]);
     }
 
@@ -186,9 +212,16 @@ class UserPaiementController extends AbstractController
             }
         }
 
+        $isRecharge = $request->query->get('type') === 'recharge';
+
         if ($request->isMethod('POST')) {
+            $method = $request->request->get('methodePaiement');
+            
+            // Recharges are ALWAYS via Stripe
+            if ($isRecharge) {
+                $method = 'Stripe';
+            }
             $amount = (float) $request->request->get('amount');
-            $method = $request->request->get('method');
             
             if (!$amount || !$method) {
                 $this->addFlash('error', 'Veuillez renseigner le montant et la méthode.');
@@ -242,6 +275,12 @@ class UserPaiementController extends AbstractController
             $paiement->setEmail($request->request->get('email'));
             $paiement->setTelephone($request->request->get('telephone'));
 
+            // Link to reservation if present in query
+            $resId = $request->query->get('reservation');
+            if ($resId) {
+                $paiement->setReservationId((int) $resId);
+            }
+
             if ($method === 'Stripe') {
                 // ═══════════════════════════════════════════════════
                 //  FLUX STRIPE : Créer un PaymentIntent et rediriger
@@ -274,10 +313,16 @@ class UserPaiementController extends AbstractController
 
                 $entityManager->persist($paiement);
                 
-                // --- SMART BUSINESS LOGIC : Score de Fraude AI ---
-                $riskScore = $smartPaymentService->processPayment($paiement, $clientIp)['score'];
+                // --- SMART BUSINESS LOGIC : Score de Fraude AI & Taxe Géo-monétaire ---
+                $analysis = $smartPaymentService->processPayment($paiement, $clientIp);
+                $riskScore = $analysis['score'];
+                $taxApplied = $analysis['taxApplied'];
                 $paiement->setScoreRisque($riskScore);
                 
+                if ($taxApplied > 0) {
+                    $this->addFlash('warning', sprintf('Frais internationaux de %.2f TND appliqués (Détection : %s).', $taxApplied, $analysis['country']));
+                }
+
                 if ($riskScore > 0.7) {
                     $this->addFlash('error', 'Transaction bloquée par le système anti-fraude AI (Risque élevé).');
                     return $this->redirectToRoute('app_user_paiement_index');
@@ -317,6 +362,15 @@ class UserPaiementController extends AbstractController
                     $subscriptionService->handlePaymentSuccess($paiement);
                 }
 
+                // --- Reservation Integration (Mark as Paid) ---
+                if ($paiement->getReservationId()) {
+                    $res = $entityManager->getRepository(\App\Entity\ReservationTransport::class)->find($paiement->getReservationId());
+                    if ($res) {
+                        $res->setIsPaid(true);
+                        $res->setStatus('Payée');
+                    }
+                }
+
                 $entityManager->persist($paiement);
                 $entityManager->flush();
 
@@ -329,7 +383,8 @@ class UserPaiementController extends AbstractController
             'subscriptions' => $subscriptions,
             'reservation' => $reservation,
             'eur_rate' => $currencyService->getExchangeRate(),
-            'detected_country' => $geoService->getCountryByIp($request->getClientIp())
+            'detected_country' => $geoService->getCountryByIp($request->getClientIp()),
+            'is_recharge' => $isRecharge
         ]);
     }
 

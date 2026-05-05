@@ -37,10 +37,16 @@ class AdminPaiementController extends AbstractController
             10
         );
 
+        $total = $paiementRepository->countAll();
+        $completed = $paiementRepository->count(['status' => 'Effectué']);
+        $successRate = ($total > 0) ? round(($completed / $total) * 100) : 0;
+
         return $this->render('backoffice/paiement/index.html.twig', [
             'pagination' => $pagination,
             'totalRevenue' => $paiementRepository->getTotalRevenue(),
-            'totalTransactions' => $paiementRepository->countAll(),
+            'totalTransactions' => $total,
+            'pendingPayments' => $paiementRepository->count(['status' => 'En attente']),
+            'successRate' => $successRate,
             'current_sort' => $sort,
             'current_direction' => $direction,
         ]);
@@ -182,7 +188,7 @@ class AdminPaiementController extends AbstractController
         return $this->redirectToRoute('app_admin_paiement_index');
     }
 
-    #[Route('/{id}/valider', name: 'app_admin_paiement_valider', methods: ['POST'])]
+    #[Route('/{id}/valider', name: 'app_admin_paiement_valider', methods: ['POST', 'GET'])]
     public function valider(#[MapEntity(id: 'id')] Paiement $paiement, EntityManagerInterface $entityManager, SubscriptionService $subscriptionService): Response
     {
         if ($paiement->getStatus() === 'En attente') {
@@ -287,7 +293,7 @@ class AdminPaiementController extends AbstractController
     #[Route('/bulk-action', name: 'app_admin_paiement_bulk_action', methods: ['POST'])]
     public function bulkAction(Request $request, EntityManagerInterface $entityManager, PaiementRepository $paiementRepository): Response
     {
-        $ids = $request->request->all('ids');
+        $ids = $request->request->all('paiement_ids');
         $action = $request->request->get('action');
 
         if (empty($ids)) {

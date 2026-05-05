@@ -32,7 +32,7 @@ class SmartPaymentService
     }
 
     /**
-     * Traite un paiement et retourne le paiement + le score de fraude (pour le test).
+     * Traite un paiement et retourne le paiement + le score de fraude + les taxes appliquées.
      */
     public function processPayment(Paiement $paiement, string $clientIp = '127.0.0.1', ?string $cardCountry = null): array
     {
@@ -47,6 +47,14 @@ class SmartPaymentService
         $detectedIpCountry = $this->geoService->getCountryByIp($clientIp);
         $this->logger->info("Pays détecté par IP ($clientIp) : $detectedIpCountry");
 
+        // 2. RÈGLE MÉTIER : Taxe Géo-monétaire (+10% hors Tunisie)
+        $taxAmount = 0.0;
+        if ($detectedIpCountry !== 'Tunisie') {
+            $taxAmount = $paiement->getAmount() * 0.10;
+            $paiement->setAmount($paiement->getAmount() + $taxAmount);
+            $this->logger->warning("TAXE APPLIQUÉE : +10% de frais internationaux pour IP $clientIp ($detectedIpCountry)");
+        }
+
         // CALCUL DU SCORE DE FRAUDE (Incohérence IP vs Carte incluse)
         $fraudScore = $this->fraudService->calculateRiskScore($paiement, $clientIp, $detectedIpCountry, $cardCountry);
         $paiement->setScoreRisque($fraudScore);
@@ -58,7 +66,12 @@ class SmartPaymentService
             throw new \Exception("Transaction bloquée par le système anti-fraude (Score: $fraudScore)");
         }
 
-        return ['paiement' => $paiement, 'score' => $fraudScore];
+        return [
+            'paiement' => $paiement, 
+            'score' => $fraudScore, 
+            'taxApplied' => $taxAmount,
+            'country' => $detectedIpCountry
+        ];
     }
 
     /**

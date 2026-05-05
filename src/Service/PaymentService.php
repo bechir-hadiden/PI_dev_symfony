@@ -105,16 +105,30 @@ class PaymentService
 
         $user = $paiement->getUser();
         if ($user) {
-            // Cashback 5%
-            $cashback = $paiement->getAmount() * 0.05;
-            $user->setWalletBalance($user->getWalletBalance() + $cashback);
-            // Points fidélité +10
-            $user->setLoyaltyPoints($user->getLoyaltyPoints() + 10);
+            // Détecter si c'est une recharge (pas de réservation ni d'abonnement)
+            if (!$paiement->getReservationId() && !$paiement->getSubscription()) {
+                // RECHARGE : On ajoute 100% du montant au solde
+                $user->setWalletBalance($user->getWalletBalance() + $paiement->getAmount());
+            } else {
+                // PAIEMENT CLASSIQUE : Cashback 5% + 10 points
+                $cashback = $paiement->getAmount() * 0.05;
+                $user->setWalletBalance($user->getWalletBalance() + $cashback);
+                $user->setLoyaltyPoints($user->getLoyaltyPoints() + 10);
+            }
         }
 
         // Activation abonnement si lié
         if ($paiement->getSubscription()) {
             $this->subscriptionService->handlePaymentSuccess($paiement);
+        }
+
+        // Marquer la réservation comme payée si liée
+        if ($paiement->getReservationId()) {
+            $res = $this->entityManager->getRepository(\App\Entity\ReservationTransport::class)->find($paiement->getReservationId());
+            if ($res) {
+                $res->setIsPaid(true);
+                $res->setStatus('Payée');
+            }
         }
 
         $this->entityManager->flush();

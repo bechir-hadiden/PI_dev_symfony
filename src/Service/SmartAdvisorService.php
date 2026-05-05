@@ -154,4 +154,16 @@ class SmartAdvisorService
         $h = (int)explode(':', $hour)[0];
         return ($h >= 7 && $h <= 9) || ($h >= 16 && $h <= 18);
     }
+    public function getPaymentAdvice(\App\Entity\User $user, float $amount): ?string
+    {
+        if ($user->getWalletBalance() >= $amount) {
+            return "💡 Conseil : Utilisez votre Wallet SmartTrip pour ce paiement de " . number_format($amount, 2) . " DT. Vous gagnerez immédiatement " . number_format($amount * 0.05, 2) . " DT en Cashback !";
+        }
+
+        if ($user->getWalletBalance() > 0) {
+            return "💡 Conseil : Il vous manque " . number_format($amount - $user->getWalletBalance(), 2) . " DT dans votre Wallet pour bénéficier des 5% de Cashback. Rechargez-le pour économiser !";
+        }
+
+        return "💡 Conseil : Le paiement par Wallet vous permet de cumuler des points Elite et du Cashback. Pensez à l'utiliser !";
+    }
 }

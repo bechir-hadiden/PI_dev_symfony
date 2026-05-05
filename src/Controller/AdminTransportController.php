@@ -16,11 +16,40 @@ use Symfony\Component\Routing\Annotation\Route;
 class AdminTransportController extends AbstractController
 {
     #[Route('/', name: 'app_admin_transport_index')]
-    public function index(TransportRepository $transportRepository, VehiculeRepository $vehiculeRepository): Response
+    public function index(Request $request, TransportRepository $transportRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
+        $q = $request->query->get('q', '');
+        $sort = $request->query->get('sort', 'p.id');
+        $order = $request->query->get('order', 'ASC');
+
+        $qb = $transportRepository->createQueryBuilder('p');
+        
+        if ($q) {
+            $qb->andWhere('p.trajet LIKE :q OR p.id LIKE :q')
+               ->setParameter('q', '%'.$q.'%');
+        }
+
+        $pagination = $paginator->paginate(
+            $qb->getQuery(),
+            $request->query->getInt('page', 1),
+            10
+        );
+
+        // Simulation Météo pour le template
+        $weather = [
+            'status' => 'Success',
+            'color' => 'success',
+            'message' => 'Conditions optimales pour les départs aujourd\'hui.',
+            'temperature' => 24,
+            'windspeed' => 12
+        ];
+
         return $this->render('backoffice/transport/index.html.twig', [
-            'transports' => $transportRepository->findAll(),
-            'vehicules' => $vehiculeRepository->findAll(),
+            'pagination' => $pagination,
+            'q' => $q,
+            'sort' => $sort,
+            'order' => $order,
+            'weather' => $weather
         ]);
     }
 
@@ -59,6 +88,34 @@ class AdminTransportController extends AbstractController
         $entityManager->flush();
 
         $this->addFlash('success', 'Offre de transport créée.');
+        return $this->redirectToRoute('app_admin_transport_index');
+    }
+    #[Route('/{id}/modifier', name: 'app_admin_transport_edit', methods: ['GET', 'POST'])]
+    public function edit(Transport $transport, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            $transport->setCompagnie($request->request->get('compagnie'));
+            $transport->setNumero($request->request->get('numero'));
+            $transport->setCapacite((int) $request->request->get('capacite'));
+            $transport->setPrix((float) $request->request->get('prix'));
+            $transport->setTrajet($request->request->get('trajet'));
+            
+            $entityManager->flush();
+            $this->addFlash('success', 'Véhicule mis à jour.');
+            return $this->redirectToRoute('app_admin_transport_index');
+        }
+
+        return $this->render('backoffice/transport/edit.html.twig', [
+            'transport' => $transport,
+        ]);
+    }
+
+    #[Route('/{id}/supprimer', name: 'app_admin_transport_delete', methods: ['POST'])]
+    public function delete(Transport $transport, EntityManagerInterface $entityManager): Response
+    {
+        $entityManager->remove($transport);
+        $entityManager->flush();
+        $this->addFlash('success', 'Véhicule supprimé avec succès.');
         return $this->redirectToRoute('app_admin_transport_index');
     }
 }
