@@ -1,0 +1,62 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Offres de Transport{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="text-light mb-5">Réserver un Transport</h1>
+
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ label == 'error' ? 'danger' : label }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="row g-4">
+        {% for t in transports %}
+            <div class="col-md-4">
+                <div class="card h-100 bg-dark text-light border-primary shadow-lg overflow-hidden">
+                    <div class="card-header bg-primary text-navy py-3 text-center fw-bold">
+                        {{ t.trajet }}
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="text-muted"><i class="fas fa-calendar-alt me-2"></i>{{ t.dateHeure|date('d M Y') }}</span>
+                            <span class="text-muted"><i class="fas fa-clock me-2"></i>{{ t.dateHeure|date('H:i') }}</span>
+                        </div>
+                        <div class="mb-4">
+                            <h5 class="mb-2">Véhicule :</h5>
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="bg-secondary p-2 rounded">
+                                    <i class="fas fa-{{ t.vehicule.type|lower == 'bus' ? 'bus' : (t.vehicule.type|lower == 'taxi' ? 'taxi' : 'car') }} fa-2x text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="d-block">{{ t.vehicule.marque }}</span>
+                                    <small class="text-muted">{{ t.vehicule.type }} - {{ t.vehicule.capacite }} places</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-center">
+                            <div class="h3 fw-bold text-success mb-3">{{ t.prix|number_format(2, '.', ',') }} TND</div>
+                            <form method="post" action="{{ path('app_user_transport_book', {'id': t.id}) }}">
+                                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Réserver maintenant</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <div class="h4 text-muted">Aucune offre de transport disponible pour le moment.</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center mt-5">
+        <a href="{{ path('app_user_reservation_index') }}" class="btn btn-outline-light">Voir mes réservations</a>
+    </div>
+</div>
+{% endblock %}

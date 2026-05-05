@@ -1,0 +1,132 @@
+{% extends 'BackOffice/base_admin.html.twig' %}
+
+{% block title %}Nouveau Paiement – Admin{% endblock %}
+{% block page_title %}Enregistrement Manuel{% endblock %}
+
+{% block body %}
+<div class="card">
+    <div class="card-header">
+        <h2><i class="fa-solid fa-file-invoice-dollar" style="color:var(--gold);margin-right:.5rem"></i>Création Financière</h2>
+        <a href="{{ path('app_admin_paiement_index') }}" class="btn btn-secondary btn-sm">
+            <i class="fa-solid fa-arrow-left"></i> Retour
+        </a>
+    </div>
+    <div class="card-body">
+        <form method="post" class="voyage-form">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="user_id">Utilisateur Bénéficiaire</label>
+                    <select name="user_id" id="user_id" class="input-pro" required>
+                        <option value="" selected disabled>Choisir un client...</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}" data-email="{{ user.email }}">{{ user.email }} (ID: {{ user.id }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subscription_id">Abonnement lié (optionnel)</label>
+                    <select name="subscription_id" id="subscription_id" class="input-pro">
+                        <option value="">Aucun abonnement</option>
+                        {% for sub in subscriptions %}
+                            <option value="{{ sub.id }}" data-user-id="{{ sub.user.id }}">
+                                #{{ sub.id }} - {{ sub.plan|capitalize }} ({{ sub.user.email }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="amount">Montant Transaction (DT)</label>
+                    <input type="number" step="0.01" name="amount" id="amount" class="input-pro" placeholder="0.00" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="methode_paiement">Mode de Règlement</label>
+                    <select name="methode_paiement" id="methode_paiement" class="input-pro" required>
+                        <option value="" selected disabled>Choisir la méthode...</option>
+                        <option value="Stripe">💳 Carte Bancaire (Stripe)</option>
+                        <option value="Wallet">👛 Portefeuille VoyageElite</option>
+                        <option value="Espèces">💵 Règlement Espèces</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="status">Statut de la Transaction</label>
+                <select name="status" id="status" class="input-pro" required>
+                    <option value="En attente" selected>🕒 En attente</option>
+                    <option value="Effectué">✅ Effectué (Valider)</option>
+                    <option value="Refusé">❌ Refusé</option>
+                </select>
+            </div>
+
+            <div style="margin: 2rem 0; padding: 1.5rem; background: #f8fafc; border-radius: 12px; border: 1px solid var(--border);">
+                <h3 style="font-size: .85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1.5rem; color: var(--navy);">
+                    <i class="fa-solid fa-file-invoice" style="color:var(--gold); margin-right:.5rem"></i>Détails de Facturation
+                </h3>
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="nom">Nom</label>
+                        <input type="text" name="nom" id="nom" class="input-pro" placeholder="Nom du client" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prenom">Prénom</label>
+                        <input type="text" name="prenom" id="prenom" class="input-pro" placeholder="Prénom du client" required>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="email">Email Facturation</label>
+                        <input type="email" name="email" id="email" class="input-pro" placeholder="email@exemple.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="telephone">Téléphone</label>
+                        <input type="text" name="telephone" id="telephone" class="input-pro" placeholder="8 chiffres" required maxlength="8">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-check"></i> Enregistrer la Transaction
+                </button>
+                <a href="{{ path('app_admin_paiement_index') }}" class="btn btn-secondary">Annuler</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const userSelect = document.getElementById('user_id');
+    const subscriptionSelect = document.getElementById('subscription_id');
+    const emailInput = document.getElementById('email');
+
+    if (userSelect && subscriptionSelect) {
+        const subscriptionOptions = Array.from(subscriptionSelect.querySelectorAll('option[data-user-id]'));
+
+        const refreshSubscriptions = () => {
+            const selectedUserId = userSelect.value;
+            subscriptionSelect.value = '';
+            subscriptionOptions.forEach((option) => {
+                option.hidden = !selectedUserId || option.dataset.userId !== selectedUserId;
+            });
+        };
+
+        userSelect.addEventListener('change', () => {
+            refreshSubscriptions();
+            const selectedOption = userSelect.options[userSelect.selectedIndex];
+            if (selectedOption.dataset.email && emailInput) {
+                emailInput.value = selectedOption.dataset.email;
+            }
+        });
+        refreshSubscriptions();
+    }
+});
+</script>
+{% endblock %}

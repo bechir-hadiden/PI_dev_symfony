@@ -1,0 +1,112 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Gestion des Abonnements - Admin{% endblock %}
+
+{% block body %}
+<div class="admin-dashboard-wrapper">
+    <!-- HEADER -->
+    <div class="admin-header fade-in">
+        <div class="header-content">
+            <span class="badge-gold-light">Administration Système</span>
+            <h1 class="page-main-title">Gestion des <em>Abonnements</em></h1>
+            <p class="page-subtitle">Pilotez les accès clients avec une interface simplifiée par cartes.</p>
+        </div>
+        <div class="header-actions-pro">
+            <div class="advanced-search" style="margin-right: 1rem;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="subSearchInput" placeholder="Chercher un client...">
+            </div>
+            <a href="{{ path('app_admin_subscription_new') }}" class="btn-action-primary" style="margin-right: 1rem;">
+                <i class="fa-solid fa-plus"></i> Nouveau Forfait
+            </a>
+            <a href="{{ path('app_admin_paiement_index') }}" class="btn-action-outline">
+                <i class="fa-solid fa-receipt"></i> Voir Paiements
+            </a>
+        </div>
+    </div>
+
+    <!-- CARDS GRID -->
+    <div class="admin-cards-grid fade-in delay-1">
+        {% for s in subscriptions %}
+            <div class="sub-card" data-search="{{ s.user.email|lower }}">
+                <div class="sub-card-header">
+                    <span class="plan-name">
+                        {% if s.plan == 'premium' %}<i class="fa-solid fa-crown gold-txt"></i>{% endif %}
+                        {{ s.plan }}
+                    </span>
+                    <span class="badge-status {{ s.status }}">
+                        {{ s.status }}
+                    </span>
+                </div>
+                
+                <div class="sub-card-body">
+                    <div class="sub-card-user">
+                        <div class="avatar">{{ s.user.email|slice(0, 1)|upper }}</div>
+                        <div class="info">
+                            <span class="email">{{ s.user.email }}</span>
+                            <span class="cl-sub">Réf: #{{ s.id }}</span>
+                        </div>
+                    </div>
+
+                    <div class="sub-card-stats">
+                        <span>{{ s.price|number_format(2) }} TND</span>
+                        <span>{{ s.getRemainingDays() }}j restants</span>
+                    </div>
+
+                    <div class="progress-mini-wrapper" title="{{ s.getProgressPercentage() }}%" style="width: 100%;">
+                        <div class="progress-mini-bar" style="width: {{ s.getProgressPercentage() }}%"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:0.5rem; font-size:0.65rem; color:#64748b; font-weight:600;">
+                        <span>Exp: {{ s.endDate|date('d/m/y') }}</span>
+                        <span>{{ s.getProgressPercentage() }}%</span>
+                    </div>
+                </div>
+
+                <div class="sub-card-footer">
+                    <a href="{{ path('app_admin_subscription_edit', {id: s.id}) }}" class="btn-sq" title="Éditer" style="background:#f1f5f9; color:#64748b; border-color:#e2e8f0;"><i class="fa-solid fa-pen-to-square"></i></a>
+                    
+                    {% if s.status != 'active' %}
+                        <form method="post" action="{{ path('app_admin_subscription_status', {id: s.id, status: 'active'}) }}" style="display:inline;">
+                            <button class="btn-sq" title="Activer" style="background:#f0fdf4; color:#166534; border-color:#dcfce7;"><i class="fa-solid fa-play"></i></button>
+                        </form>
+                    {% endif %}
+                    {% if s.status == 'active' %}
+                        <form method="post" action="{{ path('app_admin_subscription_status', {id: s.id, status: 'suspended'}) }}" style="display:inline;">
+                            <button class="btn-sq" title="Suspendre" style="background:#fffbeb; color:#92400e; border-color:#fef3c7;"><i class="fa-solid fa-pause"></i></button>
+                        </form>
+                    {% endif %}
+                    <form method="post" action="{{ path('app_admin_subscription_delete', {id: s.id}) }}" style="display:inline;" onsubmit="return confirm('Supprimer définitivement ?');">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ s.id) }}">
+                        <button class="btn-sq" title="Supprimer" style="background:#fef2f2; color:#991b1b; border-color:#fee2e2;"><i class="fa-solid fa-trash-can"></i></button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div style="grid-column: 1/-1; text-align: center; padding: 5rem; background: white; border-radius: 30px; border: 1px dashed #e2e8f0;">
+                <p class="text-muted">Aucun abonnement trouvé.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .progress-mini-wrapper { background: #f1f5f9; height: 8px; border-radius: 10px; position: relative; }
+    .progress-mini-bar { height: 100%; background: var(--gold); border-radius: 10px; transition: width 0.5s ease; }
+    .gold-txt { color: var(--gold); margin-right: 5px; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('subSearchInput');
+    const cards = document.querySelectorAll('.sub-card');
+
+    searchInput.addEventListener('input', () => {
+        const query = searchInput.value.toLowerCase();
+        cards.forEach(card => {
+            const email = card.getAttribute('data-search');
+            card.style.display = email.includes(query) ? '' : 'none';
+        });
+    });
+});
+</script>
+{% endblock %}

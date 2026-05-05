@@ -1,0 +1,137 @@
+{% extends 'base_dark.html.twig' %}
+
+{% block title %}Modifier Abonnement - Admin{% endblock %}
+
+{% block body %}
+<div class="admin-dashboard-wrapper" style="display: flex; align-items: center; justify-content: center; padding: 10rem 5%;">
+    <div class="form-card-pro fade-in" style="background: white; border-radius: 30px; box-shadow: 0 40px 100px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; width: 100%; max-width: 600px; padding: 4rem;">
+        
+        <div style="text-align: center; margin-bottom: 3rem;">
+            <span class="badge-gold-light">Édition Système</span>
+            <h1 class="page-main-title" style="font-size: 2.5rem; margin-top: 1rem;">Modifier <em>Abonnement</em></h1>
+            <p class="page-subtitle">Mise à jour des paramètres pour #{{ subscription.id }} ({{ subscription.user.email }}).</p>
+        </div>
+
+        {{ form_start(form, {'attr': {'class': 'elite-form'}}) }}
+            <div class="form-row" style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+                
+                <div class="form-group">
+                    {{ form_label(form.user) }}
+                    {{ form_widget(form.user) }}
+                    {{ form_errors(form.user) }}
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        {{ form_label(form.plan) }}
+                        {{ form_widget(form.plan) }}
+                        {{ form_errors(form.plan) }}
+                    </div>
+                    <div class="form-group">
+                        {{ form_label(form.price) }}
+                        {{ form_widget(form.price) }}
+                        {{ form_errors(form.price) }}
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                        {{ form_label(form.startDate) }}
+                        {{ form_widget(form.startDate) }}
+                        {{ form_errors(form.startDate) }}
+                    </div>
+                    <div class="form-group">
+                        {{ form_label(form.endDate) }}
+                        {{ form_widget(form.endDate) }}
+                        {{ form_errors(form.endDate) }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    {{ form_label(form.status) }}
+                    {{ form_widget(form.status) }}
+                    {{ form_errors(form.status) }}
+                </div>
+
+                <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                    <button type="submit" class="btn-action-primary" style="flex: 2; justify-content: center; padding: 1.2rem;">
+                        <i class="fa-solid fa-save"></i> Enregistrer les modifications
+                    </button>
+                    <a href="{{ path('app_admin_subscription_index') }}" class="btn-action-outline" style="flex: 1; justify-content: center; padding: 1.2rem;">
+                        Annuler
+                    </a>
+                </div>
+            </div>
+        {{ form_end(form) }}
+    </div>
+</div>
+
+<style>
+    .elite-form label { display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; color: #64748b; margin-bottom: 0.8rem; padding-left: 0.2rem; }
+    .elite-form .form-control, .elite-form .form-select { 
+        width: 100%; padding: 1.1rem 1.4rem; border: 1.5px solid #e2e8f0; border-radius: 14px; 
+        font-size: 0.95rem; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.3s; 
+        outline: none; background: #fafbfd !important; color: #010816 !important; font-weight: 700 !important;
+    }
+    .elite-form .form-control:focus, .elite-form .form-select:focus { 
+        border-color: var(--gold); background: white; box-shadow: 0 10px 25px rgba(201,168,76,0.1); 
+    }
+    .elite-form .is-invalid { border-color: #ef4444 !important; background-color: #fffafb !important; }
+    .elite-form .is-valid { border-color: #10b981 !important; background-color: #f6fffa !important; }
+    .elite-form ul { list-style: none; padding: 0.5rem 0 0; }
+    .elite-form li { color: #dc2626; font-size: 0.75rem; font-weight: 700; margin-top: 0.2rem; }
+</style>
+
+{% block javascripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('.elite-form');
+    const priceInput = document.querySelector('input[id$="_price"]');
+    const startInput = document.querySelector('input[id$="_startDate"]');
+    const endInput = document.querySelector('input[id$="_endDate"]');
+
+    function validateField(el, condition) {
+        if (!el || el.value === '') return;
+        if (condition) {
+            el.classList.add('is-valid');
+            el.classList.remove('is-invalid');
+        } else {
+            el.classList.add('is-invalid');
+            el.classList.remove('is-valid');
+        }
+    }
+
+    if (priceInput) {
+        priceInput.addEventListener('input', () => {
+            validateField(priceInput, parseFloat(priceInput.value) >= 0);
+        });
+    }
+
+    const validateDates = () => {
+        if (startInput && endInput && startInput.value && endInput.value) {
+            const start = new Date(startInput.value);
+            const end = new Date(endInput.value);
+            validateField(endInput, end > start);
+            validateField(startInput, true);
+        }
+    };
+
+    if (startInput) startInput.addEventListener('change', validateDates);
+    if (endInput) endInput.addEventListener('change', validateDates);
+
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const price = priceInput ? parseFloat(priceInput.value) : 0;
+            const start = startInput ? new Date(startInput.value) : null;
+            const end = endInput ? new Date(endInput.value) : null;
+
+            if (price < 0 || (start && end && end <= start)) {
+                e.preventDefault();
+                alert("Veuillez corriger les erreurs (prix positif et date de fin après le début) avant d'enregistrer.");
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

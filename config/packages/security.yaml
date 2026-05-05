@@ -12,9 +12,14 @@ security:
                 class: App\Entity\User
                 property: email
 
+
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js|assets|build)/
+            security: false
+        webhook:
+            # Stripe webhooks must bypass authentication
+            pattern: ^/webhook
             security: false
 
         main:

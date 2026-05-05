@@ -1,0 +1,165 @@
+{% extends 'BackOffice/base_admin.html.twig' %}
+
+{% block title %}Gestion Paiements – Admin{% endblock %}
+{% block page_title %}Gestion des Paiements{% endblock %}
+
+{% block body %}
+<div class="stat-row">
+    <div class="stat-card">
+        <div class="stat-icon gold"><i class="fas fa-hand-holding-usd"></i></div>
+        <div>
+            <div class="stat-value">{{ totalRevenue|number_format(2, ',', ' ') }} DT</div>
+            <div class="stat-label">Revenus Totaux</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon blue"><i class="fas fa-receipt"></i></div>
+        <div>
+            <div class="stat-value">{{ totalTransactions }}</div>
+            <div class="stat-label">Transactions</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:rgba(245,158,11,0.1);color:#f59e0b;"><i class="fas fa-clock"></i></div>
+        <div>
+            <div class="stat-value">{{ pendingPayments|default(0) }}</div>
+            <div class="stat-label">En attente</div>
+        </div>
+    </div>
+    
+    <!-- Circular Stat -->
+    <div class="stat-card" style="display:flex;align-items:center;gap:1.5rem">
+        <div class="circle-progress" style="--percent: {{ successRate|default(0) }};">
+            <div class="inner-circle">
+                <span class="percent-val">{{ successRate|default(0) }}%</span>
+            </div>
+        </div>
+        <div>
+            <div class="stat-label" style="margin-bottom:0">Taux de Succès</div>
+            <div style="font-size:0.7rem;color:#10b981;font-weight:700">Système Stable</div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .circle-progress {
+        width: 60px; height: 60px;
+        border-radius: 50%;
+        background: conic-gradient(#10b981 calc(var(--percent) * 1%), #e2e8f0 0);
+        display: flex; align-items: center; justify-content: center;
+        position: relative;
+    }
+    .inner-circle {
+        width: 48px; height: 48px;
+        background: #fff; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .percent-val { font-size: 0.85rem; font-weight: 800; color: var(--navy); }
+</style>
+
+<div class="card">
+    <div class="card-header">
+        <h2><i class="fas fa-credit-card" style="color:var(--gold);margin-right:.5rem"></i>Journal des paiements</h2>
+    </div>
+    <div class="card-body" style="padding:0">
+        {% if pagination is empty %}
+            <div style="padding:3rem;text-align:center;color:var(--muted)">
+                <i class="fas fa-receipt" style="font-size:3rem;opacity:.2;display:block;margin-bottom:1rem"></i>
+                Aucun paiement enregistré pour le moment.
+            </div>
+        {% else %}
+            <form method="post" action="{{ path('app_admin_paiement_bulk_action') }}">
+            <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; gap: 1rem; align-items: center; background: rgba(248, 250, 252, 0.5);">
+                <div style="display: flex; align-items: center; gap: 0.5rem; background: white; padding: 0.25rem 0.25rem 0.25rem 0.5rem; border-radius: 8px; border: 1px solid #e2e8f0; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                    <select name="action" style="border: none; background: transparent; padding: 0.4rem 0.5rem; font-size: 0.9rem; color: #475569; font-weight: 500; outline: none; cursor: pointer; min-width: 180px;">
+                        <option value="">-- Sélectionner une action --</option>
+                        <option value="valider">✔ Valider la sélection</option>
+                        <option value="supprimer">🗑 Supprimer la sélection</option>
+                    </select>
+                    <div style="width: 1px; height: 24px; background: #e2e8f0; margin: 0 0.25rem;"></div>
+                    <button type="submit" style="background: var(--navy, #0d1b2a); color: var(--gold, #c9a84c); border: none; padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 0.5rem;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'" onclick="return confirm('Exécuter cette action sur les éléments sélectionnés ?');">
+                        Appliquer <i class="fas fa-arrow-right" style="font-size: 0.75rem;"></i>
+                    </button>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Réservation #</th>
+                        <th>Montant</th>
+                        <th>Méthode</th>
+                        <th>Statut</th>
+                        <th style="min-width:140px">Analyse IA</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pagination %}
+                    <tr>
+                        <td><input type="checkbox" name="paiement_ids[]" value="{{ p.id }}" class="bulk-cb"></td>
+                        <td>{{ p.datePaiement|date('d/m/Y H:i') }}</td>
+                        <td>
+                            <strong>{{ p.nom }} {{ p.prenom }}</strong><br>
+                            <span style="font-size:0.75rem;color:var(--muted)">{{ p.email }}</span>
+                        </td>
+                        <td><span class="badge" style="background:#0d1b2a;color:var(--gold)">{{ p.reservationId ? '#' ~ p.reservationId : 'N/A' }}</span></td>
+                        <td><strong style="color:var(--gold)">{{ p.amount|number_format(2, ',', ' ') }} DT</strong></td>
+                        <td><i class="fas fa-wallet" style="margin-right:.4rem"></i> {{ p.methodePaiement }}</td>
+                        <td>
+                            {% if p.status == 'Effectué' %}
+                                <span class="badge" style="background:rgba(34,197,94,0.1);color:#15803d;padding:.4rem .8rem;font-weight:700;border-radius:50px;">Validé</span>
+                            {% else %}
+                                <span class="badge" style="background:rgba(234,179,8,0.1);color:#a16207;padding:.4rem .8rem;font-weight:700;border-radius:50px;">{{ p.status|default('En attente') }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% set risk = (p.scoreRisque * 100)|default(0)|round %}
+                            {% set riskColor = risk < 30 ? '#10b981' : (risk < 70 ? '#f59e0b' : '#ef4444') %}
+                            <div style="display:flex;flex-direction:column;gap:0.3rem">
+                                <div style="display:flex;justify-content:space-between;align-items:center">
+                                    <span style="font-size:0.65rem;font-weight:800;color:{{ riskColor }};text-transform:uppercase">
+                                        {% if risk < 30 %}Sécurisé{% elseif risk < 70 %}Suspect{% else %}Danger{% endif %}
+                                    </span>
+                                    <span style="font-size:0.75rem;font-weight:800;color:{{ riskColor }}">{{ risk }}%</span>
+                                </div>
+                                <div style="width:100%;height:6px;background:#e2e8f0;border-radius:10px;overflow:hidden;border:1px solid rgba(0,0,0,0.05)">
+                                    <div style="width:{{ risk }}%;height:100%;background:{{ riskColor }};transition:width 0.5s ease-out"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td style="white-space: nowrap;">
+                            {% if p.status == 'En attente' %}
+                                <a href="{{ path('app_admin_paiement_valider', {'id': p.id}) }}" class="btn btn-sm" style="background:rgba(34,197,94,0.1);color:#15803d;border:none;padding:.3rem .6rem;" title="Valider"><i class="fas fa-check"></i></a>
+                            {% endif %}
+                            {% if p.status == 'Effectué' %}
+                                <a href="{{ path('app_admin_paiement_export_single', {'id': p.id}) }}" class="btn btn-sm" style="background:rgba(201,168,76,0.1);color:var(--gold);border:none;padding:.3rem .6rem;" title="Télécharger Facture"><i class="fas fa-file-pdf"></i></a>
+                            {% endif %}
+                            
+                            <a href="{{ path('app_admin_paiement_edit', {'id': p.id}) }}" class="btn btn-sm" style="background:rgba(99,102,241,0.1);color:#6366f1;border:none;padding:.3rem .6rem;" title="Modifier"><i class="fas fa-edit"></i></a>
+
+                            <form method="post" action="{{ path('app_admin_paiement_delete', {'id': p.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette transaction ?');" style="display:inline-block;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ p.id) }}">
+                                <button class="btn btn-sm" style="background:rgba(239,68,68,0.1);color:#b91c1c;border:none;padding:.3rem .6rem;" title="Supprimer"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            </form>
+            
+            <script>
+                document.getElementById('selectAll')?.addEventListener('change', function() {
+                    document.querySelectorAll('.bulk-cb').forEach(cb => cb.checked = this.checked);
+                });
+            </script>
+        {% endif %}
+    </div>
+    <div class="card-footer" style="padding:1rem;display:flex;justify-content:center">
+        {{ knp_pagination_render(pagination) }}
+    </div>
+</div>
+{% endblock %}

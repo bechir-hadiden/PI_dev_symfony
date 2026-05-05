@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: 'Helvetica', sans-serif; color: #1a202c; line-height: 1.6; margin: 0; padding: 20px; }
+        .container { width: 100%; }
+        
+        .header { border-bottom: 3px solid #c9a84c; padding-bottom: 20px; margin-bottom: 30px; }
+        .header-table { width: 100%; }
+        .company-name { font-size: 28px; font-weight: bold; color: #0d1b2a; }
+        .document-type { text-align: right; font-size: 20px; color: #c9a84c; text-transform: uppercase; font-weight: bold; }
+        
+        .info-section { width: 100%; margin-bottom: 30px; }
+        .info-box { width: 45%; vertical-align: top; }
+        .info-label { font-size: 10px; color: #718096; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; }
+        .info-value { font-size: 13px; color: #2d3748; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { background-color: #0d1b2a; color: #ffffff; font-size: 10px; text-transform: uppercase; text-align: left; padding: 12px; }
+        td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; }
+        
+        .total-section { margin-top: 30px; float: right; width: 300px; }
+        .total-row { display: table; width: 100%; padding: 5px 0; }
+        .total-label { display: table-cell; font-size: 12px; color: #4a5568; }
+        .total-value { display: table-cell; text-align: right; font-weight: bold; font-size: 14px; }
+        .grand-total { border-top: 2px solid #c9a84c; margin-top: 10px; padding-top: 10px; color: #0d1b2a; font-size: 18px; }
+
+        .footer { position: fixed; bottom: 0; width: 100%; text-align: center; font-size: 10px; color: #a0aec0; border-top: 1px solid #e2e8f0; padding-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <table class="header-table">
+                <tr>
+                    <td style="border:none; padding:0;">
+                        <div class="company-name">VoyageElite</div>
+                        <div style="font-size: 12px; color: #718096;">Plateforme de Gestion de Luxe</div>
+                    </td>
+                    <td style="border:none; padding:0;" class="document-type">
+                        {{ (facture is defined and facture) ? 'Facture Officielle' : 'Reçu de Paiement' }}
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <table class="info-section" style="border:none;">
+            <tr>
+                <td class="info-box" style="border:none;">
+                    <div class="info-label">Émetteur</div>
+                    <div class="info-value"><strong>SmartTrip S.A.</strong></div>
+                    <div class="info-value">123 Avenue Habib Bourguiba</div>
+                    <div class="info-value">Tunis, Tunisie</div>
+                </td>
+                <td class="info-box" style="border:none; text-align: right;">
+                    <div class="info-label">Client</div>
+                    {% if paiements[0].nom or paiements[0].prenom %}
+                        <div class="info-value"><strong>{{ paiements[0].prenom }} {{ paiements[0].nom }}</strong></div>
+                        <div class="info-value" style="font-size: 11px;">{{ paiements[0].email|default(paiements[0].user.email) }}</div>
+                    {% else %}
+                        <div class="info-value"><strong>{{ paiements[0].user.email }}</strong></div>
+                    {% endif %}
+                    <div class="info-value">ID Client: #{{ paiements[0].user.id }}</div>
+                    {% if paiements[0].telephone %}
+                        <div class="info-value">Tél: {{ paiements[0].telephone }}</div>
+                    {% endif %}
+                </td>
+            </tr>
+        </table>
+
+        <table class="info-section" style="border:none; background: #f8fafc; padding: 15px; border-radius: 8px;">
+            <tr>
+                <td style="border:none; padding: 5px;">
+                    <div class="info-label">Numéro de Document</div>
+                    <div class="info-value">{{ (facture is defined and facture) ? facture.numeroFacture : 'REC-' ~ paiements[0].id }}</div>
+                </td>
+                <td style="border:none; padding: 5px;">
+                    <div class="info-label">Date d'émission</div>
+                    <div class="info-value">{{ ((facture is defined and facture) ? facture.dateEmission : paiements[0].datePaiement)|date('d/m/Y') }}</div>
+                </td>
+                <td style="border:none; padding: 5px; text-align: right;">
+                    <div class="info-label">Mode de Règlement</div>
+                    <div class="info-value">{{ paiements[0].methodePaiement }}</div>
+                </td>
+            </tr>
+        </table>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th style="text-align: right;">Montant Unitaire</th>
+                    <th style="text-align: center;">Quantité</th>
+                    <th style="text-align: right;">Total HT</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in paiements %}
+                <tr>
+                    <td>
+                        {{ p.subscription ? 'Abonnement ' ~ p.subscription.plan|capitalize : 'Transaction de Voyage' }}
+                        <div style="font-size: 10px; color: #718096;">Réf Transaction: #{{ p.id }}</div>
+                    </td>
+                    <td style="text-align: right;">{{ ((facture is defined and facture) ? facture.montantHT : p.amount)|number_format(2) }} TND</td>
+                    <td style="text-align: center;">1</td>
+                    <td style="text-align: right;">{{ ((facture is defined and facture) ? facture.montantHT : p.amount)|number_format(2) }} TND</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="total-section">
+            {% if facture is defined and facture %}
+                <div class="total-row">
+                    <div class="total-label">Sous-total Hors Taxes (HT)</div>
+                    <div class="total-value">{{ facture.montantHT|number_format(2) }} TND</div>
+                </div>
+                <div class="total-row">
+                    <div class="total-label">TVA ({{ facture.tva }}%)</div>
+                    <div class="total-value">{{ (facture.montantTTC - facture.montantHT)|number_format(2) }} TND</div>
+                </div>
+                <div class="total-row grand-total">
+                    <div class="total-label">Total TTC</div>
+                    <div class="total-value">{{ facture.montantTTC|number_format(2) }} TND</div>
+                </div>
+            {% else %}
+                <div class="total-row grand-total">
+                    <div class="total-label">Montant Total Payé</div>
+                    <div class="total-value">{{ paiements[0].amount|number_format(2) }} TND</div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="footer">
+            SmartTrip S.A. - MF: 1234567/A/B/C/000 - RC: B01234562024<br>
+            Merci de votre confiance. Ce document est généré électroniquement.
+        </div>
+    </div>
+</body>
+</html>

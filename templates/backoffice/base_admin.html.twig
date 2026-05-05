@@ -145,18 +145,23 @@
       </a>
     </li>
     <li>
-      <a href="{{ path('admin_transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'admin_transport_' and not app.request.attributes.get('_route') starts with 'admin_transport_type' ? 'active' : '' }}">
+      <a href="{{ path('app_admin_transport_index') }}" class="{{ app.request.attributes.get('_route') starts with 'app_admin_transport' ? 'active' : '' }}">
         <i class="fas fa-truck"></i> Véhicules
       </a>
     </li>
     <li>
-      <a href="{{ path('admin_paiement_index') }}" class="{{ app.request.attributes.get('_route') starts with 'admin_paiement' ? 'active' : '' }}">
+      <a href="{{ path('app_admin_paiement_index') }}" class="{{ app.request.attributes.get('_route') starts with 'app_admin_paiement' ? 'active' : '' }}">
         <i class="fas fa-credit-card"></i> Paiements
       </a>
     </li>
        <li>
       <a href="{{ path('app_offre_index') }}" class="{{ app.request.attributes.get('_route') starts with 'app_offre' ? 'active' : '' }}">
         <i class="fas fa-percentage"></i> Offres & Promos
+      </a>
+    </li>
+    <li>
+      <a href="{{ path('app_admin_subscription_index') }}" class="{{ app.request.attributes.get('_route') starts with 'app_admin_subscription' ? 'active' : '' }}">
+        <i class="fas fa-crown"></i> Abonnements
       </a>
     </li>
     <li>
@@ -180,8 +185,14 @@
 <!-- MAIN -->
 <div class="main">
   <div class="topbar">
-    <h1>{% block page_title %}Administration{% endblock %}</h1>
-    <span class="topbar-badge"><i class="fas fa-shield-alt" style="margin-right:.3rem"></i>BackOffice Admin</span>
+    <div>
+        <h1>{% block page_title %}Administration{% endblock %}</h1>
+        <p style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">SmartTrip Elite Control Panel</p>
+    </div>
+    <div style="display:flex; align-items:center; gap:1rem;">
+        {% block header_actions %}{% endblock %}
+        <span class="topbar-badge"><i class="fas fa-shield-alt" style="margin-right:.3rem"></i>BackOffice Admin</span>
+    </div>
   </div>
 
   <div class="content">
